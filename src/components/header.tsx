@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
-import { FileText, LogOut, Award, User, Briefcase, Play, CaseSensitive } from 'lucide-react';
+import { FileText, LogOut, Award, User, Briefcase, Play, CaseSensitive, LayoutDashboard } from 'lucide-react';
 import { useFont } from '@/context/font-context';
 
 export function Header() {
@@ -25,6 +25,7 @@ export function Header() {
     { href: '/applied', label: 'Applied', icon: <FileText /> },
     { href: '/ongoing', label: 'Ongoing', icon: <Play /> },
     { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
+    { href: '/admin', label: 'Admin Panel', icon: <LayoutDashboard /> },
     { href: '/profile', label: 'Profile', icon: <User /> },
   ];
 
@@ -41,12 +42,12 @@ export function Header() {
           {navLinks.map(({ href, label, icon }) => (
             <Button
               key={href}
-              variant={pathname === href ? 'secondary' : 'ghost'}
+              variant={pathname.startsWith(href) && href !== '/' || pathname === href ? 'secondary' : 'ghost'}
               size="sm"
               asChild
               className={cn(
                 'text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2',
-                pathname === href && 'shadow-none translate-x-0 translate-y-0'
+                (pathname.startsWith(href) && href !== '/' || pathname === href) && 'shadow-none translate-x-0 translate-y-0'
               )}
             >
               <Link href={href}>

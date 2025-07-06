@@ -288,7 +288,18 @@ export type Certificate = {
   approvedDate: string;
   description: string;
   imageUrl: string;
+  pdfUrl?: string;
+  startDate?: string;
+  uploadedBy?: string;
 };
+
+export const interns = [
+    { id: 'INT24-001', name: 'Player One' },
+    { id: 'INT24-002', name: 'Alex Doe' },
+    { id: 'INT24-003', name: 'Sam Smith' },
+    { id: 'INT24-004', name: 'Jamie Rivera' },
+    { id: 'INT24-005', name: 'Casey Jordan' },
+];
 
 export const certificates: Certificate[] = [
   {
@@ -296,9 +307,38 @@ export const certificates: Certificate[] = [
     internName: 'Player One',
     internshipRole: 'React Js Frontend',
     company: 'IR INFOTECH',
-    duration: '3 Months (2023-06-01 to 2023-08-31)',
+    duration: '3 Months',
+    startDate: '2023-06-01',
     approvedDate: '2023-09-05',
     description: 'This certifies that Player One has successfully completed the React Js Frontend internship at IR INFOTECH. During this internship, Player One demonstrated exceptional skills in building modern, responsive web applications using React. Their dedication and creative contributions were invaluable to the team.',
     imageUrl: 'https://placehold.co/800x600.png',
+    pdfUrl: '#',
+    uploadedBy: 'Admin',
+  },
+  {
+    id: 'CERT54321',
+    internName: 'Alex Doe',
+    internshipRole: 'DevOps',
+    company: 'IR INFOTECH',
+    duration: '6 Months',
+    startDate: '2023-03-01',
+    approvedDate: '2023-09-15',
+    description: 'Alex Doe completed the DevOps internship, showing great skill in CI/CD, Docker, and cloud infrastructure management. Alex was a proactive and valuable team member.',
+    imageUrl: 'https://placehold.co/800x600.png',
+    pdfUrl: '#',
+    uploadedBy: 'Admin',
+  },
+  {
+    id: 'CERT67890',
+    internName: 'Sam Smith',
+    internshipRole: 'MERN Stack',
+    company: 'IR INFOTECH',
+    duration: '4 Months',
+    startDate: '2023-05-15',
+    approvedDate: '2023-09-20',
+    description: 'Sam Smith has successfully finished the MERN Stack internship. Sam developed a full-stack application, demonstrating proficiency in MongoDB, Express, React, and Node.js.',
+    imageUrl: 'https://placehold.co/800x600.png',
+    pdfUrl: '#',
+    uploadedBy: 'Admin',
   },
 ];
