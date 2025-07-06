@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
-import { FileText, LogOut, Award, User, Briefcase, CaseSensitive, LayoutDashboard, Menu } from 'lucide-react';
+import { FileText, LogOut, Award, User, Briefcase, CaseSensitive, LayoutDashboard, Menu, Activity, CheckCircle } from 'lucide-react';
 import { useFont } from '@/context/font-context';
 import {
   Sheet,
@@ -35,6 +35,8 @@ export function Header() {
   const loggedInLinks = [
     { href: '/', label: 'Open Internships', icon: <Briefcase /> },
     { href: '/applied', label: 'Applied', icon: <FileText /> },
+    { href: '/ongoing', label: 'Ongoing', icon: <Activity /> },
+    { href: '/completed', label: 'Completed', icon: <CheckCircle /> },
     { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
     { href: '/profile', label: 'Profile', icon: <User /> },
   ];

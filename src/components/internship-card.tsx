@@ -77,73 +77,6 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
               </div>
             </div>
         );
-
-      case 'Ongoing':
-        return (
-          <div className="border-t pt-4 mt-4 space-y-6">
-            <div>
-              <h4 className="font-semibold text-primary flex items-center gap-2"><Info /> Admin Notes</h4>
-              {internship.adminNotes && internship.adminNotes.length > 0 ? (
-                <ul className="space-y-2 list-disc list-inside text-muted-foreground mt-2 text-sm">
-                  {internship.adminNotes.map((note, index) => (
-                    <li key={index}>{note}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground text-sm mt-2">No notes from the admin yet.</p>
-              )}
-            </div>
-             <div>
-              <h4 className="font-semibold text-primary flex items-center gap-2"><FileDown /> Assigned Documents</h4>
-               <div className="space-y-2 mt-2">
-                {internship.assignedDocuments && internship.assignedDocuments.length > 0 ? (
-                  internship.assignedDocuments.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 border rounded-md">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm truncate" title={doc.name}>{doc.name}</span>
-                      </div>
-                      <Button variant="ghost" size="icon" asChild>
-                        <a href={doc.url} download>
-                          <FileDown className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">No documents assigned yet.</p>
-                )}
-              </div>
-            </div>
-             <div>
-              <h4 className="font-semibold text-primary flex items-center gap-2"><Upload /> Upload Your Work</h4>
-               <form onSubmit={handleUpload} className="space-y-2 mt-2">
-                  <Input type="file" onChange={(e) => setNewFile(e.target.files ? e.target.files[0] : null)} />
-                  <Button className="w-full" size="sm" type="submit" disabled={!newFile}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload
-                  </Button>
-              </form>
-            </div>
-          </div>
-        );
-      
-      case 'Selected':
-        if (!application.driveLink) return null;
-        return (
-          <div className="border-t pt-4 mt-4">
-              <h4 className="font-semibold text-primary mb-2 flex items-center gap-2"><CheckCircle/> Internship Completed</h4>
-              <p className="text-xs text-muted-foreground">
-                  All your documents have been moved to a shared folder. This link will be active for one month. Please download your documents before then.
-              </p>
-              <Button variant="link" asChild className="p-0 h-auto mt-2">
-                  <a href={application.driveLink} target="_blank" rel="noopener noreferrer">
-                      View Documents
-                  </a>
-              </Button>
-          </div>
-        );
-      
        case 'Terminated':
          if (!application.comments) return null;
          return (
@@ -153,11 +86,105 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
               <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: application.comments}} />
             </div>
          );
-
       default:
         return null;
     }
   }
+
+  const renderActionButton = () => {
+    if (!isLoggedIn) {
+        return (
+            <Dialog>
+                <DialogTrigger asChild>
+                <Button size="sm">Apply Now</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Login Required</DialogTitle>
+                    <DialogDescription>
+                    It seems you haven't logged in to the platform. To continue, please login or create an account.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-4 pt-4">
+                    <Button variant="outline" asChild>
+                    <Link href={`/signup?redirect=/apply/${internship.id}`}>Create Account</Link>
+                    </Button>
+                    <Button asChild>
+                    <Link href={`/login?redirect=/apply/${internship.id}`}>Login</Link>
+                    </Button>
+                </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    if (!internship.applied || !application) {
+        return (
+            <Button size="sm" asChild>
+                <Link href={`/apply/${internship.id}`}>Apply Now</Link>
+            </Button>
+        );
+    }
+    
+    switch (application.status) {
+        case 'Ongoing':
+            return (
+                <Button size="sm" asChild>
+                    <Link href={`/ongoing/${application.id}`}>View Details</Link>
+                </Button>
+            );
+        case 'Selected':
+             return (
+                <Button size="sm" asChild>
+                    <Link href={`/completed/${application.id}`}>View Details</Link>
+                </Button>
+            );
+        case 'Interview Scheduled':
+        case 'Rejected':
+        case 'Terminated':
+        case 'In Review':
+        case 'Shortlisted':
+        case 'Withdrawn':
+             return (
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary" size="sm">View Status</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                        <DialogTitle>Application Status</DialogTitle>
+                        <DialogDescription>
+                            Status for your application to the "{internship.title}" role.
+                        </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4 text-sm">
+                            <div className="flex justify-between items-center">
+                                <p className="text-muted-foreground">Status</p>
+                                {internship.status && <Badge variant={statusColors[internship.status] || 'secondary'}>{internship.status}</Badge>}
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <p className="text-muted-foreground">Applied Date</p>
+                                <p>{internship.applicationDate ? format(new Date(internship.applicationDate), 'dd-MM-yy') : 'N/A'}</p>
+                            </div>
+                            
+                            {renderDialogContent()}
+                            
+                            <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
+                                Note: Applications are reviewed for up to one month. If you are not selected within this timeframe, the application will be automatically removed from your dashboard.
+                            </p>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            );
+        default:
+             return (
+                <Button size="sm" asChild>
+                    <Link href={`/apply/${internship.id}`}>Apply Now</Link>
+                </Button>
+            );
+    }
+  }
+
 
   return (
     <Card className="flex flex-col transform transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl">
@@ -215,65 +242,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
       </CardContent>
       <CardFooter className="flex justify-between items-center">
         <p className="text-xs text-muted-foreground">Posted {format(new Date(internship.postedDate), 'dd-MM-yy')}</p>
-        {isLoggedIn ? (
-          internship.applied ? (
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="secondary" size="sm">View Status</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Application Status</DialogTitle>
-                  <DialogDescription>
-                    Status for your application to the "{internship.title}" role.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4 text-sm">
-                  <div className="flex justify-between items-center">
-                    <p className="text-muted-foreground">Status</p>
-                    {internship.status && <Badge variant={statusColors[internship.status] || 'secondary'}>{internship.status}</Badge>}
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <p className="text-muted-foreground">Applied Date</p>
-                    <p>{internship.applicationDate ? format(new Date(internship.applicationDate), 'dd-MM-yy') : 'N/A'}</p>
-                  </div>
-                   
-                   {renderDialogContent()}
-                  
-                  <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
-                    Note: Applications are reviewed for up to one month. If you are not selected within this timeframe, the application will be automatically removed from your dashboard.
-                  </p>
-                </div>
-              </DialogContent>
-            </Dialog>
-          ) : (
-             <Button size="sm" asChild>
-                <Link href={`/apply/${internship.id}`}>Apply Now</Link>
-            </Button>
-          )
-        ) : (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="sm">Apply Now</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Login Required</DialogTitle>
-                <DialogDescription>
-                  It seems you haven't logged in to the platform. To continue, please login or create an account.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-end gap-4 pt-4">
-                <Button variant="outline" asChild>
-                  <Link href={`/signup?redirect=/apply/${internship.id}`}>Create Account</Link>
-                </Button>
-                <Button asChild>
-                  <Link href={`/login?redirect=/apply/${internship.id}`}>Login</Link>
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+        {renderActionButton()}
       </CardFooter>
     </Card>
   );

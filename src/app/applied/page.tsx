@@ -8,15 +8,12 @@ import { internships, InternshipStatus } from '@/lib/mock-data';
 import { useAuth } from '@/context/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const allStatuses: InternshipStatus[] = [
+const pendingStatuses: InternshipStatus[] = [
     'In Review',
     'Shortlisted',
     'Interview Scheduled',
-    'Ongoing',
-    'Selected',
     'Rejected',
     'Withdrawn',
-    'Terminated',
 ];
 
 export default function AppliedInternshipsPage() {
@@ -33,6 +30,8 @@ export default function AppliedInternshipsPage() {
   const appliedInternships = useMemo(() => {
     return internships.filter(internship => 
         internship.applied &&
+        internship.status &&
+        pendingStatuses.includes(internship.status) &&
         (statusFilter === 'all' || internship.status === statusFilter)
     );
   }, [statusFilter]);
@@ -45,8 +44,8 @@ export default function AppliedInternshipsPage() {
     <div className="container mx-auto p-4 md:p-8 flex-1">
       <header className="my-8 md:my-16">
         <div className="text-center">
-            <h1 className="text-3xl md:text-5xl font-headline text-primary">Applied Internships</h1>
-            <p className="text-muted-foreground mt-4 text-sm md:text-base">Tracking your career quests.</p>
+            <h1 className="text-3xl md:text-5xl font-headline text-primary">My Applications</h1>
+            <p className="text-muted-foreground mt-4 text-sm md:text-base">Track the status of your pending applications.</p>
         </div>
         <div className="mt-8 max-w-xs mx-auto">
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | InternshipStatus)}>
@@ -55,7 +54,7 @@ export default function AppliedInternshipsPage() {
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
-                    {allStatuses.map(status => (
+                    {pendingStatuses.map(status => (
                         <SelectItem key={status} value={status}>
                             {status}
                         </SelectItem>
