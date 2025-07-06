@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -105,7 +106,9 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
               </DialogContent>
             </Dialog>
           ) : (
-            <Button size="sm">Apply Now</Button>
+             <Button size="sm" asChild>
+                <Link href={`/apply/${internship.id}`}>Apply Now</Link>
+            </Button>
           )
         ) : (
           <Button size="sm" asChild>

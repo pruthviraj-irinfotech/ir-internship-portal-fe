@@ -14,7 +14,7 @@ export default function InternshipDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { isLoggedIn } = useAuth();
-  const internshipId = params.id;
+  const internshipId = params.id as string;
   const internship = internships.find(i => i.id.toString() === internshipId);
 
   if (!internship) {
@@ -58,7 +58,9 @@ export default function InternshipDetailsPage() {
                  <p className="text-muted-foreground mt-2 text-lg">{company} - {location}</p>
             </div>
             {isLoggedIn ? (
-                 <Button size="lg">Apply Now</Button>
+                <Button size="lg" asChild>
+                    <Link href={`/apply/${internship.id}`}>Apply Now</Link>
+                </Button>
             ) : (
                 <Button size="lg" asChild>
                     <Link href="/login">Apply Now</Link>
