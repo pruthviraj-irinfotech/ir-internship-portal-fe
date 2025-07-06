@@ -1,6 +1,8 @@
 'use client';
 
 import * as React from 'react';
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -12,15 +14,36 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Upload, Eye, LayoutDashboard } from 'lucide-react';
+import { Upload, Eye, LayoutDashboard, Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isLoggedIn, isAdmin } = useAuth();
+  const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    // Redirect if not logged in or not an admin.
+    if (!isLoggedIn || !isAdmin) {
+      router.replace('/login?redirect=' + pathname);
+    }
+  }, [isLoggedIn, isAdmin, router, pathname]);
+
+  // Render a loading state while auth state is being determined or redirecting
+  if (!isLoggedIn || !isAdmin) {
+    return (
+      <div className="flex-1 flex items-center justify-center h-screen w-full">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="text-muted-foreground">Verifying credentials...</p>
+          </div>
+      </div>
+    );
+  }
 
   const navItems = [
     {

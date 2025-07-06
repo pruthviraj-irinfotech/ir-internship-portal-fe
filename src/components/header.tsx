@@ -11,7 +11,7 @@ import { useFont } from '@/context/font-context';
 
 export function Header() {
   const pathname = usePathname();
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, isAdmin, logout } = useAuth();
   const { toggleFont } = useFont();
 
   const loggedOutLinks = [
@@ -25,7 +25,6 @@ export function Header() {
     { href: '/applied', label: 'Applied', icon: <FileText /> },
     { href: '/ongoing', label: 'Ongoing', icon: <Play /> },
     { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
-    { href: '/admin', label: 'Admin Panel', icon: <LayoutDashboard /> },
     { href: '/profile', label: 'Profile', icon: <User /> },
   ];
 
@@ -56,6 +55,23 @@ export function Header() {
               </Link>
             </Button>
           ))}
+          {isLoggedIn && isAdmin && (
+             <Button
+                key="/admin"
+                variant={pathname.startsWith('/admin') ? 'secondary' : 'ghost'}
+                size="sm"
+                asChild
+                className={cn(
+                  'text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2',
+                  (pathname.startsWith('/admin')) && 'shadow-none translate-x-0 translate-y-0'
+                )}
+              >
+                <Link href="/admin">
+                  <LayoutDashboard />
+                  <span className="hidden sm:inline-block">Admin Panel</span>
+                </Link>
+              </Button>
+          )}
           {isLoggedIn && (
             <Button variant="ghost" size="sm" onClick={logout} className="text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2">
               <LogOut />

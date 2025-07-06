@@ -85,6 +85,7 @@ export default function LoginPage() {
             </div>
             <div className="text-xs text-muted-foreground pt-2">
               <p>Use <b className="text-primary">player1@email.com</b> and <b className="text-primary">password123</b> to log in.</p>
+              <p className="mt-1">Admin: <b className="text-primary">admin@email.com</b> / <b className="text-primary">adminpassword</b>.</p>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
