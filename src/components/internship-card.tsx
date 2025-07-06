@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Clock, IndianRupee, HelpCircle, MapPin, Tag } from 'lucide-react';
 import type { Internship } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
@@ -53,12 +54,16 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
       </CardContent>
       <CardFooter className="flex justify-between items-center">
         <p className="text-xs text-muted-foreground">Posted {internship.postedDate}</p>
-        {isLoggedIn && (
-            internship.applied ? (
+        {isLoggedIn ? (
+          internship.applied ? (
             <Badge variant="secondary">Applied</Badge>
-            ) : (
+          ) : (
             <Button size="sm">Apply Now</Button>
-            )
+          )
+        ) : (
+          <Button size="sm" asChild>
+            <Link href="/login">Apply Now</Link>
+          </Button>
         )}
       </CardFooter>
     </Card>
