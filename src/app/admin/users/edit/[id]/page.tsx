@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 const formSchema = z.object({
   firstName: z.string().min(2, "First name is required."),
@@ -40,6 +40,7 @@ export default function EditUserPage() {
     const userId = params.id as string;
     
     const [user, setUser] = useState<User | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -111,7 +112,19 @@ export default function EditUserPage() {
                                 <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                              <FormField control={form.control} name="password" render={({ field }) => (
-                                <FormItem><FormLabel>New Password (Optional)</FormLabel><FormControl><Input type="password" placeholder="Leave blank to keep current password" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem>
+                                    <FormLabel>New Password (Optional)</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type={showPassword ? 'text' : 'password'} placeholder="Leave blank to keep current password" {...field} />
+                                            <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                <span className="sr-only">Toggle password visibility</span>
+                                            </Button>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

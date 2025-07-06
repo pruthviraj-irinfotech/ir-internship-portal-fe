@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 const MAX_AVATAR_SIZE = 100 * 1024; // 100KB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -21,6 +22,8 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState("https://placehold.co/100x100.png");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -167,11 +170,23 @@ export default function ProfilePage() {
             <h3 className="text-lg font-medium">Change Password</h3>
              <div className="space-y-2">
                 <Label>Current Password</Label>
-                <Input type="password" placeholder="Enter current password" />
+                <div className="relative">
+                    <Input type={showCurrentPassword ? 'text' : 'password'} placeholder="Enter current password" />
+                     <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                        {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        <span className="sr-only">Toggle current password visibility</span>
+                    </Button>
+                </div>
               </div>
                <div className="space-y-2">
                 <Label>New Password</Label>
-                <Input type="password" placeholder="Enter new password" />
+                <div className="relative">
+                    <Input type={showNewPassword ? 'text' : 'password'} placeholder="Enter new password" />
+                     <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowNewPassword(!showNewPassword)}>
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        <span className="sr-only">Toggle new password visibility</span>
+                    </Button>
+                </div>
               </div>
           </div>
           <div className="flex justify-end pt-4">
