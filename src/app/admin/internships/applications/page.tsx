@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -147,10 +148,13 @@ export default function ApplicationsPage() {
                         <div className="grid md:grid-cols-2 gap-8 max-h-[80vh]">
                             <div className="space-y-6 py-2 overflow-y-auto pr-4">
                                 
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
                                     <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{viewingApplication.userName}</p></div>
-                                    <div><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.userEmail}</p></div>
                                     <div><Label>Applicant Phone</Label><p className="text-sm text-muted-foreground">{viewingApplication.userPhone}</p></div>
+                                    <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.userEmail}</p></div>
+                                </div>
+
+                                <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
                                     <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{viewingApplication.id}</p></div>
                                     <div><Label>Application Date</Label><p className="text-sm text-muted-foreground">{format(new Date(viewingApplication.applicationDate), 'dd-MM-yy')}</p></div>
                                 </div>
@@ -160,18 +164,18 @@ export default function ApplicationsPage() {
                                    <p className="text-sm text-muted-foreground mt-1">{viewingApplication.whyApply}</p>
                                 </div>
                                 
-                                <div className="border-t pt-4 grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
+                                <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
                                     <div><Label>Highest Qualification</Label><p className="text-sm text-muted-foreground">{viewingApplication.qualification}</p></div>
                                     <div><Label>Current Status</Label><p className="text-sm text-muted-foreground capitalize">{viewingApplication.userStatus}</p></div>
-                                    <div className="md:col-span-3"><Label>Organization/Institute</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgName}</p></div>
+                                    <div className="sm:col-span-2"><Label>Organization/Institute</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgName}</p></div>
                                     <div><Label>City</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgCity}</p></div>
                                     <div><Label>State</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgState}</p></div>
                                     <div><Label>Country</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgCountry}</p></div>
                                 </div>
                                 
                                 {(viewingApplication.altEmail || viewingApplication.altPhone) && (
-                                    <div className="border-t pt-4 grid grid-cols-2 gap-y-4 gap-x-6">
-                                        {viewingApplication.altEmail && <div><Label>Alternative Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.altEmail}</p></div>}
+                                    <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+                                        {viewingApplication.altEmail && <div className="sm:col-span-2"><Label>Alternative Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.altEmail}</p></div>}
                                         {viewingApplication.altPhone && <div><Label>Alternative Phone</Label><p className="text-sm text-muted-foreground">{viewingApplication.altPhone}</p></div>}
                                     </div>
                                 )}
