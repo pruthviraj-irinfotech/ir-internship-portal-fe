@@ -218,7 +218,14 @@ export default function AdminInternshipsPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{viewingInternship.duration}</p></div>
                       <div><Label className="text-sm text-muted-foreground">Category</Label><p><Badge variant="outline">{viewingInternship.category}</Badge></p></div>
-                      <div><Label className="text-sm text-muted-foreground">Amount</Label><p>{viewingInternship.amount}</p></div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Amount</Label>
+                        <p>
+                            {viewingInternship.amount 
+                                ? `₹${viewingInternship.amount.toLocaleString('en-IN')}${viewingInternship.isMonthly ? '/month' : ''}`
+                                : 'N/A'}
+                        </p>
+                      </div>
                       <div><Label className="text-sm text-muted-foreground">Posted</Label><p>{format(new Date(viewingInternship.postedDate), 'dd-MM-yy')}</p></div>
                     </div>
                     <div className="space-y-4 border-t pt-4">

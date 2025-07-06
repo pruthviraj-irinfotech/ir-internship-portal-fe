@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription as FormDesc } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import RichTextEditor from '@/components/rich-text-editor';
@@ -20,7 +21,8 @@ const formSchema = z.object({
   location: z.string().min(2, "Location is required."),
   duration: z.string().min(3, "Duration is required."),
   category: z.enum(['Stipend', 'Paid', 'Free'], { required_error: "Please select a category."}),
-  amount: z.string().optional(),
+  amount: z.coerce.number().optional(),
+  isMonthly: z.boolean().optional().default(false),
   description: z.string().min(20, "Short description must be at least 20 characters."),
   detailedDescription: z.string().min(50, "Detailed description must be at least 50 characters."),
   whoCanApply: z.string().min(10, "Please provide details on who can apply."),
@@ -28,14 +30,15 @@ const formSchema = z.object({
   selectionProcess: z.string().min(10, "Please describe the selection process."),
   announcements: z.string().optional(),
 }).refine((data) => {
-    if ((data.category === 'Stipend' || data.category === 'Paid') && (!data.amount || data.amount.trim() === '')) {
+    if ((data.category === 'Stipend' || data.category === 'Paid') && (!data.amount || data.amount <= 0)) {
         return false;
     }
     return true;
 }, {
-    message: "Amount is required for Stipend or Paid internships.",
+    message: "A positive amount is required for Stipend or Paid internships.",
     path: ["amount"],
 });
+
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -57,7 +60,8 @@ export default function EditInternshipPage() {
             setInternship(internToEdit);
             form.reset({
                 ...internToEdit,
-                amount: internToEdit.amount || '',
+                amount: internToEdit.amount || undefined,
+                isMonthly: internToEdit.isMonthly || false,
                 announcements: internToEdit.announcements || '',
             });
         } else {
@@ -167,17 +171,39 @@ export default function EditInternshipPage() {
                         )}
                     />
                     {(category === 'Stipend' || category === 'Paid') && (
-                        <FormField
-                            control={form.control}
-                            name="amount"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Amount</FormLabel>
-                                    <FormControl><Input placeholder="e.g., 15,000/month or 10,000" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="flex flex-col gap-2">
+                             <FormField
+                                control={form.control}
+                                name="amount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Amount</FormLabel>
+                                        <FormControl><Input type="number" placeholder="e.g., 15000" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="isMonthly"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 pt-2">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                                id="isMonthly"
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel htmlFor="isMonthly" className="font-normal text-sm">
+                                                This is a monthly amount
+                                            </FormLabel>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                     )}
                  </div>
 

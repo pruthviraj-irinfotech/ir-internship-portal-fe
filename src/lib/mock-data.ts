@@ -5,7 +5,8 @@ export type Internship = {
   company: string;
   location: string;
   duration: string;
-  amount: string;
+  amount?: number;
+  isMonthly?: boolean;
   category: 'Paid' | 'Free' | 'Stipend';
   postedDate: string;
   active?: boolean;
@@ -29,7 +30,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: '15,000/month',
+    amount: 15000,
+    isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-29',
     active: true,
@@ -49,7 +51,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: '18,000/month',
+    amount: 18000,
+    isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-28',
     active: true,
@@ -65,7 +68,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '4 Months',
-    amount: '20,000/month',
+    amount: 20000,
+    isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-27',
     active: true,
@@ -81,7 +85,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: '10,000',
+    amount: 10000,
+    isMonthly: false,
     category: 'Paid',
     postedDate: '2024-07-26',
     active: true,
@@ -106,7 +111,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '6 Months',
-    amount: '25,000/month',
+    amount: 25000,
+    isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-25',
     active: true,
@@ -125,7 +131,6 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '2 Months',
-    amount: 'N/A',
     category: 'Free',
     postedDate: '2024-07-24',
     active: false,
@@ -141,7 +146,6 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: 'N/A',
     category: 'Free',
     postedDate: '2024-07-23',
     active: true,
@@ -157,7 +161,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '6 Months',
-    amount: '28,000/month',
+    amount: 28000,
+    isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-23',
     active: true,
@@ -173,7 +178,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: '8,000',
+    amount: 8000,
+    isMonthly: false,
     category: 'Paid',
     postedDate: '2024-07-22',
     active: true,

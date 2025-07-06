@@ -65,10 +65,13 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
             </Tooltip>
           </TooltipProvider>
         </div>
-        {(internship.category === 'Stipend' || internship.category === 'Paid') && (
+        {(internship.category === 'Stipend' || internship.category === 'Paid') && internship.amount && (
           <div className="flex items-center gap-2">
             <IndianRupee className="w-4 h-4 text-muted-foreground" />
-            <span>{internship.amount}</span>
+            <span>
+              {internship.amount.toLocaleString('en-IN')}
+              {internship.isMonthly ? '/month' : ''}
+            </span>
           </div>
         )}
       </CardContent>

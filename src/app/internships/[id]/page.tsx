@@ -44,6 +44,7 @@ export default function InternshipDetailsPage() {
     duration,
     category,
     amount,
+    isMonthly,
     detailedDescription,
     selectionProcess,
     perksAndBenefits,
@@ -90,7 +91,11 @@ export default function InternshipDetailsPage() {
         <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-muted-foreground">
             <Badge variant="outline">{duration}</Badge>
             <Badge variant="outline">{category}</Badge>
-            {(category === 'Stipend' || category === 'Paid') && <Badge variant="outline">{amount}</Badge>}
+            {(category === 'Stipend' || category === 'Paid') && amount && (
+              <Badge variant="outline">
+                ₹{amount.toLocaleString('en-IN')}{isMonthly ? '/month' : ''}
+              </Badge>
+            )}
         </div>
       </header>
 
