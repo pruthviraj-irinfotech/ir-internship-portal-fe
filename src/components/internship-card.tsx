@@ -122,12 +122,12 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
                   It seems you haven't logged in to the platform. To continue, please login or create an account.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid grid-cols-2 gap-4 py-4">
-                <Button asChild>
-                  <Link href={`/login?redirect=/apply/${internship.id}`}>Login</Link>
-                </Button>
+              <div className="flex justify-end gap-4 pt-4">
                 <Button variant="outline" asChild>
                   <Link href={`/signup?redirect=/apply/${internship.id}`}>Create Account</Link>
+                </Button>
+                <Button asChild>
+                  <Link href={`/login?redirect=/apply/${internship.id}`}>Login</Link>
                 </Button>
               </div>
             </DialogContent>
