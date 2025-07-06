@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,16 +9,52 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+
+const MAX_AVATAR_SIZE = 100 * 1024; // 100KB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export default function ProfilePage() {
   const { isLoggedIn } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreview, setAvatarPreview] = useState("https://placehold.co/100x100.png");
 
   useEffect(() => {
     if (!isLoggedIn) {
       router.push('/login?redirect=/profile');
     }
   }, [isLoggedIn, router]);
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid file type',
+        description: 'Please select a PNG, JPG, GIF, or WEBP file.',
+      });
+      return;
+    }
+    
+    if (file.size > MAX_AVATAR_SIZE) {
+      toast({
+        variant: 'destructive',
+        title: 'Image too large',
+        description: 'Please upload an image smaller than 100KB.',
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (!isLoggedIn) {
     return null; // or a loading spinner
@@ -39,10 +75,20 @@ export default function ProfilePage() {
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-4">
             <Avatar className="h-24 w-24">
-              <AvatarImage src="https://placehold.co/100x100.png" alt="Player Avatar" data-ai-hint="user avatar" />
+              <AvatarImage src={avatarPreview} alt="Player Avatar" data-ai-hint="user avatar" />
               <AvatarFallback>P1</AvatarFallback>
             </Avatar>
-            <Button variant="outline">Change Avatar</Button>
+            <div>
+              <Button variant="outline" onClick={() => fileInputRef.current?.click()}>Change Avatar</Button>
+              <Input 
+                type="file"
+                ref={fileInputRef}
+                onChange={handleAvatarChange}
+                className="hidden"
+                accept={ACCEPTED_IMAGE_TYPES.join(',')}
+              />
+              <p className="text-xs text-muted-foreground mt-2">Max 100KB. JPG, PNG, GIF, WEBP.</p>
+            </div>
           </div>
           
           <div className="border-t pt-6 space-y-4">
