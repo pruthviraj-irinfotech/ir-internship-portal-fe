@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, CheckCircle, FileText } from 'lucide-react';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -36,6 +37,11 @@ const formSchema = z.object({
   terms: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
+  qualification: z.string().min(1, { message: "Qualification is required." }),
+  status: z.enum(['student', 'graduate', 'professional'], { required_error: "Status is required."}),
+  orgName: z.string().min(1, { message: "Organization name is required." }),
+  orgCity: z.string().min(1, { message: "City is required." }),
+  orgState: z.string().min(1, { message: "State is required." }),
 });
 
 export default function ApplyPage() {
@@ -54,6 +60,11 @@ export default function ApplyPage() {
       altPhone: '',
       whyApply: '',
       terms: false,
+      qualification: 'B.Tech in Computer Science',
+      status: 'student',
+      orgName: 'University of Example',
+      orgCity: 'Exampleville',
+      orgState: 'Examplestate',
     },
   });
 
@@ -163,14 +174,74 @@ export default function ApplyPage() {
                     </div>
                 </div>
 
-                <div className="border-t pt-4 space-y-2">
-                  <div className="text-sm">
-                      <Label>Organization/Institute</Label>
-                      <p className="text-muted-foreground">University of Example</p>
-                  </div>
-                  <div className="text-sm">
-                      <Label>Location</Label>
-                      <p className="text-muted-foreground">Exampleville, Examplestate</p>
+                <div className="border-t pt-4 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="qualification"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Highest Qualification <span className="text-destructive">*</span></FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="student">Student</SelectItem>
+                            <SelectItem value="graduate">Graduate</SelectItem>
+                            <SelectItem value="professional">Working Professional</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="orgName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Organization/Institute Name <span className="text-destructive">*</span></FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="orgCity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>City <span className="text-destructive">*</span></FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="orgState"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>State <span className="text-destructive">*</span></FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
 
