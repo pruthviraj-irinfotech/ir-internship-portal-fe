@@ -80,7 +80,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
                 <div className="grid gap-4 py-4 text-sm">
                   <div className="flex justify-between items-center">
                     <p className="text-muted-foreground">Status</p>
-                    <Badge variant={internship.status === 'Shortlisted' ? 'default' : 'secondary'}>{internship.status}</Badge>
+                    {internship.status && <Badge variant={internship.status === 'Shortlisted' || internship.status === 'Ongoing' ? 'default' : internship.status === 'Not Selected' ? 'destructive' : 'secondary'}>{internship.status}</Badge>}
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-muted-foreground">Applied Date</p>

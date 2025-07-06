@@ -6,18 +6,25 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
 import { InnoHireIcon } from '@/components/icons';
-import { FileText, LogOut, Award, User } from 'lucide-react';
+import { FileText, LogOut, Award, User, Briefcase, Play } from 'lucide-react';
 
 export function Header() {
   const pathname = usePathname();
   const { isLoggedIn, logout } = useAuth();
 
-  const navLinks = !isLoggedIn
-    ? [
-        { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
-        { href: '/login', label: 'Login', icon: <User /> },
-      ]
-    : [{ href: '/applied', label: 'Applied', icon: <FileText /> }];
+  const loggedOutLinks = [
+    { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
+    { href: '/login', label: 'Login', icon: <User /> },
+  ];
+
+  const loggedInLinks = [
+    { href: '/', label: 'Open Internships', icon: <Briefcase /> },
+    { href: '/applied', label: 'Applied', icon: <FileText /> },
+    { href: '/ongoing', label: 'Ongoing', icon: <Play /> },
+    { href: '/profile', label: 'Profile', icon: <User /> },
+  ];
+
+  const navLinks = isLoggedIn ? loggedInLinks : loggedOutLinks;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

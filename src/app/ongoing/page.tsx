@@ -6,7 +6,7 @@ import { InternshipCard } from '@/components/internship-card';
 import { internships } from '@/lib/mock-data';
 import { useAuth } from '@/context/auth-context';
 
-export default function AppliedInternshipsPage() {
+export default function OngoingInternshipsPage() {
   const { isLoggedIn } = useAuth();
   const router = useRouter();
 
@@ -16,7 +16,7 @@ export default function AppliedInternshipsPage() {
     }
   }, [isLoggedIn, router]);
 
-  const appliedInternships = internships.filter(internship => internship.applied && internship.status !== 'Ongoing');
+  const ongoingInternships = internships.filter(internship => internship.status === 'Ongoing');
   
   if (!isLoggedIn) {
     return null; // or a loading spinner
@@ -25,21 +25,21 @@ export default function AppliedInternshipsPage() {
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1">
       <header className="text-center my-8 md:my-16">
-        <h1 className="text-3xl md:text-5xl font-headline text-primary">Applied Internships</h1>
-        <p className="text-muted-foreground mt-4 text-sm md:text-base">Tracking your career quests.</p>
+        <h1 className="text-3xl md:text-5xl font-headline text-primary">Ongoing Internships</h1>
+        <p className="text-muted-foreground mt-4 text-sm md:text-base">Your current active quests.</p>
       </header>
 
       <section>
-        {appliedInternships.length > 0 ? (
+        {ongoingInternships.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {appliedInternships.map((internship) => (
+            {ongoingInternships.map((internship) => (
               <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
             ))}
           </div>
         ) : (
           <div className="text-center py-16 border-2 border-dashed border-border">
-            <p className="text-muted-foreground">You haven't applied to any internships yet.</p>
-            <p className="text-xs mt-2">Time to start your adventure!</p>
+            <p className="text-muted-foreground">You don't have any ongoing internships.</p>
+            <p className="text-xs mt-2">Complete your applications to start a new quest!</p>
           </div>
         )}
       </section>

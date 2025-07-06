@@ -9,7 +9,7 @@ export type Internship = {
   postedDate: string;
   applied?: boolean;
   applicationDate?: string;
-  status?: 'In Review' | 'Shortlisted' | 'Not Selected';
+  status?: 'In Review' | 'Shortlisted' | 'Not Selected' | 'Ongoing';
 };
 
 export const internships: Internship[] = [
@@ -57,7 +57,7 @@ export const internships: Internship[] = [
     postedDate: '4 days ago',
     applied: true,
     applicationDate: '4 days ago',
-    status: 'Shortlisted',
+    status: 'Ongoing',
   },
   {
     id: 5,
@@ -68,6 +68,9 @@ export const internships: Internship[] = [
     amount: '25,000/month',
     category: 'Stipend',
     postedDate: '5 days ago',
+    applied: true,
+    applicationDate: '5 days ago',
+    status: 'Shortlisted',
   },
   {
     id: 6,
@@ -108,6 +111,9 @@ export const internships: Internship[] = [
     amount: '8,000',
     category: 'Paid',
     postedDate: '8 days ago',
+    applied: true,
+    applicationDate: '2 days ago',
+    status: 'Not Selected'
   },
 ];
 
