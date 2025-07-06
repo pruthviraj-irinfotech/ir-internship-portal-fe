@@ -7,8 +7,6 @@ import { Input } from '@/components/ui/input';
 import { internships, Internship } from '@/lib/mock-data';
 import { Search } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
@@ -34,38 +32,8 @@ export default function Home() {
 
       <section className="mb-16 text-center">
          <blockquote className="text-lg italic text-muted-foreground max-w-3xl mx-auto">
-          "Work life is a game; the sooner you learn the rules, the better you&apos;ll play. Master your skills from level one."
+          "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."
         </blockquote>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Start Your Journey</CardTitle>
-                    <CardDescription>Your first steps into the professional world.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Image src="https://placehold.co/600x400.png" alt="A robot walking, representing the start of a journey" width={600} height={400} className="rounded-md" data-ai-hint="walking robot" />
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader>
-                    <CardTitle>Level Up Your Skills</CardTitle>
-                    <CardDescription>Gain experience and unlock new abilities.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Image src="https://placehold.co/600x400.png" alt="A skill tree, representing gaining skills" width={600} height={400} className="rounded-md" data-ai-hint="skill tree" />
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader>
-                    <CardTitle>Navigate Your Career</CardTitle>
-                    <CardDescription>Overcome challenges and seize opportunities.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Image src="https://placehold.co/600x400.png" alt="A snakes and ladders board, representing career navigation" width={600} height={400} className="rounded-md" data-ai-hint="snakes ladders" />
-                </CardContent>
-            </Card>
-        </div>
       </section>
 
       <div className="mb-8 max-w-2xl mx-auto">
