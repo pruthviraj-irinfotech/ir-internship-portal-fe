@@ -106,16 +106,3 @@
     stroke-dashoffset: 0;
   }
 }
-
-.knight-animation {
-  animation: knight-hop 4s ease-in-out infinite alternate;
-}
-
-@keyframes knight-hop {
-  0% { transform: translate(10px, 70px) scale(3); }
-  20% { transform: translate(35px, 50px) scale(3); }
-  40% { transform: translate(60px, 30px) scale(3); }
-  60% { transform: translate(35px, 10px) scale(3); }
-  80% { transform: translate(10px, 30px) scale(3); }
-  100% { transform: translate(35px, 50px) scale(3); }
-}

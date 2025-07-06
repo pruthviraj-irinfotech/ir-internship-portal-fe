@@ -51,8 +51,6 @@ export default function Home() {
                 <path transform="translate(37.5, 12.5) scale(1.5)" d="M4 2v2h16V2l-2 4h-3l-1-4h-2l-1 4h-3l-2-4H4zm2 6v8h12V8H6z" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="0.5"/>
                 {/* Black Pawn */}
                 <path transform="translate(12.5, 12.5) scale(1.5)" d="M12 2a4 4 0 110 8 4 4 0 010-8zm-6 10h12v2H6v-2zm1 4h10v2H7v-2zm1 4h8v2H8v-2z" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="0.5"/>
-
-                <path className="knight-animation" d="M12 2C9.25 2 7.08 4.25 7.08 7c0 1.15.4 2.23 1.07 3.08L5.25 20H3v2h18v-2h-2.25L15.92 10.08A4.9 4.9 0 0016.92 7c0-2.75-2.25-5-5-5h-.01zm-.5 3c.83 0 1.5.67 1.5 1.5S12.33 8 11.5 8 10 7.33 10 6.5 10.67 5 11.5 5z" fill="hsl(var(--primary))"/>
             </svg>
             <blockquote className="text-lg italic text-muted-foreground max-w-2xl">
               "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."
