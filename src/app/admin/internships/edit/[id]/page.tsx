@@ -1,17 +1,17 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
-
+import { internships, Internship } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription as FormDesc } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { internships } from '@/lib/mock-data';
 import { Loader2 } from 'lucide-react';
 import RichTextEditor from '@/components/rich-text-editor';
 
@@ -39,62 +39,71 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function PostNewInternshipPage() {
+export default function EditInternshipPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const params = useParams();
+    const internshipId = parseInt(params.id as string, 10);
+    
+    const [internship, setInternship] = useState<Internship | null>(null);
+
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            title: '',
-            location: 'Remote',
-            duration: '',
-            category: 'Stipend',
-            amount: '',
-            description: '',
-            detailedDescription: '',
-            whoCanApply: '',
-            perksAndBenefits: '',
-            selectionProcess: '',
-            announcements: '',
-        },
     });
+
+    useEffect(() => {
+        const internToEdit = internships.find(i => i.id === internshipId);
+        if (internToEdit) {
+            setInternship(internToEdit);
+            form.reset({
+                ...internToEdit,
+                amount: internToEdit.amount || '',
+                announcements: internToEdit.announcements || '',
+            });
+        } else {
+             toast({
+                title: "Error!",
+                description: "Internship not found.",
+                variant: 'destructive',
+            });
+            router.push('/admin/internships');
+        }
+    }, [internshipId, form, router, toast]);
 
     const category = form.watch('category');
 
     function onSubmit(values: FormValues) {
-        const newInternship = {
-            id: internships.length + 1,
-            title: values.title,
-            company: 'IR INFOTECH', // Hardcoded as per mock data
-            location: values.location,
-            duration: values.duration,
-            category: values.category,
-            amount: values.amount || 'N/A',
-            postedDate: new Date().toISOString().split('T')[0],
-            description: values.description,
-            detailedDescription: values.detailedDescription,
-            whoCanApply: values.whoCanApply,
-            perksAndBenefits: values.perksAndBenefits,
-            selectionProcess: values.selectionProcess,
-            announcements: values.announcements,
-            applied: false,
-        };
+        const internIndex = internships.findIndex(i => i.id === internshipId);
+        if (internIndex === -1) {
+             toast({ title: "Error!", description: "Could not find internship to update.", variant: 'destructive'});
+             return;
+        }
 
-        internships.unshift(newInternship);
-
+        const updatedInternship = { ...internships[internIndex], ...values };
+        
+        internships[internIndex] = updatedInternship;
+        
         toast({
-            title: "Internship Posted!",
-            description: `The "${values.title}" internship has been successfully listed.`,
+            title: "Success!",
+            description: "The internship has been updated successfully.",
         });
 
         router.push('/admin/internships');
+    }
+    
+    if (!internship) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        );
     }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Post New Internship</CardTitle>
-        <CardDescription>Fill in the form below to create a new internship listing.</CardDescription>
+        <CardTitle>Edit Internship</CardTitle>
+        <CardDescription>Update the details for "{internship.title}"</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -281,7 +290,7 @@ export default function PostNewInternshipPage() {
                     </Button>
                     <Button type="submit" disabled={form.formState.isSubmitting}>
                         {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Post Internship
+                        Save Changes
                     </Button>
                 </div>
             </form>

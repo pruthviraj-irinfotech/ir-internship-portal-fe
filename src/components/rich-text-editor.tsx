@@ -4,7 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import type { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
-import { Bold, Italic, List, ListOrdered, Highlighter } from 'lucide-react';
+import { Bold, Italic, List, ListOrdered, Highlighter, Underline } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import React from 'react';
 
@@ -30,6 +30,14 @@ const Toolbar = ({ editor }: { editor: Editor | null }) => {
         aria-label="Toggle italic"
       >
         <Italic className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive('underline')}
+        onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
+        aria-label="Toggle underline"
+      >
+        <Underline className="h-4 w-4" />
       </Toggle>
       <Toggle
         size="sm"

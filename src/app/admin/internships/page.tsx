@@ -228,27 +228,19 @@ export default function AdminInternshipsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border-t pt-4">
                       <div>
                         <Label>Who Can Apply</Label>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
-                          {viewingInternship.whoCanApply?.map((item, i) => <li key={i}>{item}</li>)}
-                        </ul>
+                        <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingInternship.whoCanApply || ''}} />
                       </div>
                        <div>
                         <Label>Perks & Benefits</Label>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
-                          {viewingInternship.perksAndBenefits?.map((item, i) => <li key={i}>{item}</li>)}
-                        </ul>
+                        <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingInternship.perksAndBenefits || ''}} />
                       </div>
                       <div>
                         <Label>Selection Process</Label>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
-                          {viewingInternship.selectionProcess?.map((item, i) => <li key={i}>{item}</li>)}
-                        </ul>
+                        <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingInternship.selectionProcess || ''}} />
                       </div>
                        <div>
                         <Label>Announcements</Label>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
-                          {viewingInternship.announcements?.map((item, i) => <li key={i}>{item}</li>)}
-                        </ul>
+                        <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingInternship.announcements || ''}} />
                       </div>
                     </div>
                 </div>

@@ -105,7 +105,7 @@ export default function InternshipDetailsPage() {
             </CardContent>
           </Card>
 
-          {whoCanApply && whoCanApply.length > 0 && (
+          {whoCanApply && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -113,14 +113,12 @@ export default function InternshipDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                  {whoCanApply.map((item, index) => <li key={index}>{item}</li>)}
-                </ul>
+                <div className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: whoCanApply }} />
               </CardContent>
             </Card>
           )}
 
-           {selectionProcess && selectionProcess.length > 0 && (
+           {selectionProcess && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -128,16 +126,14 @@ export default function InternshipDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                  {selectionProcess.map((item, index) => <li key={index}>{item}</li>)}
-                </ul>
+                 <div className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: selectionProcess }} />
               </CardContent>
             </Card>
           )}
 
         </div>
         <div className="space-y-8">
-           {perksAndBenefits && perksAndBenefits.length > 0 && (
+           {perksAndBenefits && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -145,14 +141,12 @@ export default function InternshipDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                  {perksAndBenefits.map((item, index) => <li key={index}>{item}</li>)}
-                </ul>
+                 <div className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: perksAndBenefits }} />
               </CardContent>
             </Card>
           )}
 
-          {announcements && announcements.length > 0 && (
+          {announcements && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -160,9 +154,7 @@ export default function InternshipDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                  {announcements.map((item, index) => <li key={index}>{item}</li>)}
-                </ul>
+                <div className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: announcements }} />
               </CardContent>
             </Card>
           )}
