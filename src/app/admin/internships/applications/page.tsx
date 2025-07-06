@@ -23,6 +23,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import RichTextEditor from '@/components/rich-text-editor';
 import { cn } from '@/lib/utils';
+import TimePicker from '@/components/time-picker';
 
 
 const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
@@ -293,7 +294,13 @@ export default function ApplicationsPage() {
                                                     </FormItem>
                                                 )} />
                                                  <FormField control={form.control} name="interviewTime" render={({ field }) => (
-                                                    <FormItem><FormLabel>Interview Time</FormLabel><FormControl><Input placeholder="e.g., 11:00 AM" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    <FormItem>
+                                                        <FormLabel>Interview Time</FormLabel>
+                                                        <FormControl>
+                                                            <TimePicker value={field.value} onChange={field.onChange} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
                                                 )} />
                                                 <FormField control={form.control} name="interviewInstructions" render={({ field }) => (
                                                     <FormItem><FormLabel>Interview Instructions</FormLabel><FormControl><RichTextEditor value={field.value || ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
