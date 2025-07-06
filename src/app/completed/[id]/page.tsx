@@ -80,11 +80,14 @@ export default function UserCompletedInternshipDetailsPage() {
                              <Label>Internship Documents</Label>
                              <div className="border p-4 rounded-md space-y-2">
                                 <p className="text-sm text-muted-foreground">Your work and documents from this internship have been archived. You can access them via the Google Drive link below.</p>
-                                <Button asChild variant="secondary">
-                                    <a href={application.driveLink} target="_blank" rel="noopener noreferrer">
-                                        Open Google Drive <ExternalLink className="ml-2 h-4 w-4" />
-                                    </a>
-                                </Button>
+                                <div>
+                                    <Button asChild variant="secondary">
+                                        <a href={application.driveLink} target="_blank" rel="noopener noreferrer">
+                                            Open Google Drive <ExternalLink className="ml-2 h-4 w-4" />
+                                        </a>
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground mt-2">This is only valid till 30 days from end of internship.</p>
+                                </div>
                              </div>
                          </div>
                     )}
