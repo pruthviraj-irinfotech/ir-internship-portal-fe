@@ -14,6 +14,10 @@ export function Header() {
   const { isLoggedIn, isAdmin, logout } = useAuth();
   const { toggleFont } = useFont();
 
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
   const loggedOutLinks = [
     { href: '/', label: 'Open Internships', icon: <Briefcase /> },
     { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },

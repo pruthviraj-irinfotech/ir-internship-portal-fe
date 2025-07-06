@@ -29,8 +29,11 @@ export default function LoginPage() {
     const password = formData.get('password') as string;
 
     setTimeout(() => {
-      const success = login(email, password);
-      if (success) {
+      const loginResult = login(email, password);
+
+      if (loginResult === 'admin') {
+        router.push('/admin');
+      } else if (loginResult === 'user') {
         router.push(redirectUrl || '/');
       } else {
         toast({

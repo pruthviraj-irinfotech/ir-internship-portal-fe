@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
-  login: (email: string, pass: string) => boolean;
+  login: (email: string, pass: string) => 'admin' | 'user' | null;
   logout: () => void;
 }
 
@@ -24,21 +24,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (email: string, pass: string) => {
+  const login = (email: string, pass: string): 'admin' | 'user' | null => {
     // Admin credentials
     if (email === 'admin@email.com' && pass === 'adminpassword') {
       setIsLoggedIn(true);
       setIsAdmin(true);
-      return true;
+      return 'admin';
     }
     // Dummy credentials
     if (email === 'player1@email.com' && pass === 'password123') {
       setIsLoggedIn(true);
       setIsAdmin(false);
       // Redirection is now handled by the component that calls login.
-      return true;
+      return 'user';
     }
-    return false;
+    return null;
   };
 
   const logout = () => {
