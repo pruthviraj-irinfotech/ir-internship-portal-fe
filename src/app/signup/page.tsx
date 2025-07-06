@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -55,7 +54,7 @@ export default function SignupPage() {
       email: '',
       password: '',
       confirmPassword: '',
-      countryCode: '+91',
+      countryCode: '',
       phone: '',
       qualification: '',
       status: 'student',
@@ -218,45 +217,43 @@ export default function SignupPage() {
                             )}
                         />
                    </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <FormField
-                        control={form.control}
-                        name="qualification"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Highest Qualification</FormLabel>
-                            <FormControl><Input {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="student">Student</SelectItem>
-                                <SelectItem value="graduate">Graduate</SelectItem>
-                                <SelectItem value="professional">Working Professional</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                   </div>
+                   <FormField
+                      control={form.control}
+                      name="qualification"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Highest Qualification</FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                 </div>
 
                 <div className="border-t pt-4 space-y-4">
                   <h3 className="text-sm font-medium text-muted-foreground">Organization / Institute Information</h3>
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="student">Student</SelectItem>
+                            <SelectItem value="graduate">Graduate</SelectItem>
+                            <SelectItem value="professional">Working Professional</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                       control={form.control}
                       name="orgName"
