@@ -26,7 +26,7 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    stipend: '$2,800/month',
+    stipend: 'Paid',
     postedDate: '2 days ago',
   },
   {
@@ -44,7 +44,7 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    stipend: '$2,500/month',
+    stipend: 'Free',
     postedDate: '4 days ago',
     applied: true,
   },
@@ -63,7 +63,7 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '2 Months',
-    stipend: '$2,000/month',
+    stipend: 'Paid',
     postedDate: '6 days ago',
   },
   {
@@ -72,7 +72,7 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    stipend: '$2,200/month',
+    stipend: 'Free',
     postedDate: '1 week ago',
   },
   {
@@ -90,7 +90,7 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    stipend: '$2,500/month',
+    stipend: 'Paid',
     postedDate: '8 days ago',
   },
 ];

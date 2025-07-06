@@ -1,4 +1,4 @@
-import { Clock, DollarSign, MapPin } from 'lucide-react';
+import { Clock, DollarSign, Gift, MapPin } from 'lucide-react';
 import type { Internship } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +25,11 @@ export function InternshipCard({ internship }: InternshipCardProps) {
           <span>{internship.duration}</span>
         </div>
         <div className="flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-muted-foreground" />
+          {internship.stipend.toLowerCase() === 'free' ? (
+            <Gift className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <DollarSign className="w-4 h-4 text-muted-foreground" />
+          )}
           <span>{internship.stipend}</span>
         </div>
       </CardContent>
