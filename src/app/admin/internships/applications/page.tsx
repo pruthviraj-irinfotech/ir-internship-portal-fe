@@ -8,8 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, FilePenLine, Loader2, Calendar as CalendarIcon, ArrowUpDown } from 'lucide-react';
+import { Search, FilePenLine, Loader2, Calendar as CalendarIcon, ArrowUpDown, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format, parseISO } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -24,6 +25,7 @@ import { Calendar } from '@/components/ui/calendar';
 import RichTextEditor from '@/components/rich-text-editor';
 import { cn } from '@/lib/utils';
 import TimePicker from '@/components/time-picker';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
@@ -65,6 +67,8 @@ export default function ApplicationsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<InternshipStatus | 'all'>('all');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -73,6 +77,23 @@ export default function ApplicationsPage() {
     
     const watchedStatus = form.watch('status');
 
+    const filteredApplications = useMemo(() => {
+        const filtered = applicationList.filter(app =>
+            (statusFilter === 'all' || app.status === statusFilter) &&
+            (app.internshipTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            app.userName.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+
+        return filtered.sort((a, b) => {
+            const dateA = new Date(a.applicationDate).getTime();
+            const dateB = new Date(b.applicationDate).getTime();
+            if (sortDirection === 'asc') {
+                return dateA - dateB;
+            }
+            return dateB - dateA;
+        });
+    }, [applicationList, searchTerm, statusFilter, sortDirection]);
+    
     useEffect(() => {
         if (viewingApplication) {
             form.reset({
@@ -117,22 +138,42 @@ export default function ApplicationsPage() {
         setViewingApplication(null);
     };
 
-    const filteredApplications = useMemo(() => {
-        const filtered = applicationList.filter(app =>
-            (statusFilter === 'all' || app.status === statusFilter) &&
-            (app.internshipTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            app.userName.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            const allIds = new Set(filteredApplications.map(app => app.id));
+            setSelectedRows(allIds);
+        } else {
+            setSelectedRows(new Set());
+        }
+    };
 
-        return filtered.sort((a, b) => {
-            const dateA = new Date(a.applicationDate).getTime();
-            const dateB = new Date(b.applicationDate).getTime();
-            if (sortDirection === 'asc') {
-                return dateA - dateB;
-            }
-            return dateB - dateA;
+    const handleSelectRow = (appId: string, checked: boolean) => {
+        const newSelectedRows = new Set(selectedRows);
+        if (checked) {
+            newSelectedRows.add(appId);
+        } else {
+            newSelectedRows.delete(appId);
+        }
+        setSelectedRows(newSelectedRows);
+    };
+
+    const handleDeleteSelected = () => {
+        const newApplicationList = applicationList.filter(app => !selectedRows.has(app.id));
+        setApplicationList(newApplicationList);
+        
+        const appIndicesToDelete = applications.map((app, index) => selectedRows.has(app.id) ? index : -1).filter(index => index !== -1);
+        for (let i = appIndicesToDelete.length - 1; i >= 0; i--) {
+            applications.splice(appIndicesToDelete[i], 1);
+        }
+        
+        setSelectedRows(new Set());
+        toast({
+            title: `${selectedRows.size} Application(s) Deleted`,
+            description: 'The selected applications have been removed.',
         });
-    }, [applicationList, searchTerm, statusFilter, sortDirection]);
+        setIsDeleteDialogOpen(false);
+    };
+
 
     return (
         <>
@@ -143,7 +184,13 @@ export default function ApplicationsPage() {
                             <CardTitle>Internship Applications</CardTitle>
                             <CardDescription>Review and manage all incoming applications.</CardDescription>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-col sm:flex-row items-center gap-2">
+                            {selectedRows.size > 0 && (
+                                <Button variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete ({selectedRows.size})
+                                </Button>
+                            )}
                              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as InternshipStatus | 'all')}>
                                 <SelectTrigger className="w-full sm:w-[180px]">
                                     <SelectValue placeholder="Filter by status" />
@@ -174,6 +221,13 @@ export default function ApplicationsPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead className="w-[50px]">
+                                        <Checkbox
+                                            checked={filteredApplications.length > 0 && selectedRows.size === filteredApplications.length}
+                                            onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+                                            aria-label="Select all"
+                                        />
+                                    </TableHead>
                                     <TableHead>Applicant</TableHead>
                                     <TableHead>Internship</TableHead>
                                     <TableHead>
@@ -189,7 +243,14 @@ export default function ApplicationsPage() {
                             <TableBody>
                                 {filteredApplications.length > 0 ? (
                                     filteredApplications.map(app => (
-                                        <TableRow key={app.id}>
+                                        <TableRow key={app.id} data-state={selectedRows.has(app.id) && "selected"}>
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={selectedRows.has(app.id)}
+                                                    onCheckedChange={(checked) => handleSelectRow(app.id, checked as boolean)}
+                                                    aria-label={`Select row for ${app.userName}`}
+                                                />
+                                            </TableCell>
                                             <TableCell className="font-medium">{app.userName}</TableCell>
                                             <TableCell>{app.internshipTitle}</TableCell>
                                             <TableCell>{format(new Date(app.applicationDate), 'dd-MM-yy')}</TableCell>
@@ -205,7 +266,7 @@ export default function ApplicationsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center h-24">
+                                        <TableCell colSpan={6} className="text-center h-24">
                                             No applications found.
                                         </TableCell>
                                     </TableRow>
@@ -344,6 +405,25 @@ export default function ApplicationsPage() {
                         </Form>
                     </DialogContent>
                 </Dialog>
+            )}
+
+            {isDeleteDialogOpen && (
+                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete {selectedRows.size} selected application(s).
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteSelected}>
+                                Continue
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             )}
         </>
     );
