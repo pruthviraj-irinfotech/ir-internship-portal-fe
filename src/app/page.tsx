@@ -33,15 +33,27 @@ export default function Home() {
 
       <section className="mb-16">
          <div className="flex items-center justify-center gap-8">
-            <svg viewBox="0 0 100 100" className="relative w-32 h-32 hidden md:block" data-ai-hint="brick game">
-                {/* Landed bricks */}
-                <rect x="10" y="90" width="80" height="10" fill="hsl(var(--foreground))" opacity="0.5"/>
-                <rect x="30" y="80" width="40" height="10" fill="hsl(var(--foreground))" opacity="0.5"/>
-                {/* Falling piece */}
-                <g className="brick-game-piece">
-                    <rect x="40" y="0" width="20" height="10" fill="hsl(var(--primary))"/>
-                    <rect x="30" y="10" width="20" height="10" fill="hsl(var(--primary))"/>
-                    <rect x="50" y="10" width="20" height="10" fill="hsl(var(--primary))"/>
+            <svg viewBox="0 0 100 100" className="relative w-32 h-32 hidden md:block" data-ai-hint="brick game castle">
+                {/* Falling piece 1: L-Shape */}
+                <g className="brick-game-piece-1">
+                    <rect y="0" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect y="10" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect y="20" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="10" y="20" width="10" height="10" fill="hsl(var(--primary))"/>
+                </g>
+                {/* Falling piece 2: Square-Shape */}
+                <g className="brick-game-piece-2">
+                    <rect y="0" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="10" y="0" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect y="10" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="10" y="10" width="10" height="10" fill="hsl(var(--primary))"/>
+                </g>
+                {/* Falling piece 3: T-Shape */}
+                <g className="brick-game-piece-3">
+                    <rect y="0" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="10" y="0" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="20" y="0" width="10" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="10" y="10" width="10" height="10" fill="hsl(var(--primary))"/>
                 </g>
             </svg>
             <blockquote className="text-lg italic text-muted-foreground max-w-2xl">
