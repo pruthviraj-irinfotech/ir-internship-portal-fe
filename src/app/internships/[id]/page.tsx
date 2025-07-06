@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ListChecks, Award, UserCheck, Megaphone } from 'lucide-react';
 import Link from 'next/link';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
 
 export default function InternshipDetailsPage() {
   const params = useParams();
@@ -62,9 +64,27 @@ export default function InternshipDetailsPage() {
                     <Link href={`/apply/${internship.id}`}>Apply Now</Link>
                 </Button>
             ) : (
-                <Button size="lg" asChild>
-                    <Link href={`/login?redirect=/apply/${internship.id}`}>Apply Now</Link>
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="lg">Apply Now</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Login Required</DialogTitle>
+                      <DialogDescription>
+                        It seems you haven't logged in to the platform. To continue, please login or create an account.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-end gap-4 pt-4">
+                       <Button variant="outline" asChild>
+                         <Link href={`/signup?redirect=/apply/${internship.id}`}>Create Account</Link>
+                       </Button>
+                      <Button asChild>
+                          <Link href={`/login?redirect=/apply/${internship.id}`}>Login</Link>
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
             )}
         </div>
         <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-muted-foreground">

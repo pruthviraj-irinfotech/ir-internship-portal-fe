@@ -111,9 +111,27 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
             </Button>
           )
         ) : (
-          <Button size="sm" asChild>
-            <Link href={`/login?redirect=/apply/${internship.id}`}>Apply Now</Link>
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button size="sm">Apply Now</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Login Required</DialogTitle>
+                <DialogDescription>
+                  It seems you haven't logged in to the platform. To continue, please login or create an account.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-4 py-4">
+                <Button asChild>
+                  <Link href={`/login?redirect=/apply/${internship.id}`}>Login</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href={`/signup?redirect=/apply/${internship.id}`}>Create Account</Link>
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         )}
       </CardFooter>
     </Card>
