@@ -5,8 +5,8 @@ import { Header } from '@/components/header';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'InnoHire',
-  description: 'Find your next internship opportunity.',
+  title: 'IR Intern Portal',
+  description: 'Verify certificates and find your next internship.',
 };
 
 export default function RootLayout({

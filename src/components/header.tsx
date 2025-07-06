@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { InnoHireIcon, BriefcaseIcon, CertificateIcon, UserIcon } from '@/components/icons';
+import { InnoHireIcon, CertificateIcon, UserIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
-  { href: '/applied', label: 'Applied', icon: <BriefcaseIcon className="w-4 h-4" /> },
-  { href: '/certificate-assistant', label: 'Certificate AI', icon: <CertificateIcon className="w-4 h-4" /> },
+  { href: '/verify-certificate', label: 'Verify Certificate', icon: <CertificateIcon className="w-4 h-4" /> },
   { href: '/login', label: 'Login', icon: <UserIcon className="w-4 h-4" /> },
 ];
 
@@ -20,7 +19,7 @@ export function Header() {
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-8 flex items-center gap-2">
           <InnoHireIcon className="w-8 h-8 text-primary" />
-          <span className="font-headline text-lg hidden sm:inline-block">InnoHire</span>
+          <span className="font-headline text-lg hidden sm:inline-block">IR Intern Portal</span>
         </Link>
         <nav className="flex-1 flex items-center justify-end space-x-2 sm:space-x-4">
           {navLinks.map(({ href, label, icon }) => (

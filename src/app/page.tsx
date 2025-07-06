@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1">
       <header className="text-center my-8 md:my-16">
-        <h1 className="text-4xl md:text-6xl font-headline text-primary animate-pulse">InnoHire</h1>
+        <h1 className="text-4xl md:text-6xl font-headline text-primary animate-pulse">IR Intern Portal</h1>
         <p className="text-muted-foreground mt-4 text-sm md:text-base">Your quest for the perfect internship begins here.</p>
       </header>
 
