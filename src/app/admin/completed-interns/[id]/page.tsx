@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -19,6 +20,7 @@ const formSchema = z.object({
   userEmail: z.string().email({ message: "Invalid email address." }),
   userPhone: z.string().min(1, "Phone number is required."),
   workEmail: z.string().email({ message: "Invalid email address." }).optional().or(z.literal('')),
+  driveLink: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
 export default function CompletedInternDetailsPage() {
@@ -45,6 +47,7 @@ export default function CompletedInternDetailsPage() {
                 userEmail: app.userEmail,
                 userPhone: app.userPhone,
                 workEmail: app.workEmail || '',
+                driveLink: app.driveLink || '',
             });
 
         } else {
@@ -65,6 +68,7 @@ export default function CompletedInternDetailsPage() {
             userEmail: values.userEmail,
             userPhone: values.userPhone,
             workEmail: values.workEmail,
+            driveLink: values.driveLink,
         };
 
         applications[appIndex] = updatedApp;
@@ -118,6 +122,9 @@ export default function CompletedInternDetailsPage() {
                             <div><Label>Reporting To</Label><Input value={application.reportingTo || 'N/A'} disabled /></div>
                             <div><Label>Start Date</Label><Input value={format(parseISO(application.applicationDate), 'PPP')} disabled /></div>
                             <div><Label>End Date</Label><Input value={application.endDate ? format(parseISO(application.endDate), 'PPP') : 'N/A'} disabled /></div>
+                             <FormField control={form.control} name="driveLink" render={({ field }) => (
+                                <FormItem className="md:col-span-2"><FormLabel>Google Drive Link</FormLabel><FormControl><Input placeholder="https://docs.google.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
                         </CardContent>
                     </Card>
 

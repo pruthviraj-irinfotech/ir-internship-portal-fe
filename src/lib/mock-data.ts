@@ -58,6 +58,9 @@ export const internships: Internship[] = [
     category: 'Stipend',
     postedDate: '2024-07-28',
     active: true,
+    applied: true,
+    applicationDate: '2024-03-01',
+    status: 'Selected',
     description: 'Dive into the world of server-side rendering and static site generation with Next.js. This role involves building high-performance, SEO-friendly web applications and understanding the full-stack capabilities of the Next.js framework.',
     detailedDescription: 'As a Next.js intern, you will build on your React knowledge to create full-stack applications. You will learn about server components, API routes, and advanced routing patterns to build production-grade web apps.',
     selectionProcess: '<ul><li>Application Review</li><li>Portfolio Showcase</li><li>Technical Interview with a focus on Next.js concepts</li><li>Final Interview</li></ul>',
@@ -75,6 +78,9 @@ export const internships: Internship[] = [
     category: 'Stipend',
     postedDate: '2024-07-27',
     active: true,
+    applied: true,
+    applicationDate: '2024-02-15',
+    status: 'Selected',
     description: 'Become a full-stack developer by mastering the MERN (MongoDB, Express, React, Node.js) stack. You will build and deploy complete web applications, from database design to frontend implementation.',
     detailedDescription: 'This comprehensive MERN stack internship will guide you through building a complete web application from scratch. You will design and implement RESTful APIs, manage databases with MongoDB, and build a dynamic frontend with React.',
     selectionProcess: '<ul><li>Resume Screening</li><li>Coding Challenge (Node.js & React)</li><li>Technical Interview</li><li>Cultural Fit Interview</li></ul>',
@@ -373,6 +379,7 @@ export type Application = {
   endDate?: string;
   reportingTo?: string;
   workEmail?: string;
+  driveLink?: string;
 };
 
 export const applications: Application[] = [
@@ -490,6 +497,7 @@ export const applications: Application[] = [
         endDate: '2024-06-01',
         reportingTo: 'Ms. Jane',
         workEmail: 'alex.work@irinfotech.com',
+        driveLink: 'https://docs.google.com/folder/d/123xyz-example-link/view',
     },
     {
         id: 'APP-1669812350',

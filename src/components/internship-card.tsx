@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { Clock, IndianRupee, HelpCircle, MapPin, Tag } from 'lucide-react';
 import type { Internship, InternshipStatus } from '@/lib/mock-data';
+import { applications } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,10 +32,15 @@ const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destruct
     'In Review': 'secondary',
     'Withdrawn': 'destructive',
     'Rejected': 'destructive',
+    'Terminated': 'destructive',
 };
 
 
 export function InternshipCard({ internship, isLoggedIn = false }: InternshipCardProps) {
+  const application = (internship.status === 'Selected' || internship.status === 'Completed') 
+      ? applications.find(app => app.internshipId === internship.id)
+      : null;
+
   return (
     <Card className="flex flex-col transform transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl">
       <CardHeader>
@@ -114,6 +120,19 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
                     <p className="text-muted-foreground">Applied Date</p>
                     <p>{internship.applicationDate ? format(new Date(internship.applicationDate), 'dd-MM-yy') : 'N/A'}</p>
                   </div>
+                   {application?.driveLink && (
+                    <div className="border-t pt-4 mt-2">
+                        <h4 className="font-semibold text-primary mb-2">Post-Internship Documents</h4>
+                        <p className="text-xs text-muted-foreground">
+                            All your documents have been moved to a shared folder. This link will be active for one month. Please download your documents before then.
+                        </p>
+                        <Button variant="link" asChild className="p-0 h-auto mt-2">
+                            <a href={application.driveLink} target="_blank" rel="noopener noreferrer">
+                                View Documents
+                            </a>
+                        </Button>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
                     Note: Applications are reviewed for up to one month. If you are not selected within this timeframe, the application will be automatically removed from your dashboard.
                   </p>
