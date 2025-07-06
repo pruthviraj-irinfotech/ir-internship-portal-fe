@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -15,10 +16,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
+  lastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-  countryCode: z.string(),
+  countryCode: z.string().min(1, { message: "Country code is required." }),
   phone: z.string().min(10, { message: "Phone number must be at least 10 digits." }),
   qualification: z.string().min(2, { message: "Please enter your qualification." }),
   status: z.enum(['student', 'graduate', 'professional']),
@@ -38,7 +40,8 @@ export default function SignupPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
       countryCode: '+91',
@@ -86,27 +89,38 @@ export default function SignupPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="name"
+                      name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl><Input placeholder="Player One" {...field} /></FormControl>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                     <FormField
                       control={form.control}
-                      name="email"
+                      name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl><Input placeholder="player1@email.com" {...field} /></FormControl>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                 </div>
+                 <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl><Input {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                 />
                  <FormField
                   control={form.control}
                   name="password"
@@ -121,42 +135,29 @@ export default function SignupPage() {
 
                 <div className="border-t pt-4 space-y-4">
                    <h3 className="text-sm font-medium text-muted-foreground">Personal Information</h3>
-                    <div className="space-y-2">
-                     <FormLabel>Phone Number</FormLabel>
-                      <div className="flex items-start gap-2">
+                    <div className="grid grid-cols-3 gap-4">
                         <FormField
-                          control={form.control}
-                          name="countryCode"
-                          render={({ field }) => (
-                            <FormItem className="w-[110px]">
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="+91">+91 (IN)</SelectItem>
-                                  <SelectItem value="+1">+1 (US)</SelectItem>
-                                  <SelectItem value="+44">+44 (UK)</SelectItem>
-                                  <SelectItem value="+61">+61 (AU)</SelectItem>
-                                  <SelectItem value="+971">+971 (AE)</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormItem>
-                          )}
+                            control={form.control}
+                            name="countryCode"
+                            render={({ field }) => (
+                                <FormItem className="col-span-1">
+                                <FormLabel>Code</FormLabel>
+                                <FormControl><Input {...field} /></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
                         />
                         <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormControl><Input placeholder="123-456-7890" {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                                <FormItem className="col-span-2">
+                                <FormLabel>Phone</FormLabel>
+                                <FormControl><Input {...field} /></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                      </div>
                    </div>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <FormField
@@ -165,7 +166,7 @@ export default function SignupPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Highest Qualification</FormLabel>
-                            <FormControl><Input placeholder="B.Tech in Computer Science" {...field} /></FormControl>
+                            <FormControl><Input {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -179,7 +180,7 @@ export default function SignupPage() {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select status" />
+                                  <SelectValue />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -203,7 +204,7 @@ export default function SignupPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Organization/Institute Name</FormLabel>
-                          <FormControl><Input placeholder="e.g., University of Example" {...field} /></FormControl>
+                          <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -215,7 +216,7 @@ export default function SignupPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>City</FormLabel>
-                              <FormControl><Input placeholder="e.g., Exampleville" {...field} /></FormControl>
+                              <FormControl><Input {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -226,7 +227,7 @@ export default function SignupPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>State</FormLabel>
-                              <FormControl><Input placeholder="e.g., Examplestate" {...field} /></FormControl>
+                              <FormControl><Input {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -245,7 +246,7 @@ export default function SignupPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="otp">Enter 6-Digit OTP</Label>
-                <Input id="otp" type="text" maxLength={6} placeholder="******" required />
+                <Input id="otp" type="text" maxLength={6} required />
                 <div className="text-center text-xs pt-2">
                   <Button type="button" variant="link" onClick={handleResendOtp} className="p-0 h-auto">Resend OTP</Button>
                 </div>
