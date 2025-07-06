@@ -94,3 +94,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+.snake-animation {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: snake-climb 4s ease-in-out infinite alternate;
+}
+
+@keyframes snake-climb {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

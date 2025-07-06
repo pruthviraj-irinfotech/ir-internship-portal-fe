@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -34,6 +33,31 @@ export default function Home() {
          <blockquote className="text-lg italic text-muted-foreground max-w-3xl mx-auto">
           "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."
         </blockquote>
+      </section>
+
+      <section className="my-12 flex justify-center" data-ai-hint="snake ladder">
+        <div className="relative w-48 h-48">
+          <svg viewBox="0 0 100 100" className="absolute inset-0 text-foreground/50">
+            {/* Ladder */}
+            <line x1="30" y1="5" x2="30" y2="95" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+            <line x1="70" y1="5" x2="70" y2="95" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+            <line x1="30" y1="20" x2="70" y2="20" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <line x1="30" y1="40" x2="70" y2="40" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <line x1="30" y1="60" x2="70" y2="60" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <line x1="30" y1="80" x2="70" y2="80" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+          <svg viewBox="0 0 100 100" className="absolute inset-0">
+            {/* Snake */}
+            <path 
+              d="M50 95 C 60 85, 40 75, 50 65 S 60 45, 50 35 S 40 15, 50 5" 
+              stroke="hsl(var(--primary))" 
+              strokeWidth="5" 
+              fill="none" 
+              strokeLinecap="round"
+              className="snake-animation" 
+            />
+          </svg>
+        </div>
       </section>
 
       <div className="mb-8 max-w-2xl mx-auto">
