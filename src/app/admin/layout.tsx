@@ -59,7 +59,6 @@ export default function AdminLayout({
         { href: '/admin/internships', label: 'All Internships' },
         { href: '/admin/internships/new', label: 'Post New Internship' },
         { href: '/admin/internships/applications', label: 'Applications' },
-        { href: '/admin/internships/interviews', label: 'Interview Scheduled' },
       ],
     },
      {
