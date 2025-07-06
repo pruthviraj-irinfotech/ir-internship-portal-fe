@@ -1,18 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { InnoHireIcon, CertificateIcon, UserIcon } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-
-const navLinks = [
-  { href: '/verify-certificate', label: 'Verify Certificate', icon: <CertificateIcon className="w-4 h-4" /> },
-  { href: '/login', label: 'Login', icon: <UserIcon className="w-4 h-4" /> },
-];
+import { useAuth } from '@/context/auth-context';
+import { InnoHireIcon } from '@/components/icons';
+import { FileText, LogOut, Award, User } from 'lucide-react';
 
 export function Header() {
   const pathname = usePathname();
+  const { isLoggedIn, logout } = useAuth();
+
+  const navLinks = !isLoggedIn
+    ? [
+        { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
+        { href: '/login', label: 'Login', icon: <User /> },
+      ]
+    : [{ href: '/applied', label: 'Applied', icon: <FileText /> }];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,6 +44,12 @@ export function Header() {
               </Link>
             </Button>
           ))}
+          {isLoggedIn && (
+            <Button variant="ghost" size="sm" onClick={logout} className="text-xs sm:text-sm">
+              <LogOut />
+              <span className="hidden sm:inline-block">Logout</span>
+            </Button>
+          )}
         </nav>
       </div>
     </header>

@@ -1,8 +1,26 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { InternshipCard } from '@/components/internship-card';
 import { internships } from '@/lib/mock-data';
+import { useAuth } from '@/context/auth-context';
 
 export default function AppliedInternshipsPage() {
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.push('/login');
+    }
+  }, [isLoggedIn, router]);
+
   const appliedInternships = internships.filter(internship => internship.applied);
+  
+  if (!isLoggedIn) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1">
@@ -15,7 +33,7 @@ export default function AppliedInternshipsPage() {
         {appliedInternships.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {appliedInternships.map((internship) => (
-              <InternshipCard key={internship.id} internship={internship} isLoggedIn={true} />
+              <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
             ))}
           </div>
         ) : (

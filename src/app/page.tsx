@@ -1,9 +1,14 @@
+'use client';
+
 import { InternshipCard } from '@/components/internship-card';
 import { Input } from '@/components/ui/input';
 import { internships } from '@/lib/mock-data';
 import { Search } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
 
 export default function Home() {
+  const { isLoggedIn } = useAuth();
+
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1">
       <header className="text-center my-8 md:my-16">
@@ -25,7 +30,7 @@ export default function Home() {
         <h2 className="text-2xl font-headline mb-6 text-center">Open Internships</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {internships.map((internship) => (
-            <InternshipCard key={internship.id} internship={internship} />
+            <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
           ))}
         </div>
       </section>
