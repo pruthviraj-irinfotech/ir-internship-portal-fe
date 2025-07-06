@@ -6,12 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { certificates, Certificate, CertificateStatus } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { CertificateVerificationOutput, verifyCertificate } from '@/ai/flows/verify-certificate-flow';
+
+type Certificate = NonNullable<CertificateVerificationOutput>;
+type CertificateStatus = Certificate['status'];
 
 const statusColors: Record<CertificateStatus, 'default' | 'secondary' | 'destructive'> = {
     'Active': 'default',
@@ -26,7 +29,7 @@ export default function VerifyCertificatePage() {
   const [searched, setSearched] = useState(false);
   const { toast } = useToast();
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!certificateId) {
       toast({
@@ -41,25 +44,23 @@ export default function VerifyCertificatePage() {
     setSearched(false);
     setFoundCertificate(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      const cert = certificates.find(c => c.certificateNumber.toLowerCase() === certificateId.toLowerCase());
-      if (cert) {
-        setFoundCertificate(cert);
-        toast({
-          title: 'Certificate Found!',
-          description: `Details for certificate #${cert.certificateNumber} are displayed below.`,
-        });
-      } else {
-        toast({
-          title: 'Not Found',
-          description: 'No certificate was found with that ID.',
-          variant: 'destructive',
-        });
-      }
-      setIsLoading(false);
-      setSearched(true);
-    }, 1500);
+    const cert = await verifyCertificate(certificateId);
+    
+    if (cert) {
+      setFoundCertificate(cert);
+      toast({
+        title: 'Certificate Found!',
+        description: `Details for certificate #${cert.certificateNumber} are displayed below.`,
+      });
+    } else {
+      toast({
+        title: 'Not Found',
+        description: 'No certificate was found with that ID.',
+        variant: 'destructive',
+      });
+    }
+    setIsLoading(false);
+    setSearched(true);
   };
 
   return (
@@ -142,8 +143,8 @@ export default function VerifyCertificatePage() {
                <div className="space-y-1">
                   <Label>Status</Label>
                   <p>
-                      <Badge variant={statusColors[foundCertificate.status || 'Active']}>
-                          {foundCertificate.status || 'Active'}
+                      <Badge variant={statusColors[foundCertificate.status]}>
+                          {foundCertificate.status}
                       </Badge>
                   </p>
               </div>
