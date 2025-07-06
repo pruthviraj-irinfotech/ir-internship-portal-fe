@@ -157,7 +157,7 @@ export default function ApplyPage() {
         userPhone: '123-456-7890',
         applicationDate: appDate,
         status: 'In Review',
-        resumeUrl: '#', // In a real app, this would be the URL from file storage
+        resumeUrl: 'https://placehold.co/600x800.png', // In a real app, this would be the URL from file storage
         whyApply: values.whyApply,
         altEmail: values.altEmail,
         altPhone: values.altPhone,
