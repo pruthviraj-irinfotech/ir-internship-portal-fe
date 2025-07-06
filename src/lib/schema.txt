@@ -1,0 +1,114 @@
+
+# InnoHire Database Schema
+
+This document outlines the database schema based on the mock data structures used in the application.
+
+---
+
+### 1. `users` Table
+
+Stores information about all registered users, including regular users and admins.
+
+| Column        | Data Type                              | Constraints / Notes                               |
+|---------------|----------------------------------------|---------------------------------------------------|
+| `id`          | `VARCHAR(255)`                         | **Primary Key**, e.g., 'usr-001'                  |
+| `firstName`   | `VARCHAR(255)`                         | Not Null                                          |
+| `lastName`    | `VARCHAR(255)`                         | Nullable                                          |
+| `email`       | `VARCHAR(255)`                         | Not Null, **Unique**                              |
+| `password`    | `VARCHAR(255)`                         | Not Null, should be hashed                        |
+| `phone`       | `VARCHAR(20)`                          | Not Null                                          |
+| `countryCode` | `VARCHAR(5)`                           | Not Null                                          |
+| `avatarUrl`   | `VARCHAR(255)`                         | URL to the user's profile picture                 |
+| `qualification` | `VARCHAR(255)`                       | Not Null                                          |
+| `status`      | `ENUM('student', 'graduate', 'professional')` | Not Null                                          |
+| `orgName`     | `VARCHAR(255)`                         | Not Null                                          |
+| `orgCity`     | `VARCHAR(255)`                         | Not Null                                          |
+| `orgState`    | `VARCHAR(255)`                         | Not Null                                          |
+| `orgCountry`  | `VARCHAR(255)`                         | Not Null                                          |
+| `role`        | `ENUM('user', 'admin')`                | Not Null                                          |
+
+---
+
+### 2. `internships` Table
+
+Stores all the internship listings created by admins.
+
+| Column                | Data Type                       | Constraints / Notes                               |
+|-----------------------|---------------------------------|---------------------------------------------------|
+| `id`                  | `INT`                           | **Primary Key**, Auto-increment                   |
+| `title`               | `VARCHAR(255)`                  | Not Null                                          |
+| `company`             | `VARCHAR(255)`                  | Not Null                                          |
+| `location`            | `VARCHAR(255)`                  | Not Null                                          |
+| `duration`            | `VARCHAR(100)`                  | Not Null                                          |
+| `category`            | `ENUM('Paid', 'Free', 'Stipend')` | Not Null                                          |
+| `amount`              | `DECIMAL(10, 2)`                | Nullable, only used if category is 'Paid' or 'Stipend' |
+| `isMonthly`           | `BOOLEAN`                       | Default: `false`                                  |
+| `postedDate`          | `DATE`                          | Not Null                                          |
+| `active`              | `BOOLEAN`                       | Default: `true`                                   |
+| `description`         | `TEXT`                          | HTML content for the short description            |
+| `detailedDescription` | `TEXT`                          | HTML content for the detailed description         |
+| `selectionProcess`    | `TEXT`                          | HTML content                                      |
+| `perksAndBenefits`    | `TEXT`                          | HTML content                                      |
+| `whoCanApply`         | `TEXT`                          | HTML content                                      |
+| `announcements`       | `TEXT`                          | HTML content, Nullable                            |
+
+---
+
+### 3. `applications` Table
+
+Acts as a linking table between `users` and `internships`, storing application-specific details.
+
+| Column                  | Data Type                              | Constraints / Notes                               |
+|-------------------------|----------------------------------------|---------------------------------------------------|
+| `id`                    | `VARCHAR(255)`                         | **Primary Key**, e.g., 'APP-1669812345'          |
+| `internshipId`          | `INT`                                  | **Foreign Key** -> `internships(id)`              |
+| `userId`                | `VARCHAR(255)`                         | **Foreign Key** -> `users(id)`                    |
+| `applicationDate`       | `DATE`                                 | Not Null                                          |
+| `status`                | `ENUM(...)`                            | Not Null. Values: 'In Review', 'Rejected', 'Shortlisted', 'Interview Scheduled', 'Completed', 'Withdrawn', 'Ongoing', 'Terminated' |
+| `resumeUrl`             | `VARCHAR(255)`                         | Not Null                                          |
+| `whyApply`              | `TEXT`                                 | Not Null                                          |
+| `altEmail`              | `VARCHAR(255)`                         | Nullable                                          |
+| `altPhone`              | `VARCHAR(20)`                          | Nullable                                          |
+| `interviewDate`         | `DATE`                                 | Nullable                                          |
+| `interviewTime`         | `VARCHAR(20)`                          | Nullable                                          |
+| `interviewInstructions` | `TEXT`                                 | Nullable, HTML content                            |
+| `comments`              | `TEXT`                                 | Nullable, admin comments, HTML content            |
+| `internId`              | `VARCHAR(255)`                         | Nullable, assigned when status is 'Ongoing'       |
+| `endDate`               | `DATE`                                 | Nullable                                          |
+| `reportingTo`           | `VARCHAR(255)`                         | Nullable                                          |
+| `workEmail`             | `VARCHAR(255)`                         | Nullable                                          |
+| `driveLink`             | `VARCHAR(255)`                         | Nullable, for completed internship documents      |
+
+---
+
+### 4. `documents` Table
+
+Stores documents uploaded by admins or users related to a specific application.
+
+| Column          | Data Type             | Constraints / Notes                               |
+|-----------------|-----------------------|---------------------------------------------------|
+| `id`            | `VARCHAR(255)`        | **Primary Key**, e.g., 'doc-admin-1'              |
+| `applicationId` | `VARCHAR(255)`        | **Foreign Key** -> `applications(id)`             |
+| `type`          | `ENUM('admin', 'user')` | Indicates who uploaded the document               |
+| `name`          | `VARCHAR(255)`        | Not Null                                          |
+| `url`           | `VARCHAR(255)`        | Not Null, URL to the stored file                  |
+| `uploadedAt`    | `DATETIME`            | Not Null                                          |
+| `size`          | `INT`                 | File size in bytes                                |
+
+---
+
+### 5. `certificates` Table
+
+Stores details of issued internship certificates.
+
+| Column         | Data Type                       | Constraints / Notes                               |
+|----------------|---------------------------------|---------------------------------------------------|
+| `id`           | `VARCHAR(255)`                  | **Primary Key**, e.g., 'INT24-001'                |
+| `applicationId`| `VARCHAR(255)`                  | **Foreign Key** -> `applications(id)`             |
+| `startDate`    | `DATE`                          | Not Null                                          |
+| `approvedDate` | `DATE`                          | Not Null, date certificate was issued             |
+| `description`  | `TEXT`                          | HTML content for the certificate text             |
+| `imageUrl`     | `VARCHAR(255)`                  | Not Null, URL to the PNG image of the certificate |
+| `pdfUrl`       | `VARCHAR(255)`                  | Nullable, URL to the PDF version                  |
+| `uploadedBy`   | `VARCHAR(255)`                  | **Foreign Key** -> `users(id)` where `role`='admin' |
+| `status`       | `ENUM('Active', 'On Hold', 'Terminated')` | Not Null, Default: 'Active'                       |
