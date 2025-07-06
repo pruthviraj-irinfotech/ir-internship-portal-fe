@@ -65,7 +65,11 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
       <CardFooter className="flex justify-between items-center">
         <p className="text-xs text-muted-foreground">Posted {internship.postedDate}</p>
         {isLoggedIn ? (
-          internship.applied ? (
+          internship.status === 'Ongoing' ? (
+             <Button size="sm" asChild>
+               <Link href={`/ongoing/${internship.id}`}>View Details</Link>
+             </Button>
+          ) : internship.applied ? (
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="secondary" size="sm">View Status</Button>

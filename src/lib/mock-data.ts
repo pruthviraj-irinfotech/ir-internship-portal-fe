@@ -10,6 +10,9 @@ export type Internship = {
   applied?: boolean;
   applicationDate?: string;
   status?: 'In Review' | 'Shortlisted' | 'Not Selected' | 'Ongoing';
+  description?: string;
+  adminNotes?: string[];
+  assignedDocuments?: { name: string; url: string }[];
 };
 
 export const internships: Internship[] = [
@@ -25,6 +28,7 @@ export const internships: Internship[] = [
     applied: true,
     applicationDate: '1 day ago',
     status: 'In Review',
+    description: 'This internship focuses on building modern, responsive user interfaces using React.js. You will work on real-world projects, learn state management with Redux or Context API, and collaborate with our senior developers.',
   },
   {
     id: 2,
@@ -35,6 +39,7 @@ export const internships: Internship[] = [
     amount: '18,000/month',
     category: 'Stipend',
     postedDate: '2 days ago',
+    description: 'Dive into the world of server-side rendering and static site generation with Next.js. This role involves building high-performance, SEO-friendly web applications and understanding the full-stack capabilities of the Next.js framework.',
   },
   {
     id: 3,
@@ -45,6 +50,7 @@ export const internships: Internship[] = [
     amount: '20,000/month',
     category: 'Stipend',
     postedDate: '3 days ago',
+    description: 'Become a full-stack developer by mastering the MERN (MongoDB, Express, React, Node.js) stack. You will build and deploy complete web applications, from database design to frontend implementation.',
   },
   {
     id: 4,
@@ -58,6 +64,17 @@ export const internships: Internship[] = [
     applied: true,
     applicationDate: '4 days ago',
     status: 'Ongoing',
+    description: 'Learn the fundamentals of backend development with the elegant PHP framework, Laravel. This training-focused internship covers MVC architecture, database migrations, and building robust APIs.',
+    adminNotes: [
+        'Welcome to the team! Your first assignment is due next Friday.',
+        'Please review the project documentation shared in the assigned documents section.',
+        'Weekly review meeting is scheduled every Monday at 11:00 AM.'
+    ],
+    assignedDocuments: [
+        { name: 'Project-Brief.pdf', url: '#' },
+        { name: 'Style-Guide.docx', url: '#' },
+        { name: 'API-Documentation.pdf', url: '#' }
+    ]
   },
   {
     id: 5,
@@ -71,6 +88,7 @@ export const internships: Internship[] = [
     applied: true,
     applicationDate: '5 days ago',
     status: 'Shortlisted',
+    description: 'Explore the culture and practices of DevOps. This internship will give you hands-on experience with CI/CD pipelines, containerization using Docker, and cloud infrastructure management.',
   },
   {
     id: 6,
@@ -81,6 +99,7 @@ export const internships: Internship[] = [
     amount: 'N/A',
     category: 'Free',
     postedDate: '6 days ago',
+    description: 'An introductory internship to Microsoft Power Automate. Learn to create automated workflows between your favorite apps and services to synchronize files, get notifications, and collect data.',
   },
   {
     id: 7,
@@ -91,6 +110,7 @@ export const internships: Internship[] = [
     amount: 'N/A',
     category: 'Free',
     postedDate: '1 week ago',
+    description: 'Gain practical experience in project management methodologies like Agile and Scrum. You will learn to use tools like Jira, create project timelines, and facilitate team collaboration to deliver projects on time.',
   },
   {
     id: 8,
@@ -101,6 +121,7 @@ export const internships: Internship[] = [
     amount: '28,000/month',
     category: 'Stipend',
     postedDate: '1 week ago',
+    description: 'Work on cutting-edge machine learning projects. This internship involves data preprocessing, model training and evaluation, and deploying machine learning models into production environments.',
   },
   {
     id: 9,
@@ -113,7 +134,8 @@ export const internships: Internship[] = [
     postedDate: '8 days ago',
     applied: true,
     applicationDate: '2 days ago',
-    status: 'Not Selected'
+    status: 'Not Selected',
+    description: 'A training program focused on the principles of User Interface (UI) and User Experience (UX) design. You will learn to use tools like Figma, create wireframes and prototypes, and conduct user research.',
   },
 ];
 
