@@ -112,7 +112,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
           )
         ) : (
           <Button size="sm" asChild>
-            <Link href="/login">Apply Now</Link>
+            <Link href={`/login?redirect=/apply/${internship.id}`}>Apply Now</Link>
           </Button>
         )}
       </CardFooter>

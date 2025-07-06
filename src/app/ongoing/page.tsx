@@ -12,7 +12,7 @@ export default function OngoingInternshipsPage() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      router.push('/login');
+      router.push('/login?redirect=/ongoing');
     }
   }, [isLoggedIn, router]);
 

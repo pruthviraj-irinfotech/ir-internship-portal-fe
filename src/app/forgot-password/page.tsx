@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState(1);
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
 
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,8 +25,11 @@ export default function ForgotPasswordPage() {
   const handleResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
     toast({ title: "Success!", description: "Your password has been reset. Please login." });
-    // router.push('/login') logic would go here
+    const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
+    router.push(loginHref);
   };
+
+  const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
 
   return (
     <div className="flex-1 flex items-center justify-center p-4">
@@ -64,7 +71,7 @@ export default function ForgotPasswordPage() {
         )}
         <div className="text-center text-xs text-muted-foreground mb-4">
           Remembered it?{' '}
-          <Link href="/login" passHref>
+          <Link href={loginHref} passHref>
             <Button variant="link" className="p-0 h-auto">Back to Login</Button>
           </Link>
         </div>

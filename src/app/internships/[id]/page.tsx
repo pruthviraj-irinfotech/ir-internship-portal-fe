@@ -63,7 +63,7 @@ export default function InternshipDetailsPage() {
                 </Button>
             ) : (
                 <Button size="lg" asChild>
-                    <Link href="/login">Apply Now</Link>
+                    <Link href={`/login?redirect=/apply/${internship.id}`}>Apply Now</Link>
                 </Button>
             )}
         </div>

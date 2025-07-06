@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Dummy credentials
     if (email === 'player1@email.com' && pass === 'password123') {
       setIsLoggedIn(true);
-      router.push('/');
+      // Redirection is now handled by the component that calls login.
       return true;
     }
     return false;

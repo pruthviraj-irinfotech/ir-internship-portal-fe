@@ -15,14 +15,14 @@ export default function OngoingInternshipDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const internshipId = params.id as string;
 
   useEffect(() => {
     if (!isLoggedIn) {
-      router.push('/login');
+      router.push(`/login?redirect=/ongoing/${internshipId}`);
     }
-  }, [isLoggedIn, router]);
+  }, [isLoggedIn, router, internshipId]);
 
-  const internshipId = params.id;
   const internship = internships.find(i => i.id.toString() === internshipId);
 
   if (!isLoggedIn) {

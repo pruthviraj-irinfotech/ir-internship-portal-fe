@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 export default function SignupPage() {
   const [step, setStep] = useState(1);
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,13 +24,16 @@ export default function SignupPage() {
   
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: "Success!", description: "Your account has been created." });
-    // router.push('/') logic would go here
+    toast({ title: "Success!", description: "Your account has been created. Please log in." });
+    const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
+    router.push(loginHref);
   }
 
   const handleResendOtp = () => {
     toast({ title: "OTP Resent", description: "A new verification code has been sent." });
   }
+
+  const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
 
   return (
     <div className="flex-1 flex items-center justify-center p-4">
@@ -75,7 +82,7 @@ export default function SignupPage() {
         )}
         <div className="text-center text-xs text-muted-foreground mb-4">
           Already a player?{' '}
-          <Link href="/login" passHref>
+          <Link href={loginHref} passHref>
             <Button variant="link" className="p-0 h-auto">Login</Button>
           </Link>
         </div>

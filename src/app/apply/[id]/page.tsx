@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { useAuth } from '@/context/auth-context';
 import { internships } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -60,9 +60,9 @@ export default function ApplyPage() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      router.push('/login');
+      router.push(`/login?redirect=/apply/${internshipId}`);
     }
-  }, [isLoggedIn, router]);
+  }, [isLoggedIn, router, internshipId]);
 
   if (!isLoggedIn) {
     return (

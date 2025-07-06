@@ -12,7 +12,7 @@ export default function AppliedInternshipsPage() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      router.push('/login');
+      router.push('/login?redirect=/applied');
     }
   }, [isLoggedIn, router]);
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,9 @@ export default function LoginPage() {
   const { login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,7 +29,9 @@ export default function LoginPage() {
 
     setTimeout(() => {
       const success = login(email, password);
-      if (!success) {
+      if (success) {
+        router.push(redirectUrl || '/');
+      } else {
         toast({
           title: "Login Failed",
           description: "Invalid credentials. Please try again.",
@@ -35,6 +41,9 @@ export default function LoginPage() {
       setIsLoading(false);
     }, 1000);
   };
+
+  const forgotPasswordHref = redirectUrl ? `/forgot-password?redirect=${redirectUrl}` : '/forgot-password';
+  const signupHref = redirectUrl ? `/signup?redirect=${redirectUrl}` : '/signup';
 
   return (
     <div className="flex-1 flex items-center justify-center p-4">
@@ -60,7 +69,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link href="/forgot-password" passHref>
+                <Link href={forgotPasswordHref} passHref>
                   <Button variant="link" className="p-0 h-auto text-xs">Forgot?</Button>
                 </Link>
               </div>
@@ -84,7 +93,7 @@ export default function LoginPage() {
             </Button>
             <div className="text-center text-xs text-muted-foreground">
               New player?{' '}
-              <Link href="/signup" passHref>
+              <Link href={signupHref} passHref>
                 <Button variant="link" className="p-0 h-auto">Create Account</Button>
               </Link>
             </div>

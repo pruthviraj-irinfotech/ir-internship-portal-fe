@@ -16,7 +16,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      router.push('/login');
+      router.push('/login?redirect=/profile');
     }
   }, [isLoggedIn, router]);
 
