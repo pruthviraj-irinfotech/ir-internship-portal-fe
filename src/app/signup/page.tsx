@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,8 +15,23 @@ import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, EyeOff } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+const MAX_AVATAR_SIZE = 100 * 1024; // 100KB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const formSchema = z.object({
+  avatar: z
+    .any()
+    .optional()
+    .refine(
+        (files) => !files || files.length === 0 || files?.[0]?.size <= MAX_AVATAR_SIZE,
+        `Max image size is 100KB.`
+    )
+    .refine(
+        (files) => !files || files.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+        "Only .jpg, .png, .gif and .webp formats are supported."
+    ),
   firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
   lastName: z.string().optional(),
   email: z.string().email({ message: "Invalid email address." }),
@@ -47,6 +62,9 @@ export default function SignupPage() {
   const [countdown, setCountdown] = useState(120);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreview, setAvatarPreview] = useState("https://placehold.co/100x100.png");
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,6 +80,7 @@ export default function SignupPage() {
       orgName: '',
       orgCity: '',
       orgState: '',
+      avatar: undefined,
     },
   });
 
@@ -103,6 +122,33 @@ export default function SignupPage() {
     toast({ title: "OTP Resent", description: "A new verification code has been sent." });
   }
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>, fieldOnChange: (files: FileList | null) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      fieldOnChange(null);
+      return;
+    }
+
+    form.clearErrors("avatar");
+
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      form.setError("avatar", { type: 'manual', message: 'Please select a PNG, JPG, GIF, or WEBP file.' });
+      return;
+    }
+    if (file.size > MAX_AVATAR_SIZE) {
+      form.setError("avatar", { type: 'manual', message: 'Please upload an image smaller than 100KB.' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    fieldOnChange(e.target.files);
+  };
+
   const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
 
   return (
@@ -118,6 +164,36 @@ export default function SignupPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleNextStep)}>
               <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto p-6 pt-0">
+                <FormField
+                  control={form.control}
+                  name="avatar"
+                  render={({ field }) => (
+                    <FormItem className="border-b pb-4 pt-2">
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-24 w-24">
+                          <AvatarImage src={avatarPreview} alt="Player Avatar" data-ai-hint="user avatar" />
+                          <AvatarFallback>P1</AvatarFallback>
+                        </Avatar>
+                        <div className="space-y-2">
+                          <FormControl>
+                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                              Upload Avatar
+                            </Button>
+                          </FormControl>
+                          <Input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                            onChange={(e) => handleAvatarChange(e, field.onChange)}
+                          />
+                          <p className="text-xs text-muted-foreground">Max 100KB. JPG, PNG, GIF, WEBP.</p>
+                          <FormMessage />
+                        </div>
+                      </div>
+                    </FormItem>
+                  )}
+                />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -135,7 +211,7 @@ export default function SignupPage() {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Last Name</FormLabel>
+                          <FormLabel>Last Name (Optional)</FormLabel>
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -233,29 +309,7 @@ export default function SignupPage() {
 
                 <div className="border-t pt-4 space-y-4">
                   <h3 className="text-sm font-medium text-muted-foreground">Organization / Institute Information</h3>
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="student">Student</SelectItem>
-                            <SelectItem value="graduate">Graduate</SelectItem>
-                            <SelectItem value="professional">Working Professional</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
+                   <FormField
                       control={form.control}
                       name="orgName"
                       render={({ field }) => (
@@ -290,6 +344,28 @@ export default function SignupPage() {
                           )}
                         />
                    </div>
+                    <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="student">Student</SelectItem>
+                            <SelectItem value="graduate">Graduate</SelectItem>
+                            <SelectItem value="professional">Working Professional</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
               </CardContent>
