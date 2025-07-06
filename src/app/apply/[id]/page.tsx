@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -163,6 +162,18 @@ export default function ApplyPage() {
                         <p className="text-sm text-muted-foreground">123-456-7890</p>
                     </div>
                 </div>
+
+                <div className="border-t pt-4 space-y-2">
+                  <div className="text-sm">
+                      <Label>Organization/Institute</Label>
+                      <p className="text-muted-foreground">University of Example</p>
+                  </div>
+                  <div className="text-sm">
+                      <Label>Location</Label>
+                      <p className="text-muted-foreground">Exampleville, Examplestate</p>
+                  </div>
+                </div>
+
                 <FormField
                   control={form.control}
                   name="altEmail"
