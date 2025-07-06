@@ -275,6 +275,12 @@ export default function ApplyPage() {
                 <div><Label>Position</Label><p>{internship.title}</p></div>
                 <div><Label>Duration</Label><p>{internship.duration}</p></div>
                 <div><Label>Category</Label><p>{internship.category}</p></div>
+                {internship.description && (
+                  <div>
+                    <Label>Description</Label>
+                    <p className="text-muted-foreground whitespace-pre-line">{internship.description}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
