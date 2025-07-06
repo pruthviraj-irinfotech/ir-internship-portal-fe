@@ -196,6 +196,8 @@ export const internships: Internship[] = [
   },
 ];
 
+export type CertificateStatus = 'Active' | 'Terminated' | 'On Hold';
+
 export type Certificate = {
   id: string;
   internName: string;
@@ -208,6 +210,7 @@ export type Certificate = {
   pdfUrl?: string;
   startDate?: string;
   uploadedBy?: string;
+  status?: CertificateStatus;
 };
 
 export const interns = [
@@ -231,6 +234,7 @@ export const certificates: Certificate[] = [
     imageUrl: 'https://placehold.co/800x600.png',
     pdfUrl: '#',
     uploadedBy: 'Admin',
+    status: 'Active',
   },
   {
     id: 'CERT54321',
@@ -244,6 +248,7 @@ export const certificates: Certificate[] = [
     imageUrl: 'https://placehold.co/800x600.png',
     pdfUrl: '#',
     uploadedBy: 'Admin',
+    status: 'Active',
   },
   {
     id: 'CERT67890',
@@ -257,6 +262,7 @@ export const certificates: Certificate[] = [
     imageUrl: 'https://placehold.co/800x600.png',
     pdfUrl: '#',
     uploadedBy: 'Admin',
+    status: 'Active',
   },
 ];
 

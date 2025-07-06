@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { certificates, Certificate } from '@/lib/mock-data';
+import { certificates, Certificate, CertificateStatus } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,13 @@ import { Search, FileDown, Image as ImageIcon, PlusCircle, Eye, FilePenLine } fr
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+
+const statusColors: Record<CertificateStatus, 'default' | 'secondary' | 'destructive'> = {
+    'Active': 'default',
+    'On Hold': 'secondary',
+    'Terminated': 'destructive',
+};
 
 export default function CertificatesIssuedPage() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -63,6 +70,7 @@ export default function CertificatesIssuedPage() {
                                     <TableHead>Intern Name</TableHead>
                                     <TableHead>Role</TableHead>
                                     <TableHead>Date Approved</TableHead>
+                                    <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -74,6 +82,11 @@ export default function CertificatesIssuedPage() {
                                             <TableCell className="font-medium">{cert.internName}</TableCell>
                                             <TableCell>{cert.internshipRole}</TableCell>
                                             <TableCell>{format(new Date(cert.approvedDate), 'dd-MM-yy')}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={statusColors[cert.status || 'Active']}>
+                                                    {cert.status || 'Active'}
+                                                </Badge>
+                                            </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="outline" size="icon" onClick={() => setSelectedCertificate(cert)} title="View Details">
@@ -100,7 +113,7 @@ export default function CertificatesIssuedPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center h-24">
+                                        <TableCell colSpan={6} className="text-center h-24">
                                             No certificates found.
                                         </TableCell>
                                     </TableRow>
@@ -152,6 +165,14 @@ export default function CertificatesIssuedPage() {
                                 <div>
                                     <Label className="text-sm text-muted-foreground">Date Approved</Label>
                                     <p>{format(new Date(selectedCertificate.approvedDate), 'dd-MM-yy')}</p>
+                                </div>
+                                 <div>
+                                    <Label className="text-sm text-muted-foreground">Status</Label>
+                                    <p>
+                                        <Badge variant={statusColors[selectedCertificate.status || 'Active']}>
+                                            {selectedCertificate.status || 'Active'}
+                                        </Badge>
+                                    </p>
                                 </div>
                                 <div className="col-span-2">
                                     <Label className="text-sm text-muted-foreground">Description</Label>

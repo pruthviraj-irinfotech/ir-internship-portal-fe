@@ -87,6 +87,7 @@ export default function UploadCertificatePage() {
             imageUrl: URL.createObjectURL(values.pngFile[0]), // Temporary URL for display
             pdfUrl: URL.createObjectURL(values.pdfFile[0]), // Temporary URL
             uploadedBy: values.uploadedBy,
+            status: 'Active' as const,
         };
         
         certificates.push(newCertificate);

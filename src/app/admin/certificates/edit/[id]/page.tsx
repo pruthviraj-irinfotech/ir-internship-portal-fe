@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { interns, certificates, Certificate } from '@/lib/mock-data';
+import { interns, certificates, Certificate, CertificateStatus } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,6 +38,7 @@ const formSchema = z.object({
     .refine((files) => !files || files.length === 0 || files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
     .refine((files) => !files || files.length === 0 || ACCEPTED_PDF_TYPES.includes(files?.[0]?.type), "Only .pdf format is supported."),
   uploadedBy: z.string().min(1, "Uploader name is required."),
+  status: z.enum(['Active', 'On Hold', 'Terminated'], { required_error: "Please select a status." }),
 });
 
 export default function EditCertificatePage() {
@@ -64,6 +65,7 @@ export default function EditCertificatePage() {
                 certificateDate: parseISO(certToEdit.approvedDate),
                 description: certToEdit.description,
                 uploadedBy: certToEdit.uploadedBy || 'Admin',
+                status: certToEdit.status || 'Active',
             });
         } else {
              toast({
@@ -101,6 +103,7 @@ export default function EditCertificatePage() {
             approvedDate: format(values.certificateDate, 'yyyy-MM-dd'),
             description: values.description,
             uploadedBy: values.uploadedBy,
+            status: values.status,
         };
 
         if (values.pngFile && values.pngFile.length > 0) {
@@ -250,6 +253,29 @@ export default function EditCertificatePage() {
                         )}
                     />
                 </div>
+                
+                <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Certificate Status</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="md:w-1/2">
+                                        <SelectValue placeholder="Select a status" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Active">Active</SelectItem>
+                                    <SelectItem value="On Hold">On Hold</SelectItem>
+                                    <SelectItem value="Terminated">Terminated</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 
                  <FormField
                     control={form.control}
