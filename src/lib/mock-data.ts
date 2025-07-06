@@ -363,6 +363,10 @@ export type Application = {
   comments?: string;
   adminDocuments?: Document[];
   userDocuments?: Document[];
+  internId?: string;
+  endDate?: string;
+  reportingTo?: string;
+  workEmail?: string;
 };
 
 export const applications: Application[] = [
@@ -446,6 +450,10 @@ export const applications: Application[] = [
         orgCity: 'Exampleville',
         orgState: 'Examplestate',
         orgCountry: 'Exampleland',
+        internId: 'INT24-001',
+        endDate: '2024-10-27',
+        reportingTo: 'Mr. Smith',
+        workEmail: 'p1.work@irinfotech.com',
         adminDocuments: [
             { id: 'doc-admin-1', name: 'Project-Brief.pdf', url: '#', uploadedAt: '2024-07-28', size: 262144 },
             { id: 'doc-admin-2', name: 'Style-Guide.docx', url: '#', uploadedAt: '2024-07-28', size: 131072 },

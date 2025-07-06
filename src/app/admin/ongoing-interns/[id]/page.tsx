@@ -1,15 +1,30 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { applications, internships, Application, Internship, Document } from '@/lib/mock-data';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, File, Loader2, Trash2, Upload } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, File, Loader2, Trash2, Upload, CalendarIcon, FileDown } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+
+const formSchema = z.object({
+  internId: z.string().optional(),
+  workEmail: z.string().email({ message: "Invalid email address." }).optional().or(z.literal('')),
+  reportingTo: z.string().optional(),
+  endDate: z.date().optional(),
+});
 
 function formatBytes(bytes: number, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
@@ -30,17 +45,29 @@ export default function OngoingInternDetailsPage() {
     const [internship, setInternship] = useState<Internship | null>(null);
     const [newFile, setNewFile] = useState<File | null>(null);
 
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+    });
+
     useEffect(() => {
         const app = applications.find(a => a.id === appId);
         if (app && app.status === 'Ongoing') {
             setApplication(app);
             const intern = internships.find(i => i.id === app.internshipId);
             setInternship(intern || null);
+            
+            form.reset({
+                internId: app.internId || '',
+                workEmail: app.workEmail || '',
+                reportingTo: app.reportingTo || '',
+                endDate: app.endDate ? parseISO(app.endDate) : undefined,
+            });
+
         } else {
             toast({ variant: 'destructive', title: 'Error', description: 'Ongoing internship application not found.' });
             router.replace('/admin/ongoing-interns');
         }
-    }, [appId, router, toast]);
+    }, [appId, router, toast, form]);
 
     const handleDocDelete = (docId: string, type: 'admin' | 'user') => {
         if (!application) return;
@@ -54,7 +81,6 @@ export default function OngoingInternDetailsPage() {
         
         setApplication(updatedApplication);
         
-        // Update mock data source
         const appIndex = applications.findIndex(a => a.id === appId);
         if (appIndex !== -1) {
             applications[appIndex] = updatedApplication;
@@ -73,7 +99,7 @@ export default function OngoingInternDetailsPage() {
         const newDoc: Document = {
             id: `doc-admin-${Date.now()}`,
             name: newFile.name,
-            url: '#', // In a real app, this would be the uploaded URL
+            url: '#', 
             uploadedAt: new Date().toISOString(),
             size: newFile.size,
         };
@@ -95,6 +121,23 @@ export default function OngoingInternDetailsPage() {
         toast({ title: 'File Uploaded', description: `${newFile.name} has been added.` });
     };
 
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        if (!application) return;
+        
+        const appIndex = applications.findIndex(a => a.id === application.id);
+        if (appIndex === -1) return;
+
+        const updatedApp = { 
+            ...applications[appIndex], 
+            ...values,
+            endDate: values.endDate ? format(values.endDate, 'yyyy-MM-dd') : undefined,
+        };
+
+        applications[appIndex] = updatedApp;
+        setApplication(updatedApp);
+
+        toast({ title: 'Success', description: 'Intern details have been updated.' });
+    }
 
     if (!application || !internship) {
         return (
@@ -115,9 +158,43 @@ export default function OngoingInternDetailsPage() {
                     <p className="text-muted-foreground">Managing intern: {application.userName}</p>
                 </div>
             </div>
-
+        <Form {...form}>
+         <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
+                     <Card>
+                        <CardHeader><CardTitle>Intern Management</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <FormField control={form.control} name="internId" render={({ field }) => (
+                                <FormItem><FormLabel>Intern ID</FormLabel><FormControl><Input placeholder="e.g., INT24-001" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={form.control} name="workEmail" render={({ field }) => (
+                                <FormItem><FormLabel>Work Email ID</FormLabel><FormControl><Input placeholder="work.email@company.com" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="reportingTo" render={({ field }) => (
+                                <FormItem><FormLabel>Reporting To</FormLabel><FormControl><Input placeholder="e.g., Mr. Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={form.control} name="endDate" render={({ field }) => (
+                                <FormItem className="flex flex-col"><FormLabel>Internship End Date</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                                    {field.value ? format(field.value, "dd-MM-yy") : <span>Pick a date</span>}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                        </CardContent>
+                    </Card>
+
                     <Card>
                         <CardHeader><CardTitle>Documents for Intern (Admin Uploads)</CardTitle></CardHeader>
                         <CardContent>
@@ -134,9 +211,16 @@ export default function OngoingInternDetailsPage() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDocDelete(doc.id, 'admin')} title="Delete Document">
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
+                                            <div className="flex items-center">
+                                                <Button variant="ghost" size="icon" asChild>
+                                                    <a href={doc.url} download={doc.name} title="Download Document">
+                                                        <FileDown className="h-4 w-4" />
+                                                    </a>
+                                                </Button>
+                                                <Button variant="ghost" size="icon" onClick={() => handleDocDelete(doc.id, 'admin')} title="Delete Document">
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </li>
                                     ))
                                 ) : (
@@ -162,9 +246,16 @@ export default function OngoingInternDetailsPage() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDocDelete(doc.id, 'user')} title="Delete Document">
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
+                                             <div className="flex items-center">
+                                                <Button variant="ghost" size="icon" asChild>
+                                                    <a href={doc.url} download={doc.name} title="Download Document">
+                                                        <FileDown className="h-4 w-4" />
+                                                    </a>
+                                                </Button>
+                                                <Button variant="ghost" size="icon" onClick={() => handleDocDelete(doc.id, 'user')} title="Delete Document">
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </li>
                                     ))
                                 ) : (
@@ -177,13 +268,15 @@ export default function OngoingInternDetailsPage() {
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Internship Details</CardTitle>
-                            <CardDescription>{internship.company}</CardDescription>
+                            <CardTitle>Intern Information</CardTitle>
                         </CardHeader>
-                        <CardContent className="text-sm space-y-2">
+                        <CardContent className="text-sm space-y-4">
+                            <div><Label>Intern Name</Label><p>{application.userName}</p></div>
+                            <div><Label>Email ID</Label><p>{application.userEmail}</p></div>
+                            <div><Label>Phone Number</Label><p>{application.userPhone}</p></div>
+                            <div><Label>Internship Start Date</Label><p>{format(new Date(application.applicationDate), 'dd-MM-yy')}</p></div>
                             <div><Label>Role</Label><p>{internship.title}</p></div>
                             <div><Label>Duration</Label><p>{internship.duration}</p></div>
-                            <div><Label>Application Date</Label><p>{format(new Date(application.applicationDate), 'dd-MM-yy')}</p></div>
                         </CardContent>
                     </Card>
                      <Card>
@@ -197,8 +290,14 @@ export default function OngoingInternDetailsPage() {
                             </form>
                         </CardContent>
                     </Card>
+                    <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                        {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Changes
+                    </Button>
                 </div>
             </div>
+            </form>
+            </Form>
         </div>
     );
 }
