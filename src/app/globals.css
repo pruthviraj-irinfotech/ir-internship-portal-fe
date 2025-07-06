@@ -66,9 +66,7 @@
     --chart-5: 340 75% 55%;
     --radius: 0rem;
   }
-}
-
-@layer base {
+  
   * {
     @apply border-border;
   }
