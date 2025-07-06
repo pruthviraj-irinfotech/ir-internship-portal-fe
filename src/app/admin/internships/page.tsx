@@ -6,11 +6,11 @@ export default function AdminInternshipsPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Internships</CardTitle>
-        <CardDescription>Manage your company's internships here.</CardDescription>
+        <CardTitle>All Internships</CardTitle>
+        <CardDescription>Manage your company's internship listings here.</CardDescription>
       </CardHeader>
       <CardContent>
-        <p>A list of internships with options to create, edit, and delete will be displayed here.</p>
+        <p>A list of all internships with options to edit and delete will be displayed here.</p>
       </CardContent>
     </Card>
   );

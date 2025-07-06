@@ -13,8 +13,13 @@ import {
   SidebarMenuButton,
   SidebarInset,
 } from '@/components/ui/sidebar';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import Link from 'next/link';
-import { Briefcase, Users, Award, User, LayoutDashboard, Loader2 } from 'lucide-react';
+import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
 export default function AdminLayout({
@@ -47,9 +52,15 @@ export default function AdminLayout({
 
   const navItems = [
     {
-      href: '/admin/internships',
       label: 'Internships',
       icon: <Briefcase className="w-5 h-5" />,
+      basePath: '/admin/internships',
+      subItems: [
+        { href: '/admin/internships', label: 'All Internships' },
+        { href: '/admin/internships/new', label: 'Post New Internship' },
+        { href: '/admin/internships/applications', label: 'Applications' },
+        { href: '/admin/internships/interviews', label: 'Interview Scheduled' },
+      ],
     },
     {
       href: '/admin/ongoing-interns',
@@ -80,14 +91,53 @@ export default function AdminLayout({
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <Link href={item.href} passHref>
-                    <SidebarMenuButton isActive={pathname === item.href} tooltip={item.label}>
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </Link>
+              {navItems.map((item, index) => (
+                <SidebarMenuItem key={index}>
+                  {item.subItems ? (
+                    <Collapsible
+                      className="group"
+                      defaultOpen={pathname.startsWith(item.basePath!)}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          isActive={pathname.startsWith(item.basePath!)}
+                          className="w-full justify-between"
+                          tooltip={item.label}
+                        >
+                          <div className="flex items-center gap-2">
+                            {item.icon}
+                            <span>{item.label}</span>
+                          </div>
+                          <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-90 group-data-[collapsible=icon]:hidden" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <ul className="pl-8 py-1 space-y-1 group-data-[collapsible=icon]:hidden">
+                            {item.subItems.map(subItem => (
+                                <li key={subItem.href}>
+                                     <Link href={subItem.href} passHref>
+                                        <SidebarMenuButton
+                                          size="sm"
+                                          variant="ghost"
+                                          isActive={pathname === subItem.href}
+                                          className="w-full justify-start h-8"
+                                        >
+                                            <span>{subItem.label}</span>
+                                        </SidebarMenuButton>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  ) : (
+                    <Link href={item.href!} passHref>
+                        <SidebarMenuButton isActive={pathname === item.href} tooltip={item.label}>
+                        {item.icon}
+                        <span>{item.label}</span>
+                        </SidebarMenuButton>
+                    </Link>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
