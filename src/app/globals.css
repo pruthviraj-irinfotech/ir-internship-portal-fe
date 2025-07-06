@@ -2,12 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
+    --font-body: "Press Start 2P", system-ui, sans-serif;
+    --font-headline: "Press Start 2P", system-ui, sans-serif;
+
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -34,6 +33,12 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0rem;
   }
+
+  .font-readable {
+    --font-body: Arial, Helvetica, sans-serif;
+    --font-headline: Arial, Helvetica, sans-serif;
+  }
+
   .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;

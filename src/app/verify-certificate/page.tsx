@@ -99,38 +99,38 @@ export default function VerifyCertificatePage() {
 
       {foundCertificate && (
         <Card className="w-full max-w-4xl mt-8">
-          <CardHeader>
-            <CardTitle className="text-primary">Certificate of Completion</CardTitle>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl text-primary">Certificate of Completion</CardTitle>
             <CardDescription>ID: {foundCertificate.id}</CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-8">
-            <div className="relative aspect-[4/3]">
+          <CardContent className="flex flex-col items-center gap-8">
+             <div className="relative w-full max-w-3xl aspect-[4/3]">
               <Image
                 src={foundCertificate.imageUrl}
                 alt={`Certificate for ${foundCertificate.internName}`}
                 fill
-                className="object-cover rounded-md border"
+                className="object-contain"
                 data-ai-hint="certificate document"
               />
             </div>
-            <div className="space-y-4">
-               <div>
+            <div className="w-full border-t pt-8 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-left">
+               <div className="space-y-1">
                   <Label>Intern Name</Label>
                   <p className="text-lg font-semibold">{foundCertificate.internName}</p>
               </div>
-              <div>
+              <div className="space-y-1">
                   <Label>Role</Label>
                   <p>{foundCertificate.internshipRole} at {foundCertificate.company}</p>
               </div>
-               <div>
+               <div className="space-y-1">
                   <Label>Internship Duration</Label>
                   <p>{foundCertificate.duration}</p>
               </div>
-               <div>
+               <div className="space-y-1">
                   <Label>Date Approved</Label>
                   <p>{foundCertificate.approvedDate}</p>
               </div>
-              <div>
+              <div className="md:col-span-2 space-y-1">
                   <Label>Description</Label>
                   <p className="text-muted-foreground text-sm">{foundCertificate.description}</p>
               </div>

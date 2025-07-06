@@ -6,11 +6,13 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
 import { InnoHireIcon } from '@/components/icons';
-import { FileText, LogOut, Award, User, Briefcase, Play } from 'lucide-react';
+import { FileText, LogOut, Award, User, Briefcase, Play, CaseSensitive } from 'lucide-react';
+import { useFont } from '@/context/font-context';
 
 export function Header() {
   const pathname = usePathname();
   const { isLoggedIn, logout } = useAuth();
+  const { toggleFont } = useFont();
 
   const loggedOutLinks = [
     { href: '/', label: 'Open Internships', icon: <Briefcase /> },
@@ -35,7 +37,7 @@ export function Header() {
           <InnoHireIcon className="w-8 h-8 text-primary" />
           <span className="font-headline text-lg hidden sm:inline-block">IR Intern Portal</span>
         </Link>
-        <nav className="flex-1 flex items-center justify-end space-x-2 sm:space-x-4">
+        <nav className="flex-1 flex items-center justify-end space-x-1 sm:space-x-2">
           {navLinks.map(({ href, label, icon }) => (
             <Button
               key={href}
@@ -43,7 +45,7 @@ export function Header() {
               size="sm"
               asChild
               className={cn(
-                'text-xs sm:text-sm',
+                'text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2',
                 pathname === href && 'shadow-none translate-x-0 translate-y-0'
               )}
             >
@@ -54,11 +56,15 @@ export function Header() {
             </Button>
           ))}
           {isLoggedIn && (
-            <Button variant="ghost" size="sm" onClick={logout} className="text-xs sm:text-sm">
+            <Button variant="ghost" size="sm" onClick={logout} className="text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2">
               <LogOut />
               <span className="hidden sm:inline-block">Logout</span>
             </Button>
           )}
+          <Button variant="ghost" size="sm" onClick={toggleFont} className="text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2">
+            <CaseSensitive />
+            <span className="hidden sm:inline-block">Font</span>
+          </Button>
         </nav>
       </div>
     </header>
