@@ -155,7 +155,7 @@ export default function CertificatesIssuedPage() {
                                 </div>
                                 <div className="col-span-2">
                                     <Label className="text-sm text-muted-foreground">Description</Label>
-                                    <p className="text-sm">{selectedCertificate.description}</p>
+                                    <div className="text-sm" dangerouslySetInnerHTML={{ __html: selectedCertificate.description }} />
                                 </div>
                                 <div>
                                     <Label className="text-sm text-muted-foreground">Uploaded By</Label>

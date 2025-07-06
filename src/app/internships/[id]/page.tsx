@@ -101,7 +101,7 @@ export default function InternshipDetailsPage() {
               <CardTitle>Internship Role Description</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground whitespace-pre-line">{detailedDescription || 'No detailed description available.'}</p>
+              <div className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: detailedDescription || 'No detailed description available.' }} />
             </CardContent>
           </Card>
 

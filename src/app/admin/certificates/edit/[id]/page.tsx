@@ -7,7 +7,6 @@ import { interns, certificates, Certificate } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -18,6 +17,7 @@ import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import RichTextEditor from '@/components/rich-text-editor';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/png"];
@@ -258,11 +258,10 @@ export default function EditCertificatePage() {
                     <FormItem>
                         <FormLabel>Internship Description</FormLabel>
                         <FormControl>
-                        <Textarea
-                            placeholder="Provide a brief description of the intern's role and accomplishments..."
-                            className="resize-y min-h-[100px]"
-                            {...field}
-                        />
+                          <RichTextEditor
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
                         </FormControl>
                         <FormMessage />
                     </FormItem>

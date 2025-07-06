@@ -76,9 +76,9 @@ const RichTextEditor = ({ value, onChange }: { value: string, onChange: (richTex
         },
       }),
       Highlight.configure({
-        multicolor: false, // Set to false to use a single highlight color
+        multicolor: false,
         HTMLAttributes: {
-            class: 'bg-primary/20',
+            class: 'bg-yellow-400/40',
         }
       }),
     ],

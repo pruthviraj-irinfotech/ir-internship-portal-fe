@@ -182,11 +182,10 @@ export default function PostNewInternshipPage() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Short Description</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                    placeholder="A brief summary shown on the internship card..."
-                                    className="resize-y"
-                                    {...field}
+                             <FormControl>
+                                <RichTextEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
                                 />
                             </FormControl>
                              <FormDesc>This will be visible on the main internship listings page.</FormDesc>

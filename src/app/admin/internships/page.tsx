@@ -222,8 +222,8 @@ export default function AdminInternshipsPage() {
                       <div><Label className="text-sm text-muted-foreground">Posted</Label><p>{format(new Date(viewingInternship.postedDate), 'dd-MM-yy')}</p></div>
                     </div>
                     <div className="space-y-4 border-t pt-4">
-                        <div><Label>Short Description</Label><p className="text-sm text-muted-foreground">{viewingInternship.description}</p></div>
-                        <div><Label>Detailed Description</Label><p className="text-sm text-muted-foreground whitespace-pre-line">{viewingInternship.detailedDescription}</p></div>
+                        <div><Label>Short Description</Label><div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingInternship.description || ''}} /></div>
+                        <div><Label>Detailed Description</Label><div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingInternship.detailedDescription || ''}} /></div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border-t pt-4">
                       <div>

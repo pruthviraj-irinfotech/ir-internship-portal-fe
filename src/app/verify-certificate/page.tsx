@@ -133,7 +133,7 @@ export default function VerifyCertificatePage() {
               </div>
               <div className="md:col-span-2 space-y-1">
                   <Label>Description</Label>
-                  <p className="text-muted-foreground text-sm">{foundCertificate.description}</p>
+                  <div className="text-muted-foreground text-sm" dangerouslySetInnerHTML={{ __html: foundCertificate.description }} />
               </div>
             </div>
           </CardContent>
