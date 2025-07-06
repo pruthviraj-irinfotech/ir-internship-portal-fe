@@ -7,9 +7,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 
 type InternshipCardProps = {
   internship: Internship;
+  isLoggedIn?: boolean;
 };
 
-export function InternshipCard({ internship }: InternshipCardProps) {
+export function InternshipCard({ internship, isLoggedIn = false }: InternshipCardProps) {
   return (
     <Card className="flex flex-col transform transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl">
       <CardHeader>
@@ -52,10 +53,12 @@ export function InternshipCard({ internship }: InternshipCardProps) {
       </CardContent>
       <CardFooter className="flex justify-between items-center">
         <p className="text-xs text-muted-foreground">Posted {internship.postedDate}</p>
-        {internship.applied ? (
-          <Badge variant="secondary">Applied</Badge>
-        ) : (
-          <Button size="sm">Apply Now</Button>
+        {isLoggedIn && (
+            internship.applied ? (
+            <Badge variant="secondary">Applied</Badge>
+            ) : (
+            <Button size="sm">Apply Now</Button>
+            )
         )}
       </CardFooter>
     </Card>

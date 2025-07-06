@@ -15,7 +15,7 @@ export default function AppliedInternshipsPage() {
         {appliedInternships.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {appliedInternships.map((internship) => (
-              <InternshipCard key={internship.id} internship={internship} />
+              <InternshipCard key={internship.id} internship={internship} isLoggedIn={true} />
             ))}
           </div>
         ) : (
