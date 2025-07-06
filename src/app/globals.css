@@ -35,8 +35,8 @@
   }
 
   .font-readable {
-    --font-body: Arial, Helvetica, sans-serif;
-    --font-headline: Arial, Helvetica, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-headline: "Inter", system-ui, sans-serif;
   }
 
   .dark {
