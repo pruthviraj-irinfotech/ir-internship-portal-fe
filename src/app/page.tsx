@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -32,25 +33,15 @@ export default function Home() {
 
       <section className="mb-16">
          <div className="flex items-center justify-center gap-8">
-             <svg viewBox="0 0 100 100" className="relative w-32 h-32 hidden md:block" data-ai-hint="chess game">
-                <defs>
-                    <pattern id="chess-pattern" patternUnits="userSpaceOnUse" width="25" height="25" className='text-foreground/50'>
-                        <rect width="12.5" height="12.5" fill="currentColor" />
-                        <rect x="12.5" y="12.5" width="12.5" height="12.5" fill="currentColor" />
-                    </pattern>
-                </defs>
-                <rect width="100" height="100" fill="url(#chess-pattern)" className="opacity-50" />
-                
-                {/* Static Pieces */}
-                {/* White Queen */}
-                <path transform="translate(62.5, 87.5) scale(1.5)" d="M4 2v2h16V2l-2 4h-3l-1-4h-2l-1 4h-3l-2-4H4zm2 6v8h12V8H6z" fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth="0.5"/>
-                {/* White Pawn */}
-                <path transform="translate(37.5, 87.5) scale(1.5)" d="M12 2a4 4 0 110 8 4 4 0 010-8zm-6 10h12v2H6v-2zm1 4h10v2H7v-2zm1 4h8v2H8v-2z" fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth="0.5"/>
-                
-                {/* Black Queen */}
-                <path transform="translate(37.5, 12.5) scale(1.5)" d="M4 2v2h16V2l-2 4h-3l-1-4h-2l-1 4h-3l-2-4H4zm2 6v8h12V8H6z" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="0.5"/>
-                {/* Black Pawn */}
-                <path transform="translate(12.5, 12.5) scale(1.5)" d="M12 2a4 4 0 110 8 4 4 0 010-8zm-6 10h12v2H6v-2zm1 4h10v2H7v-2zm1 4h8v2H8v-2z" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="0.5"/>
+            <svg viewBox="0 0 100 100" className="relative w-32 h-32 hidden md:block" data-ai-hint="brick game">
+                {/* Landed bricks */}
+                <rect x="10" y="90" width="80" height="10" fill="hsl(var(--foreground))" opacity="0.5"/>
+                <rect x="30" y="80" width="40" height="10" fill="hsl(var(--foreground))" opacity="0.5"/>
+                {/* Falling piece */}
+                <g className="brick-game-piece">
+                    <rect x="40" y="0" width="20" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="30" y="10" width="40" height="10" fill="hsl(var(--primary))"/>
+                </g>
             </svg>
             <blockquote className="text-lg italic text-muted-foreground max-w-2xl">
               "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."

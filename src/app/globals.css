@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -104,5 +105,18 @@
 @keyframes snake-climb {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+.brick-game-piece {
+  animation: brick-fall 3s linear infinite;
+}
+
+@keyframes brick-fall {
+  from {
+    transform: translateY(-20px);
+  }
+  to {
+    transform: translateY(70px);
   }
 }
