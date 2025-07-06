@@ -62,6 +62,8 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [countdown, setCountdown] = useState(120);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
+  const [otp, setOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState("https://placehold.co/100x100.png");
@@ -113,6 +115,13 @@ export default function SignupPage() {
   
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
+    const otpRegex = /^\d{6}$/;
+    if (!otpRegex.test(otp)) {
+      setOtpError("Please enter a valid 6-digit OTP.");
+      return;
+    }
+    setOtpError('');
+
     toast({ title: "Success!", description: "Your account has been created. Please log in." });
     const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
     router.push(loginHref);
@@ -392,7 +401,18 @@ export default function SignupPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="otp">Enter 6-Digit OTP</Label>
-                <Input id="otp" type="text" maxLength={6} required />
+                 <Input
+                    id="otp"
+                    type="text"
+                    maxLength={6}
+                    required
+                    value={otp}
+                    onChange={(e) => {
+                        setOtp(e.target.value);
+                        if (otpError) setOtpError('');
+                    }}
+                />
+                {otpError && <p className="text-xs text-destructive mt-1">{otpError}</p>}
                 <div className="text-center text-xs pt-2">
                   <Button
                     type="button"

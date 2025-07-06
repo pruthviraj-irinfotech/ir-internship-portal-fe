@@ -14,6 +14,8 @@ import { Eye, EyeOff } from 'lucide-react';
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,6 +29,14 @@ export default function ForgotPasswordPage() {
 
   const handleResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const otpRegex = /^\d{6}$/;
+    if (!otpRegex.test(otp)) {
+      setOtpError("Please enter a valid 6-digit OTP.");
+      return;
+    }
+    setOtpError('');
+
     toast({ title: "Success!", description: "Your password has been reset. Please login." });
     const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
     router.push(loginHref);
@@ -60,7 +70,18 @@ export default function ForgotPasswordPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="otp">6-Digit OTP</Label>
-                <Input id="otp" type="text" maxLength={6} required />
+                <Input
+                  id="otp"
+                  type="text"
+                  maxLength={6}
+                  required
+                  value={otp}
+                  onChange={(e) => {
+                    setOtp(e.target.value);
+                    if (otpError) setOtpError('');
+                  }}
+                />
+                {otpError && <p className="text-xs text-destructive mt-1">{otpError}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-password">New Password</Label>
