@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Search, FileDown, Image as ImageIcon, PlusCircle, Eye, FilePenLine } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { format } from 'date-fns';
 
 export default function CertificatesIssuedPage() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -23,7 +24,7 @@ export default function CertificatesIssuedPage() {
             cert.id.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setFilteredCertificates(results);
-    }, [searchTerm, certificates]);
+    }, [searchTerm]);
 
     return (
         <>
@@ -72,7 +73,7 @@ export default function CertificatesIssuedPage() {
                                             <TableCell className="font-mono">{cert.id}</TableCell>
                                             <TableCell className="font-medium">{cert.internName}</TableCell>
                                             <TableCell>{cert.internshipRole}</TableCell>
-                                            <TableCell>{cert.approvedDate}</TableCell>
+                                            <TableCell>{format(new Date(cert.approvedDate), 'dd-MM-yy')}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="outline" size="icon" onClick={() => setSelectedCertificate(cert)} title="View Details">
@@ -146,11 +147,11 @@ export default function CertificatesIssuedPage() {
                                 </div>
                                 <div>
                                     <Label className="text-sm text-muted-foreground">Start Date</Label>
-                                    <p>{selectedCertificate.startDate}</p>
+                                    <p>{selectedCertificate.startDate ? format(new Date(selectedCertificate.startDate), 'dd-MM-yy') : 'N/A'}</p>
                                 </div>
                                 <div>
                                     <Label className="text-sm text-muted-foreground">Date Approved</Label>
-                                    <p>{selectedCertificate.approvedDate}</p>
+                                    <p>{format(new Date(selectedCertificate.approvedDate), 'dd-MM-yy')}</p>
                                 </div>
                                 <div className="col-span-2">
                                     <Label className="text-sm text-muted-foreground">Description</Label>

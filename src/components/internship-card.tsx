@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { format } from 'date-fns';
 
 type InternshipCardProps = {
   internship: Internship;
@@ -72,7 +73,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
         )}
       </CardContent>
       <CardFooter className="flex justify-between items-center">
-        <p className="text-xs text-muted-foreground">Posted {internship.postedDate}</p>
+        <p className="text-xs text-muted-foreground">Posted {format(new Date(internship.postedDate), 'dd-MM-yy')}</p>
         {isLoggedIn ? (
           internship.status === 'Ongoing' ? (
              <Button size="sm" asChild>
@@ -97,7 +98,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-muted-foreground">Applied Date</p>
-                    <p>{internship.applicationDate}</p>
+                    <p>{internship.applicationDate ? format(new Date(internship.applicationDate), 'dd-MM-yy') : 'N/A'}</p>
                   </div>
                   <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
                     Note: Applications are reviewed for up to one month. If you are not selected within this timeframe, the application will be automatically removed from your dashboard.

@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, CheckCircle, FileText } from 'lucide-react';
+import { format } from 'date-fns';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = ["application/pdf"];
@@ -111,7 +112,7 @@ export default function ApplyPage() {
                         <p className="text-muted-foreground">Application Number:</p>
                         <p className="font-mono">{submission.number}</p>
                         <p className="text-muted-foreground">Application Date:</p>
-                        <p>{submission.date}</p>
+                        <p>{format(new Date(submission.date), 'dd-MM-yy')}</p>
                         <p className="text-muted-foreground">Application Status:</p>
                         <p>In Review</p>
                     </div>
@@ -136,7 +137,7 @@ export default function ApplyPage() {
     console.log(`Simulating upload: renaming ${originalFile.name} to ${newFileName}`);
     
     // Simulate API call and update mock data
-    const appDate = new Date().toLocaleDateString('en-GB');
+    const appDate = format(new Date(), 'yyyy-MM-dd');
     const internshipIndex = internships.findIndex(i => i.id === internship.id);
     if (internshipIndex !== -1) {
       internships[internshipIndex].applied = true;

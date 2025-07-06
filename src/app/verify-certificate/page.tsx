@@ -9,6 +9,7 @@ import { certificates, Certificate } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
+import { format } from 'date-fns';
 
 export default function VerifyCertificatePage() {
   const [certificateId, setCertificateId] = useState('');
@@ -128,7 +129,7 @@ export default function VerifyCertificatePage() {
               </div>
                <div className="space-y-1">
                   <Label>Date Approved</Label>
-                  <p>{foundCertificate.approvedDate}</p>
+                  <p>{format(new Date(foundCertificate.approvedDate), 'dd-MM-yy')}</p>
               </div>
               <div className="md:col-span-2 space-y-1">
                   <Label>Description</Label>

@@ -163,7 +163,7 @@ export default function UploadCertificatePage() {
                                     )}
                                     >
                                     {field.value ? (
-                                        format(field.value, "PPP")
+                                        format(field.value, "dd-MM-yy")
                                     ) : (
                                         <span>Pick a date</span>
                                     )}
@@ -204,7 +204,7 @@ export default function UploadCertificatePage() {
                                     )}
                                     >
                                     {field.value ? (
-                                        format(field.value, "PPP")
+                                        format(field.value, "dd-MM-yy")
                                     ) : (
                                         <span>Pick a date</span>
                                     )}
