@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/context/auth-context';
-import { internships } from '@/lib/mock-data';
+import { internships, applications, Application } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -147,8 +147,32 @@ export default function ApplyPage() {
       internships[internshipIndex].applicationDate = appDate;
     }
 
+    const newApplication: Application = {
+        id: `APP-${Date.now()}`,
+        internshipId: internship!.id,
+        internshipTitle: internship!.title,
+        userId: 'usr-001', // This would be dynamic in a real app
+        userName: 'Player One', // This would be from auth context
+        userEmail: 'player1@email.com',
+        userPhone: '123-456-7890',
+        applicationDate: appDate,
+        status: 'In Review',
+        resumeUrl: '#', // In a real app, this would be the URL from file storage
+        whyApply: values.whyApply,
+        altEmail: values.altEmail,
+        altPhone: values.altPhone,
+        qualification: values.qualification,
+        userStatus: values.status,
+        orgName: values.orgName,
+        orgCity: values.orgCity,
+        orgState: values.orgState,
+        orgCountry: values.orgCountry,
+    };
+
+    applications.unshift(newApplication);
+
     setSubmission({
-        number: `APP-${Date.now()}`,
+        number: newApplication.id,
         date: appDate,
     })
   }

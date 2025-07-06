@@ -1,4 +1,6 @@
 
+export type InternshipStatus = 'In Review' | 'Rejected' | 'Shortlisted' | 'Interview Scheduled' | 'Selected' | 'Withdrawn' | 'Ongoing';
+
 export type Internship = {
   id: number;
   title: string;
@@ -12,7 +14,7 @@ export type Internship = {
   active?: boolean;
   applied?: boolean;
   applicationDate?: string;
-  status?: 'In Review' | 'Shortlisted' | 'Not Selected' | 'Ongoing';
+  status?: InternshipStatus;
   description?: string;
   detailedDescription?: string;
   selectionProcess?: string;
@@ -185,7 +187,7 @@ export const internships: Internship[] = [
     active: true,
     applied: true,
     applicationDate: '2024-07-29',
-    status: 'Not Selected',
+    status: 'Rejected',
     description: 'A training program focused on the principles of User Interface (UI) and User Experience (UX) design. You will learn to use tools like Figma, create wireframes and prototypes, and conduct user research.',
     detailedDescription: 'This training-based internship is perfect for aspiring designers. You will learn the entire design process, from user research and creating personas to wireframing, prototyping, and usability testing. You will work on a portfolio project under the guidance of our experienced designers.',
     selectionProcess: '<ul><li>Portfolio Review is mandatory.</li><li>Design Task</li><li>Interview with the Design Lead</li></ul>',
@@ -325,4 +327,105 @@ export const users: User[] = [
         orgCountry: 'USA',
         role: 'user',
     },
+];
+
+export type Application = {
+  id: string;
+  internshipId: number;
+  internshipTitle: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userPhone: string;
+  applicationDate: string;
+  status: InternshipStatus;
+  resumeUrl: string;
+  whyApply: string;
+  altEmail?: string;
+  altPhone?: string;
+  qualification: string;
+  userStatus: 'student' | 'graduate' | 'professional';
+  orgName: string;
+  orgCity: string;
+  orgState: string;
+  orgCountry: string;
+};
+
+export const applications: Application[] = [
+    {
+        id: 'APP-1669812345',
+        internshipId: 1,
+        internshipTitle: 'React Js Frontend',
+        userId: 'usr-001',
+        userName: 'Player One',
+        userEmail: 'player1@email.com',
+        userPhone: '123-456-7890',
+        applicationDate: '2024-07-30',
+        status: 'In Review',
+        resumeUrl: '#',
+        whyApply: 'I am very passionate about React and have been building projects with it for the past year. I believe I have the skills and enthusiasm to be a great contributor to your team.',
+        qualification: 'B.Tech in Computer Science',
+        userStatus: 'student',
+        orgName: 'University of Example',
+        orgCity: 'Exampleville',
+        orgState: 'Examplestate',
+        orgCountry: 'Exampleland',
+    },
+    {
+        id: 'APP-1669812346',
+        internshipId: 5,
+        internshipTitle: 'DevOps',
+        userId: 'usr-001',
+        userName: 'Player One',
+        userEmail: 'player1@email.com',
+        userPhone: '123-456-7890',
+        applicationDate: '2024-07-26',
+        status: 'Shortlisted',
+        resumeUrl: '#',
+        whyApply: 'My interest in automation and system architecture makes me a strong candidate for this DevOps role. I am eager to learn from your experienced team.',
+        qualification: 'B.Tech in Computer Science',
+        userStatus: 'student',
+        orgName: 'University of Example',
+        orgCity: 'Exampleville',
+        orgState: 'Examplestate',
+        orgCountry: 'Exampleland',
+    },
+     {
+        id: 'APP-1669812347',
+        internshipId: 9,
+        internshipTitle: 'UI UX',
+        userId: 'usr-001',
+        userName: 'Player One',
+        userEmail: 'player1@email.com',
+        userPhone: '123-456-7890',
+        applicationDate: '2024-07-29',
+        status: 'Rejected',
+        resumeUrl: '#',
+        whyApply: 'I have a keen eye for design and a passion for creating intuitive user experiences. My portfolio showcases several projects where I have applied user-centered design principles.',
+        qualification: 'B.Tech in Computer Science',
+        userStatus: 'student',
+        orgName: 'University of Example',
+        orgCity: 'Exampleville',
+        orgState: 'Examplestate',
+        orgCountry: 'Exampleland',
+    },
+    {
+        id: 'APP-1669812348',
+        internshipId: 4,
+        internshipTitle: 'Laravel',
+        userId: 'usr-001',
+        userName: 'Player One',
+        userEmail: 'player1@email.com',
+        userPhone: '123-456-7890',
+        applicationDate: '2024-07-27',
+        status: 'Ongoing',
+        resumeUrl: '#',
+        whyApply: 'I am excited to learn backend development with Laravel and contribute to real-world projects.',
+        qualification: 'B.Tech in Computer Science',
+        userStatus: 'student',
+        orgName: 'University of Example',
+        orgCity: 'Exampleville',
+        orgState: 'Examplestate',
+        orgCountry: 'Exampleland',
+    }
 ];

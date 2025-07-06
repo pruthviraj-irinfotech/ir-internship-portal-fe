@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Clock, IndianRupee, HelpCircle, MapPin, Tag } from 'lucide-react';
-import type { Internship } from '@/lib/mock-data';
+import type { Internship, InternshipStatus } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,17 @@ type InternshipCardProps = {
   internship: Internship;
   isLoggedIn?: boolean;
 };
+
+const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
+    'Selected': 'default',
+    'Interview Scheduled': 'default',
+    'Ongoing': 'default',
+    'Shortlisted': 'default',
+    'In Review': 'secondary',
+    'Withdrawn': 'destructive',
+    'Rejected': 'destructive',
+};
+
 
 export function InternshipCard({ internship, isLoggedIn = false }: InternshipCardProps) {
   return (
@@ -97,7 +108,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
                 <div className="grid gap-4 py-4 text-sm">
                   <div className="flex justify-between items-center">
                     <p className="text-muted-foreground">Status</p>
-                    {internship.status && <Badge variant={internship.status === 'Shortlisted' || internship.status === 'Ongoing' ? 'default' : internship.status === 'Not Selected' ? 'destructive' : 'secondary'}>{internship.status}</Badge>}
+                    {internship.status && <Badge variant={statusColors[internship.status] || 'secondary'}>{internship.status}</Badge>}
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-muted-foreground">Applied Date</p>
