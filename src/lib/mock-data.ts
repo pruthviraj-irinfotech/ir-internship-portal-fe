@@ -349,6 +349,9 @@ export type Application = {
   orgCity: string;
   orgState: string;
   orgCountry: string;
+  interviewDate?: string;
+  interviewTime?: string;
+  interviewInstructions?: string;
 };
 
 export const applications: Application[] = [
@@ -380,7 +383,7 @@ export const applications: Application[] = [
         userEmail: 'player1@email.com',
         userPhone: '123-456-7890',
         applicationDate: '2024-07-26',
-        status: 'Shortlisted',
+        status: 'Interview Scheduled',
         resumeUrl: 'https://placehold.co/600x800.png',
         whyApply: 'My interest in automation and system architecture makes me a strong candidate for this DevOps role. I am eager to learn from your experienced team.',
         qualification: 'B.Tech in Computer Science',
@@ -389,6 +392,9 @@ export const applications: Application[] = [
         orgCity: 'Exampleville',
         orgState: 'Examplestate',
         orgCountry: 'Exampleland',
+        interviewDate: '2024-08-10',
+        interviewTime: '2:00 PM',
+        interviewInstructions: '<ul><li>Please join the Google Meet link 5 minutes early.</li><li>Be prepared to discuss your resume and past projects.</li></ul>'
     },
      {
         id: 'APP-1669812347',
