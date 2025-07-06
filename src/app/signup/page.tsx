@@ -44,6 +44,7 @@ const formSchema = z.object({
   orgName: z.string().min(2, { message: "Please enter your organization/institute name." }),
   orgCity: z.string().min(2, { message: "Please enter a city." }),
   orgState: z.string().min(2, { message: "Please enter a state." }),
+  orgCountry: z.string().min(2, { message: "Please enter a country." }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -80,6 +81,7 @@ export default function SignupPage() {
       orgName: '',
       orgCity: '',
       orgState: '',
+      orgCountry: '',
       avatar: undefined,
     },
   });
@@ -320,7 +322,7 @@ export default function SignupPage() {
                         </FormItem>
                       )}
                     />
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField
                           control={form.control}
                           name="orgCity"
@@ -338,6 +340,17 @@ export default function SignupPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>State <span className="text-destructive">*</span></FormLabel>
+                              <FormControl><Input {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="orgCountry"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country <span className="text-destructive">*</span></FormLabel>
                               <FormControl><Input {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>

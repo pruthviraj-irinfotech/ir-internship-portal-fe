@@ -44,6 +44,7 @@ const formSchema = z.object({
   orgName: z.string().min(1, { message: "Organization name is required." }),
   orgCity: z.string().min(1, { message: "City is required." }),
   orgState: z.string().min(1, { message: "State is required." }),
+  orgCountry: z.string().min(1, { message: "Country is required." }),
 });
 
 export default function ApplyPage() {
@@ -67,6 +68,7 @@ export default function ApplyPage() {
       orgName: 'University of Example',
       orgCity: 'Exampleville',
       orgState: 'Examplestate',
+      orgCountry: 'Exampleland',
     },
   });
 
@@ -221,7 +223,7 @@ export default function ApplyPage() {
                       </FormItem>
                     )}
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="orgCity"
@@ -239,6 +241,17 @@ export default function ApplyPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>State <span className="text-destructive">*</span></FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="orgCountry"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Country <span className="text-destructive">*</span></FormLabel>
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -280,7 +293,7 @@ export default function ApplyPage() {
                 {internship.description && (
                   <div>
                     <Label>Description</Label>
-                    <p className="text-muted-foreground line-clamp-3">{internship.description}</p>
+                    <div className="text-muted-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: internship.description }} />
                   </div>
                 )}
               </CardContent>

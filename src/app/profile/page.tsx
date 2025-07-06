@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -145,15 +146,19 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="org-name">Organization/Institute Name</Label>
-                    <Input id="org-name" placeholder="e.g., University of Example" />
+                    <Input id="org-name" placeholder="e.g., University of Example" defaultValue="University of Example"/>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="org-city">City</Label>
-                    <Input id="org-city" placeholder="e.g., Exampleville" />
+                    <Input id="org-city" placeholder="e.g., Exampleville" defaultValue="Exampleville"/>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="org-state">State</Label>
-                    <Input id="org-state" placeholder="e.g., Examplestate" />
+                    <Input id="org-state" placeholder="e.g., Examplestate" defaultValue="Examplestate" />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="org-country">Country</Label>
+                    <Input id="org-country" placeholder="e.g., Exampleland" defaultValue="Exampleland" />
                 </div>
             </div>
           </div>

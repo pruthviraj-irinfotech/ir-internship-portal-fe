@@ -187,7 +187,7 @@ export default function AdminUsersPage() {
                 <div><Label>Qualification</Label><p className="text-sm text-muted-foreground">{viewingUser.qualification}</p></div>
                 <div><Label>Status</Label><p className="text-sm text-muted-foreground capitalize">{viewingUser.status}</p></div>
                 <div><Label>Organization</Label><p className="text-sm text-muted-foreground">{viewingUser.orgName}</p></div>
-                <div><Label>Location</Label><p className="text-sm text-muted-foreground">{viewingUser.orgCity}, {viewingUser.orgState}</p></div>
+                <div><Label>Location</Label><p className="text-sm text-muted-foreground">{viewingUser.orgCity}, {viewingUser.orgState}, {viewingUser.orgCountry}</p></div>
               </div>
             </div>
           </DialogContent>

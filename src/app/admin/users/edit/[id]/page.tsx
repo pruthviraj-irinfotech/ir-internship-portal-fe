@@ -28,6 +28,7 @@ const formSchema = z.object({
   orgName: z.string().min(2, "Organization name is required."),
   orgCity: z.string().min(2, "City is required."),
   orgState: z.string().min(2, "State is required."),
+  orgCountry: z.string().min(2, "Country is required."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -158,12 +159,15 @@ export default function EditUserPage() {
                                 <FormItem><FormLabel>Organization/Institute</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                              <FormField control={form.control} name="orgCity" render={({ field }) => (
                                 <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name="orgState" render={({ field }) => (
                                 <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="orgCountry" render={({ field }) => (
+                                <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                         </div>
                         <div className="flex justify-end gap-2">

@@ -367,6 +367,7 @@ export type User = {
     orgName: string;
     orgCity: string;
     orgState: string;
+    orgCountry: string;
     role: 'user' | 'admin';
     password?: string;
 };
@@ -385,6 +386,7 @@ export const users: User[] = [
         orgName: 'University of Example',
         orgCity: 'Exampleville',
         orgState: 'Examplestate',
+        orgCountry: 'Exampleland',
         role: 'user',
     },
     {
@@ -400,6 +402,7 @@ export const users: User[] = [
         orgName: 'IR INFOTECH',
         orgCity: 'Tech City',
         orgState: 'InfoState',
+        orgCountry: 'Stateland',
         role: 'admin',
     },
      {
@@ -415,6 +418,7 @@ export const users: User[] = [
         orgName: 'Business Corp',
         orgCity: 'Metropolis',
         orgState: 'NY',
+        orgCountry: 'USA',
         role: 'user',
     },
 ];
