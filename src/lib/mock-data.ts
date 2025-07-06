@@ -329,6 +329,14 @@ export const users: User[] = [
     },
 ];
 
+export type Document = {
+  id: string;
+  name: string;
+  url: string;
+  uploadedAt: string;
+  size: number; // in bytes
+};
+
 export type Application = {
   id: string;
   internshipId: number;
@@ -353,6 +361,8 @@ export type Application = {
   interviewTime?: string;
   interviewInstructions?: string;
   comments?: string;
+  adminDocuments?: Document[];
+  userDocuments?: Document[];
 };
 
 export const applications: Application[] = [
@@ -436,5 +446,12 @@ export const applications: Application[] = [
         orgCity: 'Exampleville',
         orgState: 'Examplestate',
         orgCountry: 'Exampleland',
+        adminDocuments: [
+            { id: 'doc-admin-1', name: 'Project-Brief.pdf', url: '#', uploadedAt: '2024-07-28', size: 262144 },
+            { id: 'doc-admin-2', name: 'Style-Guide.docx', url: '#', uploadedAt: '2024-07-28', size: 131072 },
+        ],
+        userDocuments: [
+            { id: 'doc-user-1', name: 'Task-1-Submission.zip', url: '#', uploadedAt: '2024-08-02', size: 2097152 },
+        ]
     }
 ];
