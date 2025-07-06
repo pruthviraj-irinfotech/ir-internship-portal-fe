@@ -34,7 +34,7 @@ export default function ProfilePage() {
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>Profile Details</CardTitle>
-          <CardDescription>Update your personal information here.</CardDescription>
+          <CardDescription>Update your personal and organization information here.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-4">
@@ -44,48 +44,74 @@ export default function ProfilePage() {
             </Avatar>
             <Button variant="outline">Change Avatar</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="Player One" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue="player1@email.com" disabled />
-            </div>
-            <div className="space-y-2">
-              <Label>Phone Number</Label>
-              <div className="flex items-center gap-2">
-                <Select defaultValue="+91">
-                  <SelectTrigger className="w-[80px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="+91">+91</SelectItem>
-                    <SelectItem value="+1">+1</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input id="phone-number" placeholder="123-456-7890" defaultValue="1234567890" />
+          
+          <div className="border-t pt-6 space-y-4">
+             <h3 className="text-lg font-medium">Personal Information</h3>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input id="name" defaultValue="Player One" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" defaultValue="player1@email.com" disabled />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone Number</Label>
+                  <div className="flex items-center gap-2">
+                    <Select defaultValue="+91">
+                      <SelectTrigger className="w-[110px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="+91">+91 (IN)</SelectItem>
+                        <SelectItem value="+1">+1 (US)</SelectItem>
+                        <SelectItem value="+44">+44 (UK)</SelectItem>
+                        <SelectItem value="+61">+61 (AU)</SelectItem>
+                        <SelectItem value="+971">+971 (AE)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input id="phone-number" placeholder="123-456-7890" defaultValue="1234567890" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="qualification">Highest Qualification</Label>
+                  <Input id="qualification" defaultValue="B.Tech in Computer Science" />
+                </div>
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select defaultValue="student">
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="graduate">Graduate</SelectItem>
+                      <SelectItem value="professional">Working Professional</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="qualification">Highest Qualification</Label>
-              <Input id="qualification" defaultValue="B.Tech in Computer Science" />
-            </div>
-            <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select defaultValue="student">
-                <SelectTrigger id="status">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="graduate">Graduate</SelectItem>
-                  <SelectItem value="professional">Working Professional</SelectItem>
-                </SelectContent>
-              </Select>
+          </div>
+
+          <div className="border-t pt-6 space-y-4">
+            <h3 className="text-lg font-medium">Organization / Institute Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="org-name">Organization/Institute Name</Label>
+                    <Input id="org-name" placeholder="e.g., University of Example" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="org-city">City</Label>
+                    <Input id="org-city" placeholder="e.g., Exampleville" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="org-state">State</Label>
+                    <Input id="org-state" placeholder="e.g., Examplestate" />
+                </div>
             </div>
           </div>
+          
           <div className="border-t pt-6 space-y-4">
             <h3 className="text-lg font-medium">Change Password</h3>
              <div className="space-y-2">
