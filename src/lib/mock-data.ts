@@ -11,7 +11,7 @@ export type Internship = {
   isMonthly?: boolean;
   category: 'Paid' | 'Free' | 'Stipend';
   postedDate: string;
-  active?: boolean;
+  active: boolean;
   applied?: boolean;
   applicationDate?: string;
   status?: InternshipStatus;
@@ -208,7 +208,9 @@ export const internships: Internship[] = [
 export type CertificateStatus = 'Active' | 'Terminated' | 'On Hold';
 
 export type Certificate = {
-  id: string;
+  id: number;
+  applicationId: number;
+  certificateNumber: string;
   internName: string;
   internshipRole: string;
   company: string;
@@ -218,21 +220,24 @@ export type Certificate = {
   imageUrl: string;
   pdfUrl?: string;
   startDate?: string;
-  uploadedBy?: string;
-  status?: CertificateStatus;
+  uploadedBy?: number;
+  status: CertificateStatus;
 };
 
 export const interns = [
-    { id: '001', name: 'Player One' },
-    { id: '002', name: 'Alex Doe' },
-    { id: '003', name: 'Sam Smith' },
-    { id: '004', name: 'Jamie Rivera' },
-    { id: '005', name: 'Casey Jordan' },
+    { id: 1, name: 'Player One' },
+    { id: 2, name: 'Admin User' },
+    { id: 3, name: 'Alex Doe' },
+    { id: 4, name: 'Sam Smith' },
+    { id: 5, name: 'Jamie Rivera' },
+    { id: 6, name: 'Casey Jordan' },
 ];
 
 export const certificates: Certificate[] = [
   {
-    id: 'CERT12345',
+    id: 1,
+    applicationId: 5, // Corresponds to Alex Doe's completed NextJS internship
+    certificateNumber: 'CERT12345',
     internName: 'Player One',
     internshipRole: 'React Js Frontend',
     company: 'IR INFOTECH',
@@ -242,11 +247,13 @@ export const certificates: Certificate[] = [
     description: 'This certifies that Player One has successfully completed the React Js Frontend internship at IR INFOTECH. During this internship, Player One demonstrated exceptional skills in building modern, responsive web applications using React. Their dedication and creative contributions were invaluable to the team.',
     imageUrl: 'https://placehold.co/800x600.png',
     pdfUrl: '#',
-    uploadedBy: 'Admin',
+    uploadedBy: 2, // Admin User
     status: 'Active',
   },
   {
-    id: 'CERT54321',
+    id: 2,
+    applicationId: 5,
+    certificateNumber: 'CERT54321',
     internName: 'Alex Doe',
     internshipRole: 'DevOps',
     company: 'IR INFOTECH',
@@ -256,11 +263,13 @@ export const certificates: Certificate[] = [
     description: 'Alex Doe completed the DevOps internship, showing great skill in CI/CD, Docker, and cloud infrastructure management. Alex was a proactive and valuable team member.',
     imageUrl: 'https://placehold.co/800x600.png',
     pdfUrl: '#',
-    uploadedBy: 'Admin',
+    uploadedBy: 2,
     status: 'Active',
   },
   {
-    id: 'CERT67890',
+    id: 3,
+    applicationId: 6,
+    certificateNumber: 'CERT67890',
     internName: 'Sam Smith',
     internshipRole: 'MERN Stack',
     company: 'IR INFOTECH',
@@ -270,13 +279,13 @@ export const certificates: Certificate[] = [
     description: 'Sam Smith has successfully finished the MERN Stack internship. Sam developed a full-stack application, demonstrating proficiency in MongoDB, Express, React, and Node.js.',
     imageUrl: 'https://placehold.co/800x600.png',
     pdfUrl: '#',
-    uploadedBy: 'Admin',
+    uploadedBy: 2,
     status: 'Active',
   },
 ];
 
 export type User = {
-    id: string;
+    id: number;
     firstName: string;
     lastName?: string;
     email: string;
@@ -295,7 +304,7 @@ export type User = {
 
 export const users: User[] = [
     {
-        id: 'usr-001',
+        id: 1,
         firstName: 'Player',
         lastName: 'One',
         email: 'player1@email.com',
@@ -311,7 +320,7 @@ export const users: User[] = [
         role: 'user',
     },
     {
-        id: 'usr-002',
+        id: 2,
         firstName: 'Admin',
         lastName: 'User',
         email: 'admin@email.com',
@@ -327,7 +336,7 @@ export const users: User[] = [
         role: 'admin',
     },
      {
-        id: 'usr-003',
+        id: 3,
         firstName: 'Alex',
         lastName: 'Doe',
         email: 'alex.doe@email.com',
@@ -342,10 +351,26 @@ export const users: User[] = [
         orgCountry: 'USA',
         role: 'user',
     },
+    {
+        id: 4,
+        firstName: 'Sam',
+        lastName: 'Smith',
+        email: 'sam.smith@email.com',
+        phone: '555-987-6543',
+        countryCode: '+1',
+        avatarUrl: 'https://placehold.co/100x100.png',
+        qualification: 'B.Sc. in IT',
+        status: 'graduate',
+        orgName: 'Tech Institute',
+        orgCity: 'Innovate City',
+        orgState: 'CA',
+        orgCountry: 'USA',
+        role: 'user',
+    }
 ];
 
 export type Document = {
-  id: string;
+  id: number;
   name: string;
   url: string;
   uploadedAt: string;
@@ -353,10 +378,11 @@ export type Document = {
 };
 
 export type Application = {
-  id: string;
+  id: number;
+  applicationNumber: string;
   internshipId: number;
   internshipTitle: string;
-  userId: string;
+  userId: number;
   userName: string;
   userEmail: string;
   userPhone: string;
@@ -378,7 +404,7 @@ export type Application = {
   comments?: string;
   adminDocuments?: Document[];
   userDocuments?: Document[];
-  internId?: string;
+  internId?: number;
   endDate?: string;
   reportingTo?: string;
   workEmail?: string;
@@ -387,10 +413,11 @@ export type Application = {
 
 export const applications: Application[] = [
     {
-        id: 'APP-1669812345',
+        id: 1,
+        applicationNumber: "IRAPPL0001",
         internshipId: 1,
         internshipTitle: 'React Js Frontend',
-        userId: 'usr-001',
+        userId: 1,
         userName: 'Player One',
         userEmail: 'player1@email.com',
         userPhone: '123-456-7890',
@@ -407,10 +434,11 @@ export const applications: Application[] = [
         comments: '<p>Good resume, but lacks specific project experience. Keeping in review for now.</p>',
     },
     {
-        id: 'APP-1669812346',
+        id: 2,
+        applicationNumber: "IRAPPL0002",
         internshipId: 5,
         internshipTitle: 'DevOps',
-        userId: 'usr-001',
+        userId: 1,
         userName: 'Player One',
         userEmail: 'player1@email.com',
         userPhone: '123-456-7890',
@@ -429,10 +457,11 @@ export const applications: Application[] = [
         interviewInstructions: '<ul><li>Please join the Google Meet link 5 minutes early.</li><li>Be prepared to discuss your resume and past projects.</li></ul>'
     },
      {
-        id: 'APP-1669812347',
+        id: 3,
+        applicationNumber: "IRAPPL0003",
         internshipId: 9,
         internshipTitle: 'UI UX',
-        userId: 'usr-001',
+        userId: 1,
         userName: 'Player One',
         userEmail: 'player1@email.com',
         userPhone: '123-456-7890',
@@ -449,10 +478,11 @@ export const applications: Application[] = [
         comments: '<p>The internship was terminated due to not meeting project deadlines and a lack of communication.</p>',
     },
     {
-        id: 'APP-1669812348',
+        id: 4,
+        applicationNumber: "IRAPPL0004",
         internshipId: 4,
         internshipTitle: 'Laravel',
-        userId: 'usr-001',
+        userId: 1,
         userName: 'Player One',
         userEmail: 'player1@email.com',
         userPhone: '123-456-7890',
@@ -466,23 +496,24 @@ export const applications: Application[] = [
         orgCity: 'Exampleville',
         orgState: 'Examplestate',
         orgCountry: 'Exampleland',
-        internId: 'INT24-001',
+        internId: 1,
         endDate: '2024-10-27',
         reportingTo: 'Mr. Smith',
         workEmail: 'p1.work@irinfotech.com',
         adminDocuments: [
-            { id: 'doc-admin-1', name: 'Project-Brief.pdf', url: '#', uploadedAt: '2024-07-28', size: 262144 },
-            { id: 'doc-admin-2', name: 'Style-Guide.docx', url: '#', uploadedAt: '2024-07-28', size: 131072 },
+            { id: 1, name: 'Project-Brief.pdf', url: '#', uploadedAt: '2024-07-28', size: 262144 },
+            { id: 2, name: 'Style-Guide.docx', url: '#', uploadedAt: '2024-07-28', size: 131072 },
         ],
         userDocuments: [
-            { id: 'doc-user-1', name: 'Task-1-Submission.zip', url: '#', uploadedAt: '2024-08-02', size: 2097152 },
+            { id: 101, name: 'Task-1-Submission.zip', url: '#', uploadedAt: '2024-08-02', size: 2097152 },
         ]
     },
     {
-        id: 'APP-1669812349',
+        id: 5,
+        applicationNumber: "IRAPPL0005",
         internshipId: 2,
         internshipTitle: 'NextJs Frontend',
-        userId: 'usr-003',
+        userId: 3,
         userName: 'Alex Doe',
         userEmail: 'alex.doe@email.com',
         userPhone: '5551234567',
@@ -496,17 +527,18 @@ export const applications: Application[] = [
         orgCity: 'Metropolis',
         orgState: 'NY',
         orgCountry: 'USA',
-        internId: 'INT24-002',
+        internId: 3,
         endDate: '2024-06-01',
         reportingTo: 'Ms. Jane',
         workEmail: 'alex.work@irinfotech.com',
         driveLink: 'https://docs.google.com/folder/d/123xyz-example-link/view',
     },
     {
-        id: 'APP-1669812350',
+        id: 6,
+        applicationNumber: "IRAPPL0006",
         internshipId: 3,
         internshipTitle: 'MERN Stack',
-        userId: 'usr-004', 
+        userId: 4, 
         userName: 'Sam Smith',
         userEmail: 'sam.smith@email.com',
         userPhone: '555-987-6543',
@@ -520,16 +552,17 @@ export const applications: Application[] = [
         orgCity: 'Innovate City',
         orgState: 'CA',
         orgCountry: 'USA',
-        internId: 'INT24-003',
+        internId: 4,
         endDate: '2024-06-15',
         reportingTo: 'Mr. John',
         workEmail: 'sam.work@irinfotech.com',
     },
     {
-        id: 'APP-1669812351',
+        id: 7,
+        applicationNumber: "IRAPPL0007",
         internshipId: 8,
         internshipTitle: 'Machine Learning',
-        userId: 'usr-001',
+        userId: 1,
         userName: 'Player One',
         userEmail: 'player1@email.com',
         userPhone: '123-456-7890',
@@ -543,12 +576,10 @@ export const applications: Application[] = [
         orgCity: 'Exampleville',
         orgState: 'Examplestate',
         orgCountry: 'Exampleland',
-        internId: 'INT24-006',
+        internId: 1,
         endDate: '2024-07-10',
         reportingTo: 'Dr. Eva',
         workEmail: 'ml.work@irinfotech.com',
         driveLink: 'https://docs.google.com/folder/d/some-other-unique-id/view'
     }
 ];
-
-

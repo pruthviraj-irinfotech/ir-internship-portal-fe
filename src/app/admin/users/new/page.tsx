@@ -58,7 +58,7 @@ export default function AddNewUserPage() {
 
     function onSubmit(values: FormValues) {
         const newUser = {
-            id: `usr-${String(users.length + 1).padStart(3, '0')}`,
+            id: users.length + 1,
             avatarUrl: 'https://placehold.co/100x100.png',
             ...values,
         };

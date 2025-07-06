@@ -39,7 +39,7 @@ export default function OngoingInternDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
-    const appId = params.id as string;
+    const appId = parseInt(params.id as string, 10);
 
     const [application, setApplication] = useState<Application | null>(null);
     const [internship, setInternship] = useState<Internship | null>(null);
@@ -57,7 +57,7 @@ export default function OngoingInternDetailsPage() {
             setInternship(intern || null);
             
             form.reset({
-                internId: app.internId || '',
+                internId: app.internId?.toString() || '',
                 workEmail: app.workEmail || '',
                 reportingTo: app.reportingTo || '',
                 endDate: app.endDate ? parseISO(app.endDate) : undefined,
@@ -69,7 +69,7 @@ export default function OngoingInternDetailsPage() {
         }
     }, [appId, router, toast, form]);
 
-    const handleDocDelete = (docId: string, type: 'admin' | 'user') => {
+    const handleDocDelete = (docId: number, type: 'admin' | 'user') => {
         if (!application) return;
 
         const updatedDocs = (type === 'admin' ? application.adminDocuments : application.userDocuments)?.filter(d => d.id !== docId);
@@ -97,7 +97,7 @@ export default function OngoingInternDetailsPage() {
         }
 
         const newDoc: Document = {
-            id: `doc-admin-${Date.now()}`,
+            id: Date.now(),
             name: newFile.name,
             url: '#', 
             uploadedAt: new Date().toISOString(),
@@ -130,6 +130,7 @@ export default function OngoingInternDetailsPage() {
         const updatedApp = { 
             ...applications[appIndex], 
             ...values,
+            internId: values.internId ? parseInt(values.internId, 10) : undefined,
             endDate: values.endDate ? format(values.endDate, 'yyyy-MM-dd') : undefined,
         };
 
@@ -166,7 +167,7 @@ export default function OngoingInternDetailsPage() {
                         <CardHeader><CardTitle>Intern Management</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <FormField control={form.control} name="internId" render={({ field }) => (
-                                <FormItem><FormLabel>Intern ID</FormLabel><FormControl><Input placeholder="e.g., INT24-001" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Intern ID</FormLabel><FormControl><Input placeholder="e.g., 1" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                              <FormField control={form.control} name="workEmail" render={({ field }) => (
                                 <FormItem><FormLabel>Work Email ID</FormLabel><FormControl><Input placeholder="work.email@company.com" {...field} /></FormControl><FormMessage /></FormItem>

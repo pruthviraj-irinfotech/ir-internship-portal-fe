@@ -25,7 +25,7 @@ export default function AdminOngoingInternsPage() {
         );
     }, [ongoingApps, searchTerm]);
 
-    const handleCompleteInternship = (appId: string) => {
+    const handleCompleteInternship = (appId: number) => {
         if (!appAction?.app) return;
 
         const appIndex = applications.findIndex(app => app.id === appId);
@@ -43,7 +43,7 @@ export default function AdminOngoingInternsPage() {
         setAppAction(null);
     };
 
-    const handleTerminateInternship = (appId: string) => {
+    const handleTerminateInternship = (appId: number) => {
         if (!appAction?.app) return;
         const appIndex = applications.findIndex(app => app.id === appId);
         if (appIndex !== -1) {

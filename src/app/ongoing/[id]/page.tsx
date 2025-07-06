@@ -27,7 +27,7 @@ export default function UserOngoingInternshipDetailsPage() {
     const router = useRouter();
     const { isLoggedIn } = useAuth();
     const { toast } = useToast();
-    const appId = params.id as string;
+    const appId = parseInt(params.id as string, 10);
 
     const [application, setApplication] = useState<Application | null>(null);
     const [internship, setInternship] = useState<Internship | null>(null);
@@ -51,7 +51,7 @@ export default function UserOngoingInternshipDetailsPage() {
         }
     }, [appId, router, toast]);
 
-    const handleDocDelete = (docId: string) => {
+    const handleDocDelete = (docId: number) => {
         if (!application) return;
         const updatedDocs = application.userDocuments?.filter(d => d.id !== docId);
         const updatedApplication = {
@@ -73,7 +73,7 @@ export default function UserOngoingInternshipDetailsPage() {
             return;
         }
         const newDoc: Document = {
-            id: `doc-user-${Date.now()}`,
+            id: Date.now(),
             name: newFile.name,
             url: URL.createObjectURL(newFile), // In real app, this would be the URL from file storage
             uploadedAt: new Date().toISOString(),

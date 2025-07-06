@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -42,12 +43,12 @@ export default function VerifyCertificatePage() {
 
     // Simulate API call
     setTimeout(() => {
-      const cert = certificates.find(c => c.id.toLowerCase() === certificateId.toLowerCase());
+      const cert = certificates.find(c => c.certificateNumber.toLowerCase() === certificateId.toLowerCase());
       if (cert) {
         setFoundCertificate(cert);
         toast({
           title: 'Certificate Found!',
-          description: `Details for certificate #${cert.id} are displayed below.`,
+          description: `Details for certificate #${cert.certificateNumber} are displayed below.`,
         });
       } else {
         toast({
@@ -109,7 +110,7 @@ export default function VerifyCertificatePage() {
         <Card className="w-full max-w-4xl mt-8">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl text-primary">Certificate of Completion</CardTitle>
-            <CardDescription>ID: {foundCertificate.id}</CardDescription>
+            <CardDescription>ID: {foundCertificate.certificateNumber}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-8">
              <div className="relative w-full max-w-3xl aspect-[4/3]">

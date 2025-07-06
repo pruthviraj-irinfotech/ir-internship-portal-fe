@@ -51,8 +51,8 @@ export default function ApplyPage() {
   const params = useParams();
   const router = useRouter();
   const { isLoggedIn } = useAuth();
-  const internshipId = params.id as string;
-  const internship = internships.find(i => i.id.toString() === internshipId);
+  const internshipId = parseInt(params.id as string, 10);
+  const internship = internships.find(i => i.id === internshipId);
 
   const [submission, setSubmission] = useState<{ number: string; date: string } | null>(null);
 
@@ -147,11 +147,13 @@ export default function ApplyPage() {
       internships[internshipIndex].applicationDate = appDate;
     }
 
+    const newAppId = applications.length + 1;
     const newApplication: Application = {
-        id: `APP-${Date.now()}`,
+        id: newAppId,
+        applicationNumber: `IRAPPL${String(newAppId).padStart(4, '0')}`,
         internshipId: internship!.id,
         internshipTitle: internship!.title,
-        userId: 'usr-001', // This would be dynamic in a real app
+        userId: 1, // This would be dynamic in a real app
         userName: 'Player One', // This would be from auth context
         userEmail: 'player1@email.com',
         userPhone: '123-456-7890',
@@ -172,7 +174,7 @@ export default function ApplyPage() {
     applications.unshift(newApplication);
 
     setSubmission({
-        number: newApplication.id,
+        number: newApplication.applicationNumber,
         date: appDate,
     })
   }

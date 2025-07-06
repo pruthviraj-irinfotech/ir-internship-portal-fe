@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -25,7 +26,7 @@ const ACCEPTED_PDF_TYPES = ["application/pdf"];
 
 const formSchema = z.object({
   internId: z.string().min(1, "Please select an intern."),
-  certificateId: z.string().min(1, "Certificate ID is required."),
+  certificateNumber: z.string().min(1, "Certificate ID is required."),
   startDate: z.date({ required_error: "Start date is required." }),
   certificateDate: z.date({ required_error: "Certificate date is required." }),
   description: z.string().min(50, "Description must be at least 50 characters."),
@@ -45,7 +46,7 @@ export default function EditCertificatePage() {
     const { toast } = useToast();
     const router = useRouter();
     const params = useParams();
-    const certificateId = params.id as string;
+    const certificateId = parseInt(params.id as string, 10);
     
     const [certificate, setCertificate] = useState<Certificate | null>(null);
 
@@ -54,17 +55,23 @@ export default function EditCertificatePage() {
     });
 
     useEffect(() => {
+        if (isNaN(certificateId)) {
+            toast({ variant: 'destructive', title: 'Invalid URL', description: 'Certificate ID is not valid.' });
+            router.push('/admin/certificates');
+            return;
+        }
+
         const certToEdit = certificates.find(c => c.id === certificateId);
         if (certToEdit) {
             setCertificate(certToEdit);
             const intern = interns.find(i => i.name === certToEdit.internName);
             form.reset({
-                internId: intern?.id || '',
-                certificateId: certToEdit.id,
+                internId: intern?.id.toString() || '',
+                certificateNumber: certToEdit.certificateNumber,
                 startDate: certToEdit.startDate ? parseISO(certToEdit.startDate) : new Date(),
                 certificateDate: parseISO(certToEdit.approvedDate),
                 description: certToEdit.description,
-                uploadedBy: certToEdit.uploadedBy || 'Admin',
+                uploadedBy: certToEdit.uploadedBy?.toString() || 'Admin', // Assuming uploadedBy is user ID
                 status: certToEdit.status || 'Active',
             });
         } else {
@@ -94,15 +101,15 @@ export default function EditCertificatePage() {
              return;
         }
 
-        const intern = interns.find(i => i.id === values.internId);
+        const intern = interns.find(i => i.id === parseInt(values.internId, 10));
 
         const updatedCertificate: Partial<Certificate> = {
-            id: values.certificateId,
+            certificateNumber: values.certificateNumber,
             internName: intern?.name || 'Unknown Intern',
             startDate: format(values.startDate, 'yyyy-MM-dd'),
             approvedDate: format(values.certificateDate, 'yyyy-MM-dd'),
             description: values.description,
-            uploadedBy: values.uploadedBy,
+            uploadedBy: parseInt(values.uploadedBy, 10) || undefined,
             status: values.status,
         };
 
@@ -127,7 +134,7 @@ export default function EditCertificatePage() {
     <Card>
       <CardHeader>
         <CardTitle>Edit Internship Certificate</CardTitle>
-        <CardDescription>Update the details for certificate ID: {certificate.id}</CardDescription>
+        <CardDescription>Update the details for certificate ID: {certificate.certificateNumber}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -147,8 +154,8 @@ export default function EditCertificatePage() {
                                 </FormControl>
                                 <SelectContent>
                                     {interns.map(intern => (
-                                        <SelectItem key={intern.id} value={intern.id}>
-                                            {intern.name} ({intern.id})
+                                        <SelectItem key={intern.id} value={intern.id.toString()}>
+                                            {intern.name} (ID: {intern.id})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -159,7 +166,7 @@ export default function EditCertificatePage() {
                     />
                     <FormField
                       control={form.control}
-                      name="certificateId"
+                      name="certificateNumber"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Certificate ID</FormLabel>

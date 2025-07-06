@@ -18,7 +18,7 @@ export default function UserCompletedInternshipDetailsPage() {
     const router = useRouter();
     const { isLoggedIn } = useAuth();
     const { toast } = useToast();
-    const appId = params.id as string;
+    const appId = parseInt(params.id as string, 10);
 
     const [application, setApplication] = useState<Application | null>(null);
     const [internship, setInternship] = useState<Internship | null>(null);

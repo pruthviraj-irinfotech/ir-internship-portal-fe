@@ -37,7 +37,7 @@ export default function EditUserPage() {
     const { toast } = useToast();
     const router = useRouter();
     const params = useParams();
-    const userId = params.id as string;
+    const userId = parseInt(params.id as string, 10);
     
     const [user, setUser] = useState<User | null>(null);
     const [showPassword, setShowPassword] = useState(false);

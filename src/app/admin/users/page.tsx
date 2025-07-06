@@ -23,7 +23,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
-  const handleDelete = (userId: string) => {
+  const handleDelete = (userId: number) => {
     const index = users.findIndex(u => u.id === userId);
     if (index > -1) {
       users.splice(index, 1);
@@ -99,7 +99,7 @@ export default function AdminUsersPage() {
                           </Avatar>
                           <div>
                             <p>{`${user.firstName} ${user.lastName || ''}`}</p>
-                            <p className="text-xs text-muted-foreground">{user.id}</p>
+                            <p className="text-xs text-muted-foreground">ID: {user.id}</p>
                           </div>
                         </div>
                       </TableCell>

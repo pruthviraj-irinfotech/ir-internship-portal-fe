@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -28,7 +29,7 @@ export default function CertificatesIssuedPage() {
     useEffect(() => {
         const results = certificates.filter(cert =>
             cert.internName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            cert.id.toLowerCase().includes(searchTerm.toLowerCase())
+            cert.certificateNumber.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setFilteredCertificates(results);
     }, [searchTerm]);
@@ -78,7 +79,7 @@ export default function CertificatesIssuedPage() {
                                 {filteredCertificates.length > 0 ? (
                                     filteredCertificates.map(cert => (
                                         <TableRow key={cert.id}>
-                                            <TableCell className="font-mono">{cert.id}</TableCell>
+                                            <TableCell className="font-mono">{cert.certificateNumber}</TableCell>
                                             <TableCell className="font-medium">{cert.internName}</TableCell>
                                             <TableCell>{cert.internshipRole}</TableCell>
                                             <TableCell>{format(new Date(cert.approvedDate), 'dd-MM-yy')}</TableCell>
@@ -129,7 +130,7 @@ export default function CertificatesIssuedPage() {
                     <DialogContent className="sm:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Certificate Details</DialogTitle>
-                            <DialogDescription>Viewing details for Certificate ID: {selectedCertificate.id}</DialogDescription>
+                            <DialogDescription>Viewing details for Certificate ID: {selectedCertificate.certificateNumber}</DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
                             <div className="relative w-full aspect-[4/3] rounded-md overflow-hidden border">

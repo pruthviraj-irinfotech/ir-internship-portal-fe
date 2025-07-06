@@ -27,7 +27,7 @@ export default function CompletedInternDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
-    const appId = params.id as string;
+    const appId = parseInt(params.id as string, 10);
 
     const [application, setApplication] = useState<Application | null>(null);
     const [internship, setInternship] = useState<Internship | null>(null);
@@ -118,7 +118,7 @@ export default function CompletedInternDetailsPage() {
                                 <FormItem><FormLabel>Work Email</FormLabel><FormControl><Input placeholder="work.email@company.com" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
 
-                            <div><Label>Intern ID</Label><Input value={application.internId || 'N/A'} disabled /></div>
+                            <div><Label>Intern ID</Label><Input value={application.internId?.toString() || 'N/A'} disabled /></div>
                             <div><Label>Reporting To</Label><Input value={application.reportingTo || 'N/A'} disabled /></div>
                             <div><Label>Start Date</Label><Input value={format(parseISO(application.applicationDate), 'PPP')} disabled /></div>
                             <div><Label>End Date</Label><Input value={application.endDate ? format(parseISO(application.endDate), 'PPP') : 'N/A'} disabled /></div>

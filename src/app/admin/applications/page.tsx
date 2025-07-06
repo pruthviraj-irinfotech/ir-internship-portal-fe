@@ -68,7 +68,7 @@ export default function ApplicationsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<InternshipStatus | 'all'>('all');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const { toast } = useToast();
 
@@ -148,7 +148,7 @@ export default function ApplicationsPage() {
         }
     };
 
-    const handleSelectRow = (appId: string, checked: boolean) => {
+    const handleSelectRow = (appId: number, checked: boolean) => {
         const newSelectedRows = new Set(selectedRows);
         if (checked) {
             newSelectedRows.add(appId);
@@ -298,7 +298,7 @@ export default function ApplicationsPage() {
                                         <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.userEmail}</p></div>
                                     </div>
                                     <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                        <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{viewingApplication.id}</p></div>
+                                        <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{viewingApplication.applicationNumber}</p></div>
                                         <div><Label>Application Date</Label><p className="text-sm text-muted-foreground">{format(new Date(viewingApplication.applicationDate), 'dd-MM-yy')}</p></div>
                                     </div>
                                     <div className="border-t pt-4"><Label>Why are you applying for this internship?</Label><p className="text-sm text-muted-foreground mt-1">{viewingApplication.whyApply}</p></div>

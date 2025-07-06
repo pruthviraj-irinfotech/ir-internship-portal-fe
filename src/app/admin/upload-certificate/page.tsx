@@ -4,7 +4,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { interns, certificates } from '@/lib/mock-data';
+import { interns, certificates, applications } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ const ACCEPTED_PDF_TYPES = ["application/pdf"];
 
 const formSchema = z.object({
   internId: z.string().min(1, "Please select an intern."),
-  certificateId: z.string().min(1, "Certificate ID is required."),
+  certificateNumber: z.string().min(1, "Certificate ID is required."),
   startDate: z.date({ required_error: "Start date is required." }),
   certificateDate: z.date({ required_error: "Certificate date is required." }),
   description: z.string().min(50, "Description must be at least 50 characters."),
@@ -47,47 +47,56 @@ export default function UploadCertificatePage() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             internId: '',
-            certificateId: '',
+            certificateNumber: '',
             description: '',
-            uploadedBy: 'Admin',
+            uploadedBy: '2', // Default to Admin User ID
         },
     });
 
     const selectedInternId = form.watch('internId');
     const currentYear = new Date().getFullYear().toString().slice(-2);
 
-    const generateCertId = (internId: string) => {
+    const generateCertId = (internId: number) => {
         if (!internId) return '';
-        const intern = interns.find(i => i.id === internId);
-        if (!intern) return '';
-        return `INT${currentYear}-${intern.id}`;
+        return `INT${currentYear}-${String(internId).padStart(3, '0')}`;
     }
 
     form.watch((values, { name }) => {
         if (name === 'internId') {
-            form.setValue('certificateId', generateCertId(values.internId || ''));
+            form.setValue('certificateNumber', generateCertId(parseInt(values.internId || '0', 10)));
         }
     });
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
+        const internIdNum = parseInt(values.internId, 10);
+        const intern = interns.find(i => i.id === internIdNum);
         
-        // In a real app, you would upload files and save data to a database.
-        // Here, we just add it to our mock data array.
-        const intern = interns.find(i => i.id === values.internId);
+        // Find a completed application for this intern to link the certificate
+        const app = applications.find(a => a.userId === internIdNum && a.status === 'Completed');
+
+        if (!app) {
+             toast({
+                title: "Error!",
+                description: "Could not find a completed internship for this user to associate the certificate.",
+                variant: 'destructive'
+            });
+            return;
+        }
         
         const newCertificate = {
-            id: values.certificateId,
+            id: certificates.length + 1,
+            applicationId: app.id,
+            certificateNumber: values.certificateNumber,
             internName: intern?.name || 'Unknown Intern',
-            internshipRole: 'Role from Internship Data', // This would come from the intern's data
+            internshipRole: app.internshipTitle,
             company: 'IR INFOTECH',
-            duration: 'Calculated Duration', // This would be calculated from dates
+            duration: '3 Months', // This should be calculated or retrieved
             startDate: format(values.startDate, 'yyyy-MM-dd'),
             approvedDate: format(values.certificateDate, 'yyyy-MM-dd'),
             description: values.description,
             imageUrl: URL.createObjectURL(values.pngFile[0]), // Temporary URL for display
             pdfUrl: URL.createObjectURL(values.pdfFile[0]), // Temporary URL
-            uploadedBy: values.uploadedBy,
+            uploadedBy: parseInt(values.uploadedBy, 10),
             status: 'Active' as const,
         };
         
@@ -125,8 +134,8 @@ export default function UploadCertificatePage() {
                                 </FormControl>
                                 <SelectContent>
                                     {interns.map(intern => (
-                                        <SelectItem key={intern.id} value={intern.id}>
-                                            {intern.name} ({intern.id})
+                                        <SelectItem key={intern.id} value={intern.id.toString()}>
+                                            {intern.name} (ID: {intern.id})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -137,7 +146,7 @@ export default function UploadCertificatePage() {
                     />
                     <FormField
                       control={form.control}
-                      name="certificateId"
+                      name="certificateNumber"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Certificate ID</FormLabel>
@@ -291,9 +300,9 @@ export default function UploadCertificatePage() {
                     name="uploadedBy"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Uploaded By</FormLabel>
+                        <FormLabel>Uploaded By (User ID)</FormLabel>
                         <FormControl>
-                        <Input placeholder="Admin Name" {...field} />
+                        <Input placeholder="Admin User ID" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>

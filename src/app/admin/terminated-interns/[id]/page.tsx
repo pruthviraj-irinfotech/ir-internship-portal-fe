@@ -16,7 +16,7 @@ export default function TerminatedInternDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
-    const appId = params.id as string;
+    const appId = parseInt(params.id as string, 10);
 
     const [application, setApplication] = useState<Application | null>(null);
     const [internship, setInternship] = useState<Internship | null>(null);
@@ -62,7 +62,7 @@ export default function TerminatedInternDetailsPage() {
                     <div><Label>Personal Email</Label><Input value={application.userEmail} disabled /></div>
                     <div><Label>Personal Phone</Label><Input value={application.userPhone} disabled /></div>
                     <div><Label>Work Email</Label><Input value={application.workEmail || 'N/A'} disabled /></div>
-                    <div><Label>Intern ID</Label><Input value={application.internId || 'N/A'} disabled /></div>
+                    <div><Label>Intern ID</Label><Input value={application.internId?.toString() || 'N/A'} disabled /></div>
                     <div><Label>Reporting To</Label><Input value={application.reportingTo || 'N/A'} disabled /></div>
                     <div><Label>Start Date</Label><Input value={application.applicationDate ? format(parseISO(application.applicationDate), 'PPP') : 'N/A'} disabled /></div>
                     <div><Label>Termination Date</Label><Input value={application.endDate ? format(parseISO(application.endDate), 'PPP') : 'N/A'} disabled /></div>
