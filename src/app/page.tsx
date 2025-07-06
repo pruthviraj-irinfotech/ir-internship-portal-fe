@@ -40,7 +40,8 @@ export default function Home() {
                 {/* Falling piece */}
                 <g className="brick-game-piece">
                     <rect x="40" y="0" width="20" height="10" fill="hsl(var(--primary))"/>
-                    <rect x="30" y="10" width="40" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="30" y="10" width="20" height="10" fill="hsl(var(--primary))"/>
+                    <rect x="50" y="10" width="20" height="10" fill="hsl(var(--primary))"/>
                 </g>
             </svg>
             <blockquote className="text-lg italic text-muted-foreground max-w-2xl">
