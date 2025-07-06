@@ -25,40 +25,38 @@ export default function Home() {
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1 relative">
 
-      {/* Background Animation */}
-      <div className="absolute inset-0 -z-10 flex items-center justify-center pointer-events-none">
-        <div className="relative w-48 h-48 opacity-10" data-ai-hint="snake ladder">
-          <svg viewBox="0 0 100 100" className="absolute inset-0 text-foreground/50">
-            {/* Ladder */}
-            <line x1="30" y1="5" x2="30" y2="95" stroke="currentColor" strokeWidth="4" />
-            <line x1="70" y1="5" x2="70" y2="95" stroke="currentColor" strokeWidth="4" />
-            <line x1="30" y1="20" x2="70" y2="20" stroke="currentColor" strokeWidth="3" />
-            <line x1="30" y1="40" x2="70" y2="40" stroke="currentColor" strokeWidth="3" />
-            <line x1="30" y1="60" x2="70" y2="60" stroke="currentColor" strokeWidth="3" />
-            <line x1="30" y1="80" x2="70" y2="80" stroke="currentColor" strokeWidth="3" />
-          </svg>
-          <svg viewBox="0 0 100 100" className="absolute inset-0">
-            {/* Snake */}
-            <path 
-              d="M50 95 L50 85 L60 85 L60 75 L50 75 L50 65 L40 65 L40 55 L50 55 L50 45 L60 45 L60 35 L50 35 L50 25 L40 25 L40 15 L50 15 L50 5"
-              stroke="hsl(var(--primary))" 
-              strokeWidth="5" 
-              fill="none"
-              className="snake-animation" 
-            />
-          </svg>
-        </div>
-      </div>
-
       <header className="text-center my-8 md:my-16">
         <h1 className="text-4xl md:text-6xl font-headline text-primary animate-pulse">IR Intern Portal</h1>
         <p className="text-muted-foreground mt-4 text-sm md:text-base">Your quest for the perfect internship begins here.</p>
       </header>
 
-      <section className="mb-16 text-center">
-         <blockquote className="text-lg italic text-muted-foreground max-w-3xl mx-auto">
-          "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."
-        </blockquote>
+      <section className="mb-16">
+         <div className="flex items-center justify-center gap-8">
+            <blockquote className="text-lg italic text-muted-foreground max-w-2xl">
+              "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."
+            </blockquote>
+             <div className="relative w-32 h-32 hidden md:block" data-ai-hint="snake ladder">
+                <svg viewBox="0 0 100 100" className="absolute inset-0 text-foreground/50">
+                    {/* Ladder */}
+                    <line x1="30" y1="5" x2="30" y2="95" stroke="currentColor" strokeWidth="4" />
+                    <line x1="70" y1="5" x2="70" y2="95" stroke="currentColor" strokeWidth="4" />
+                    <line x1="30" y1="20" x2="70" y2="20" stroke="currentColor" strokeWidth="3" />
+                    <line x1="30" y1="40" x2="70" y2="40" stroke="currentColor" strokeWidth="3" />
+                    <line x1="30" y1="60" x2="70" y2="60" stroke="currentColor" strokeWidth="3" />
+                    <line x1="30" y1="80" x2="70" y2="80" stroke="currentColor" strokeWidth="3" />
+                </svg>
+                <svg viewBox="0 0 100 100" className="absolute inset-0">
+                    {/* Snake */}
+                    <path 
+                    d="M50 95 L50 85 L60 85 L60 75 L50 75 L50 65 L40 65 L40 55 L50 55 L50 45 L60 45 L60 35 L50 35 L50 25 L40 25 L40 15 L50 15 L50 5"
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth="5" 
+                    fill="none"
+                    className="snake-animation" 
+                    />
+                </svg>
+            </div>
+         </div>
       </section>
 
       <div className="mb-8 max-w-2xl mx-auto">
