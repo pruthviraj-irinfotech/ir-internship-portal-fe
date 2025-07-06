@@ -1,4 +1,4 @@
-import { Clock, DollarSign, HelpCircle, MapPin, Tag } from 'lucide-react';
+import { Clock, IndianRupee, HelpCircle, MapPin, Tag } from 'lucide-react';
 import type { Internship } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +45,7 @@ export function InternshipCard({ internship }: InternshipCardProps) {
         </div>
         {(internship.category === 'Stipend' || internship.category === 'Paid') && (
           <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-muted-foreground" />
+            <IndianRupee className="w-4 h-4 text-muted-foreground" />
             <span>{internship.amount}</span>
           </div>
         )}
