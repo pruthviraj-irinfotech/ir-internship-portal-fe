@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -59,7 +60,7 @@ export default function UploadCertificatePage() {
         if (!internId) return '';
         const intern = interns.find(i => i.id === internId);
         if (!intern) return '';
-        return `INT${currentYear}-${intern.id.split('-')[1]}`;
+        return `INT${currentYear}-${intern.id}`;
     }
 
     form.watch((values, { name }) => {

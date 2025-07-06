@@ -223,11 +223,11 @@ export type Certificate = {
 };
 
 export const interns = [
-    { id: 'INT24-001', name: 'Player One' },
-    { id: 'INT24-002', name: 'Alex Doe' },
-    { id: 'INT24-003', name: 'Sam Smith' },
-    { id: 'INT24-004', name: 'Jamie Rivera' },
-    { id: 'INT24-005', name: 'Casey Jordan' },
+    { id: '001', name: 'Player One' },
+    { id: '002', name: 'Alex Doe' },
+    { id: '003', name: 'Sam Smith' },
+    { id: '004', name: 'Jamie Rivera' },
+    { id: '005', name: 'Casey Jordan' },
 ];
 
 export const certificates: Certificate[] = [
@@ -550,4 +550,5 @@ export const applications: Application[] = [
         driveLink: 'https://docs.google.com/folder/d/some-other-unique-id/view'
     }
 ];
+
 

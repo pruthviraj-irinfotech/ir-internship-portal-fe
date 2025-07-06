@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import {
   Collapsible,
@@ -20,7 +21,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import Link from 'next/link';
-import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight, Contact, UserCheck, UserX } from 'lucide-react';
+import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight, Contact, UserCheck, UserX, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
 export default function AdminLayout({
@@ -28,7 +29,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isLoggedIn, isAdmin } = useAuth();
+  const { isLoggedIn, isAdmin, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -161,6 +162,16 @@ export default function AdminLayout({
               ))}
             </SidebarMenu>
           </SidebarContent>
+           <SidebarFooter>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton onClick={logout} tooltip="Logout" className="w-full justify-start">
+                        <LogOut />
+                        <span>Logout</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
         </Sidebar>
         <SidebarInset>
             <div className="p-4 md:p-8">
