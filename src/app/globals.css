@@ -96,8 +96,8 @@
 }
 
 .snake-animation {
-  stroke-dasharray: 180;
-  stroke-dashoffset: 180;
+  stroke-dasharray: 170;
+  stroke-dashoffset: 170;
   animation: snake-climb 4s ease-in-out infinite alternate;
 }
 
