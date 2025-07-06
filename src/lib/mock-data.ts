@@ -353,3 +353,68 @@ export const certificates: Certificate[] = [
     uploadedBy: 'Admin',
   },
 ];
+
+export type User = {
+    id: string;
+    firstName: string;
+    lastName?: string;
+    email: string;
+    phone: string;
+    countryCode: string;
+    avatarUrl: string;
+    qualification: string;
+    status: 'student' | 'graduate' | 'professional';
+    orgName: string;
+    orgCity: string;
+    orgState: string;
+    role: 'user' | 'admin';
+    password?: string;
+};
+
+export const users: User[] = [
+    {
+        id: 'usr-001',
+        firstName: 'Player',
+        lastName: 'One',
+        email: 'player1@email.com',
+        phone: '1234567890',
+        countryCode: '+91',
+        avatarUrl: 'https://placehold.co/100x100.png',
+        qualification: 'B.Tech in Computer Science',
+        status: 'student',
+        orgName: 'University of Example',
+        orgCity: 'Exampleville',
+        orgState: 'Examplestate',
+        role: 'user',
+    },
+    {
+        id: 'usr-002',
+        firstName: 'Admin',
+        lastName: 'User',
+        email: 'admin@email.com',
+        phone: '0987654321',
+        countryCode: '+91',
+        avatarUrl: 'https://placehold.co/100x100.png',
+        qualification: 'M.Tech in Systems Engineering',
+        status: 'professional',
+        orgName: 'IR INFOTECH',
+        orgCity: 'Tech City',
+        orgState: 'InfoState',
+        role: 'admin',
+    },
+     {
+        id: 'usr-003',
+        firstName: 'Alex',
+        lastName: 'Doe',
+        email: 'alex.doe@email.com',
+        phone: '5551234567',
+        countryCode: '+1',
+        avatarUrl: 'https://placehold.co/100x100.png',
+        qualification: 'MBA',
+        status: 'professional',
+        orgName: 'Business Corp',
+        orgCity: 'Metropolis',
+        orgState: 'NY',
+        role: 'user',
+    },
+];

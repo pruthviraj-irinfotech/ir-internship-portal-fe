@@ -19,7 +19,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import Link from 'next/link';
-import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight } from 'lucide-react';
+import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight, Contact } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
 export default function AdminLayout({
@@ -60,6 +60,15 @@ export default function AdminLayout({
         { href: '/admin/internships/new', label: 'Post New Internship' },
         { href: '/admin/internships/applications', label: 'Applications' },
         { href: '/admin/internships/interviews', label: 'Interview Scheduled' },
+      ],
+    },
+     {
+      label: 'Users',
+      icon: <Contact className="w-5 h-5" />,
+      basePath: '/admin/users',
+      subItems: [
+        { href: '/admin/users', label: 'All Users' },
+        { href: '/admin/users/new', label: 'Add New User' },
       ],
     },
     {
