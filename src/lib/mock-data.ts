@@ -5,6 +5,7 @@ export type Internship = {
   location: string;
   duration: string;
   stipend: string;
+  category: 'Paid' | 'Free' | 'Stipend';
   postedDate: string;
   applied?: boolean;
 };
@@ -17,6 +18,7 @@ export const internships: Internship[] = [
     location: 'Remote',
     duration: '3 Months',
     stipend: '$2,500/month',
+    category: 'Stipend',
     postedDate: '1 day ago',
     applied: true,
   },
@@ -26,7 +28,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    stipend: 'Paid',
+    stipend: '$2,800/month',
+    category: 'Stipend',
     postedDate: '2 days ago',
   },
   {
@@ -36,6 +39,7 @@ export const internships: Internship[] = [
     location: 'Remote',
     duration: '4 Months',
     stipend: '$3,000/month',
+    category: 'Stipend',
     postedDate: '3 days ago',
   },
   {
@@ -44,7 +48,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    stipend: 'Free',
+    stipend: 'N/A',
+    category: 'Paid',
     postedDate: '4 days ago',
     applied: true,
   },
@@ -55,6 +60,7 @@ export const internships: Internship[] = [
     location: 'Remote',
     duration: '6 Months',
     stipend: '$3,500/month',
+    category: 'Stipend',
     postedDate: '5 days ago',
   },
   {
@@ -63,7 +69,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '2 Months',
-    stipend: 'Paid',
+    stipend: 'N/A',
+    category: 'Free',
     postedDate: '6 days ago',
   },
   {
@@ -72,7 +79,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    stipend: 'Free',
+    stipend: 'N/A',
+    category: 'Free',
     postedDate: '1 week ago',
   },
   {
@@ -82,6 +90,7 @@ export const internships: Internship[] = [
     location: 'Remote',
     duration: '6 Months',
     stipend: '$4,000/month',
+    category: 'Stipend',
     postedDate: '1 week ago',
   },
   {
@@ -90,7 +99,8 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    stipend: 'Paid',
+    stipend: 'N/A',
+    category: 'Paid',
     postedDate: '8 days ago',
   },
 ];
