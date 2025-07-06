@@ -43,10 +43,10 @@ export function InternshipCard({ internship }: InternshipCardProps) {
             </Tooltip>
           </TooltipProvider>
         </div>
-        {internship.category === 'Stipend' && (
+        {(internship.category === 'Stipend' || internship.category === 'Paid') && (
           <div className="flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-muted-foreground" />
-            <span>{internship.stipend}</span>
+            <span>{internship.amount}</span>
           </div>
         )}
       </CardContent>
