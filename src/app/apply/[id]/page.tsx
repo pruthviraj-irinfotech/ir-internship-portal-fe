@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -278,7 +279,7 @@ export default function ApplyPage() {
                 {internship.description && (
                   <div>
                     <Label>Description</Label>
-                    <p className="text-muted-foreground whitespace-pre-line">{internship.description}</p>
+                    <p className="text-muted-foreground line-clamp-3">{internship.description}</p>
                   </div>
                 )}
               </CardContent>
