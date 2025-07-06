@@ -20,13 +20,8 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect');
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const performLogin = (email: string, password: string) => {
     setIsLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
 
     setTimeout(() => {
       const loginResult = login(email, password);
@@ -43,8 +38,22 @@ export default function LoginPage() {
         });
       }
       setIsLoading(false);
-    }, 1000);
+    }, 500); // Shortened for faster testing
+  }
+
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    performLogin(email, password);
   };
+
+  const handleTestLogin = (role: 'user' | 'admin') => {
+    const email = role === 'user' ? 'player1@email.com' : 'admin@email.com';
+    const password = role === 'user' ? 'password123' : 'adminpassword';
+    performLogin(email, password);
+  }
 
   const forgotPasswordHref = redirectUrl ? `/forgot-password?redirect=${redirectUrl}` : '/forgot-password';
   const signupHref = redirectUrl ? `/signup?redirect=${redirectUrl}` : '/signup';
@@ -96,6 +105,18 @@ export default function LoginPage() {
             <div className="text-xs text-muted-foreground pt-2">
               <p>Use <b className="text-primary">player1@email.com</b> and <b className="text-primary">password123</b> to log in.</p>
               <p className="mt-1">Admin: <b className="text-primary">admin@email.com</b> / <b className="text-primary">adminpassword</b>.</p>
+            </div>
+
+            <div className="text-xs text-center text-muted-foreground pt-4 border-t mt-4">
+              <p className="font-medium mb-2">For testing purposes:</p>
+              <div className="flex justify-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => handleTestLogin('user')} disabled={isLoading}>
+                    Login as User
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => handleTestLogin('admin')} disabled={isLoading}>
+                    Login as Admin
+                </Button>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
