@@ -52,6 +52,7 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 placeholder="player1@email.com"
+                defaultValue="player1@email.com"
                 required
                 disabled={isLoading}
               />
@@ -68,6 +69,7 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 placeholder="Use: password123"
+                defaultValue="password123"
                 required
                 disabled={isLoading}
               />
