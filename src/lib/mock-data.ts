@@ -1,3 +1,4 @@
+
 export type Internship = {
   id: number;
   title: string;
@@ -7,6 +8,7 @@ export type Internship = {
   amount: string;
   category: 'Paid' | 'Free' | 'Stipend';
   postedDate: string;
+  active?: boolean;
   applied?: boolean;
   applicationDate?: string;
   status?: 'In Review' | 'Shortlisted' | 'Not Selected' | 'Ongoing';
@@ -30,6 +32,7 @@ export const internships: Internship[] = [
     amount: '15,000/month',
     category: 'Stipend',
     postedDate: '2024-07-29',
+    active: true,
     applied: true,
     applicationDate: '2024-07-30',
     status: 'In Review',
@@ -66,6 +69,7 @@ export const internships: Internship[] = [
     amount: '18,000/month',
     category: 'Stipend',
     postedDate: '2024-07-28',
+    active: true,
     description: 'Dive into the world of server-side rendering and static site generation with Next.js. This role involves building high-performance, SEO-friendly web applications and understanding the full-stack capabilities of the Next.js framework.',
     detailedDescription: 'As a Next.js intern, you will build on your React knowledge to create full-stack applications. You will learn about server components, API routes, and advanced routing patterns to build production-grade web apps.',
     selectionProcess: [
@@ -94,6 +98,7 @@ export const internships: Internship[] = [
     amount: '20,000/month',
     category: 'Stipend',
     postedDate: '2024-07-27',
+    active: true,
     description: 'Become a full-stack developer by mastering the MERN (MongoDB, Express, React, Node.js) stack. You will build and deploy complete web applications, from database design to frontend implementation.',
     detailedDescription: 'This comprehensive MERN stack internship will guide you through building a complete web application from scratch. You will design and implement RESTful APIs, manage databases with MongoDB, and build a dynamic frontend with React.',
     selectionProcess: [
@@ -122,6 +127,7 @@ export const internships: Internship[] = [
     amount: '10,000',
     category: 'Paid',
     postedDate: '2024-07-26',
+    active: true,
     applied: true,
     applicationDate: '2024-07-27',
     status: 'Ongoing',
@@ -146,6 +152,7 @@ export const internships: Internship[] = [
     amount: '25,000/month',
     category: 'Stipend',
     postedDate: '2024-07-25',
+    active: true,
     applied: true,
     applicationDate: '2024-07-26',
     status: 'Shortlisted',
@@ -176,6 +183,7 @@ export const internships: Internship[] = [
     amount: 'N/A',
     category: 'Free',
     postedDate: '2024-07-24',
+    active: false,
     description: 'An introductory internship to Microsoft Power Automate. Learn to create automated workflows between your favorite apps and services to synchronize files, get notifications, and collect data.',
     detailedDescription: 'This is a beginner-friendly internship for those interested in low-code/no-code automation. You will learn to use Microsoft Power Automate to build flows that solve real-world business problems, improving efficiency and productivity.',
     selectionProcess: [
@@ -202,6 +210,7 @@ export const internships: Internship[] = [
     amount: 'N/A',
     category: 'Free',
     postedDate: '2024-07-23',
+    active: true,
     description: 'Gain practical experience in project management methodologies like Agile and Scrum. You will learn to use tools like Jira, create project timelines, and facilitate team collaboration to deliver projects on time.',
     detailedDescription: 'As a Project Management intern, you will support our project managers in planning, executing, and monitoring projects. You will get hands-on experience with project management software and learn how to manage scope, time, and resources effectively.',
     selectionProcess: [
@@ -229,6 +238,7 @@ export const internships: Internship[] = [
     amount: '28,000/month',
     category: 'Stipend',
     postedDate: '2024-07-23',
+    active: true,
     description: 'Work on cutting-edge machine learning projects. This internship involves data preprocessing, model training and evaluation, and deploying machine learning models into production environments.',
     detailedDescription: 'This is an advanced internship for students passionate about AI and Machine Learning. You will work on a real-world problem, from data collection and cleaning to model building, evaluation, and deployment. You will be using Python and popular libraries like TensorFlow or PyTorch.',
     selectionProcess: [
@@ -256,6 +266,7 @@ export const internships: Internship[] = [
     amount: '8,000',
     category: 'Paid',
     postedDate: '2024-07-22',
+    active: true,
     applied: true,
     applicationDate: '2024-07-29',
     status: 'Not Selected',

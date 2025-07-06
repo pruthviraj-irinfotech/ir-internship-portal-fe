@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -21,7 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, FilePenLine, Trash2, Search, ArrowUpDown } from 'lucide-react';
+import { PlusCircle, FilePenLine, Trash2, Search, Eye } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,23 +33,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 export default function AdminInternshipsPage() {
   const [internshipList, setInternshipList] = useState<Internship[]>(internships);
   const [internshipToDelete, setInternshipToDelete] = useState<Internship | null>(null);
+  const [viewingInternship, setViewingInternship] = useState<Internship | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const { toast } = useToast();
 
   const handleDelete = (internshipId: number) => {
-    // This removes the item from the mock data source for session persistence
     const index = internships.findIndex(i => i.id === internshipId);
     if (index > -1) {
         internships.splice(index, 1);
     }
-    // This updates the local state to re-render the table
     setInternshipList(internships.slice());
     
     setInternshipToDelete(null);
@@ -57,29 +65,34 @@ export default function AdminInternshipsPage() {
       description: 'The internship listing has been deleted.',
     });
   };
-  
-  const toggleSortOrder = () => {
-    setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+
+  const handleStatusChange = (internshipId: number, active: boolean) => {
+    const updatedInternships = internshipList.map(internship => 
+        internship.id === internshipId ? { ...internship, active } : internship
+    );
+    setInternshipList(updatedInternships);
+
+    const index = internships.findIndex(i => i.id === internshipId);
+    if (index > -1) {
+        internships[index].active = active;
+    }
+    toast({
+      title: 'Status Updated',
+      description: `The internship has been set to ${active ? 'active' : 'inactive'}.`,
+    });
   };
 
-  const filteredAndSortedInternships = useMemo(() => {
-    const sorted = [...internshipList].sort((a, b) => {
-      const dateA = new Date(a.postedDate).getTime();
-      const dateB = new Date(b.postedDate).getTime();
-      if (sortOrder === 'asc') {
-        return dateA - dateB;
-      }
-      return dateB - dateA;
-    });
+  const filteredInternships = useMemo(() => {
+    let results = [...internshipList];
 
-    if (!searchTerm) {
-      return sorted;
+    if (searchTerm) {
+      results = results.filter(internship =>
+        internship.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-
-    return sorted.filter(internship =>
-      internship.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [internshipList, searchTerm, sortOrder]);
+    // Default sort by posted date desc
+    return results.sort((a, b) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime());
+  }, [internshipList, searchTerm]);
 
 
   return (
@@ -101,10 +114,6 @@ export default function AdminInternshipsPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" onClick={toggleSortOrder} className="w-full sm:w-auto">
-                  <ArrowUpDown className="mr-2 h-4 w-4" />
-                  Sort by Date
-                </Button>
                 <Button asChild className="w-full sm:w-auto">
                     <Link href="/admin/internships/new">
                         <PlusCircle className="mr-2 h-4 w-4" />
@@ -121,21 +130,30 @@ export default function AdminInternshipsPage() {
                 <TableRow>
                   <TableHead>Title</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Duration</TableHead>
                   <TableHead>Posted</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAndSortedInternships.length > 0 ? (
-                  filteredAndSortedInternships.map(internship => (
+                {filteredInternships.length > 0 ? (
+                  filteredInternships.map(internship => (
                     <TableRow key={internship.id}>
                       <TableCell className="font-medium">{internship.title}</TableCell>
                       <TableCell><Badge variant="outline">{internship.category}</Badge></TableCell>
-                      <TableCell>{internship.duration}</TableCell>
                       <TableCell>{format(new Date(internship.postedDate), 'dd-MM-yy')}</TableCell>
+                       <TableCell>
+                        <Switch
+                          checked={internship.active}
+                          onCheckedChange={(checked) => handleStatusChange(internship.id, checked)}
+                          aria-label={`Toggle status for ${internship.title}`}
+                        />
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                           <Button variant="outline" size="icon" onClick={() => setViewingInternship(internship)} title="View Details">
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           <Button variant="outline" size="icon" asChild title="Edit Internship">
                             <Link href={`/admin/internships/edit/${internship.id}`}>
                               <FilePenLine className="h-4 w-4" />
@@ -187,6 +205,55 @@ export default function AdminInternshipsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      )}
+
+      {viewingInternship && (
+        <Dialog open={!!viewingInternship} onOpenChange={() => setViewingInternship(null)}>
+            <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>{viewingInternship.title}</DialogTitle>
+                    <DialogDescription>{viewingInternship.company} - {viewingInternship.location}</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{viewingInternship.duration}</p></div>
+                      <div><Label className="text-sm text-muted-foreground">Category</Label><p><Badge variant="outline">{viewingInternship.category}</Badge></p></div>
+                      <div><Label className="text-sm text-muted-foreground">Amount</Label><p>{viewingInternship.amount}</p></div>
+                      <div><Label className="text-sm text-muted-foreground">Posted</Label><p>{format(new Date(viewingInternship.postedDate), 'dd-MM-yy')}</p></div>
+                    </div>
+                    <div className="space-y-4 border-t pt-4">
+                        <div><Label>Short Description</Label><p className="text-sm text-muted-foreground">{viewingInternship.description}</p></div>
+                        <div><Label>Detailed Description</Label><p className="text-sm text-muted-foreground whitespace-pre-line">{viewingInternship.detailedDescription}</p></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border-t pt-4">
+                      <div>
+                        <Label>Who Can Apply</Label>
+                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                          {viewingInternship.whoCanApply?.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                      </div>
+                       <div>
+                        <Label>Perks & Benefits</Label>
+                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                          {viewingInternship.perksAndBenefits?.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <Label>Selection Process</Label>
+                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                          {viewingInternship.selectionProcess?.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                      </div>
+                       <div>
+                        <Label>Announcements</Label>
+                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                          {viewingInternship.announcements?.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                      </div>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
       )}
     </>
   );
