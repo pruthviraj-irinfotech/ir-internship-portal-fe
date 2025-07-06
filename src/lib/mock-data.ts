@@ -8,6 +8,8 @@ export type Internship = {
   category: 'Paid' | 'Free' | 'Stipend';
   postedDate: string;
   applied?: boolean;
+  applicationDate?: string;
+  status?: 'In Review' | 'Shortlisted' | 'Not Selected';
 };
 
 export const internships: Internship[] = [
@@ -21,6 +23,8 @@ export const internships: Internship[] = [
     category: 'Stipend',
     postedDate: '1 day ago',
     applied: true,
+    applicationDate: '1 day ago',
+    status: 'In Review',
   },
   {
     id: 2,
@@ -52,6 +56,8 @@ export const internships: Internship[] = [
     category: 'Paid',
     postedDate: '4 days ago',
     applied: true,
+    applicationDate: '4 days ago',
+    status: 'Shortlisted',
   },
   {
     id: 5,
