@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ProfilePage() {
   const { isLoggedIn } = useAuth();
@@ -52,16 +53,51 @@ export default function ProfilePage() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" defaultValue="player1@email.com" disabled />
             </div>
+            <div className="space-y-2">
+              <Label>Phone Number</Label>
+              <div className="flex items-center gap-2">
+                <Select defaultValue="+91">
+                  <SelectTrigger className="w-[80px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="+91">+91</SelectItem>
+                    <SelectItem value="+1">+1</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input id="phone-number" placeholder="123-456-7890" defaultValue="1234567890" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qualification">Highest Qualification</Label>
+              <Input id="qualification" defaultValue="B.Tech in Computer Science" />
+            </div>
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select defaultValue="student">
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="graduate">Graduate</SelectItem>
+                  <SelectItem value="professional">Working Professional</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-           <div className="space-y-2">
-              <Label>Current Password</Label>
-              <Input type="password" placeholder="Enter current password" />
-            </div>
+          <div className="border-t pt-6 space-y-4">
+            <h3 className="text-lg font-medium">Change Password</h3>
              <div className="space-y-2">
-              <Label>New Password</Label>
-              <Input type="password" placeholder="Enter new password" />
-            </div>
-          <div className="flex justify-end">
+                <Label>Current Password</Label>
+                <Input type="password" placeholder="Enter current password" />
+              </div>
+               <div className="space-y-2">
+                <Label>New Password</Label>
+                <Input type="password" placeholder="Enter new password" />
+              </div>
+          </div>
+          <div className="flex justify-end pt-4">
             <Button>Save Changes</Button>
           </div>
         </CardContent>
