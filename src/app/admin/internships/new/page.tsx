@@ -73,7 +73,7 @@ export default function PostNewInternshipPage() {
             duration: values.duration,
             category: values.category,
             amount: values.amount || 'N/A',
-            postedDate: 'Just now',
+            postedDate: new Date().toISOString().split('T')[0],
             description: values.description,
             detailedDescription: values.detailedDescription,
             whoCanApply: splitTextarea(values.whoCanApply),
