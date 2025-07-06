@@ -27,7 +27,6 @@ export function Header() {
   const loggedInLinks = [
     { href: '/', label: 'Open Internships', icon: <Briefcase /> },
     { href: '/applied', label: 'Applied', icon: <FileText /> },
-    { href: '/ongoing', label: 'Ongoing', icon: <Play /> },
     { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
     { href: '/profile', label: 'Profile', icon: <User /> },
   ];

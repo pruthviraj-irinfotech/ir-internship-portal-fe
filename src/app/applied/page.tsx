@@ -16,7 +16,7 @@ export default function AppliedInternshipsPage() {
     }
   }, [isLoggedIn, router]);
 
-  const appliedInternships = internships.filter(internship => internship.applied && internship.status !== 'Ongoing');
+  const appliedInternships = internships.filter(internship => internship.applied);
   
   if (!isLoggedIn) {
     return null; // or a loading spinner

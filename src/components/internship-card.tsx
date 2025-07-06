@@ -2,7 +2,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, IndianRupee, HelpCircle, MapPin, Tag } from 'lucide-react';
+import React, { useState } from 'react';
+import { Clock, IndianRupee, HelpCircle, MapPin, Tag, FileDown, Upload, Paperclip, ListChecks, CheckCircle, UserX, Info } from 'lucide-react';
 import type { Internship, InternshipStatus } from '@/lib/mock-data';
 import { applications } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 type InternshipCardProps = {
   internship: Internship;
@@ -37,21 +41,131 @@ const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destruct
 
 
 export function InternshipCard({ internship, isLoggedIn = false }: InternshipCardProps) {
-  const application = (internship.status === 'Selected' || internship.status === 'Completed') 
-      ? applications.find(app => app.internshipId === internship.id)
-      : null;
+  const application = applications.find(app => app.internshipId === internship.id);
+  const { toast } = useToast();
+  const [newFile, setNewFile] = useState<File | null>(null);
+
+  const handleUpload = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newFile) {
+          toast({ variant: 'destructive', title: 'No file selected' });
+          return;
+      }
+      // In a real app, this would handle the file upload to a server.
+      toast({ title: "Success!", description: "Your document has been uploaded." });
+      setNewFile(null);
+      // Here you would typically update the mock data or refetch
+  }
+  
+  const renderDialogContent = () => {
+    if (!application) return null;
+
+    switch(application.status) {
+      case 'Interview Scheduled':
+        return (
+           <div className="border-t pt-4 mt-4 space-y-4">
+              <h4 className="font-semibold text-primary flex items-center gap-2"><ListChecks /> Interview Details</h4>
+              <div className="grid grid-cols-2 gap-2 text-left">
+                  <p className="text-muted-foreground">Interview Date:</p>
+                  <p>{application.interviewDate ? format(parseISO(application.interviewDate), 'PPP') : 'N/A'}</p>
+                  <p className="text-muted-foreground">Interview Time:</p>
+                  <p>{application.interviewTime || 'N/A'}</p>
+              </div>
+               <div className="text-left space-y-1">
+                 <p className="text-muted-foreground">Instructions:</p>
+                 <div className="text-sm" dangerouslySetInnerHTML={{ __html: application.interviewInstructions || 'No instructions provided.'}} />
+              </div>
+            </div>
+        );
+
+      case 'Ongoing':
+        return (
+          <div className="border-t pt-4 mt-4 space-y-6">
+            <div>
+              <h4 className="font-semibold text-primary flex items-center gap-2"><Info /> Admin Notes</h4>
+              {internship.adminNotes && internship.adminNotes.length > 0 ? (
+                <ul className="space-y-2 list-disc list-inside text-muted-foreground mt-2 text-sm">
+                  {internship.adminNotes.map((note, index) => (
+                    <li key={index}>{note}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted-foreground text-sm mt-2">No notes from the admin yet.</p>
+              )}
+            </div>
+             <div>
+              <h4 className="font-semibold text-primary flex items-center gap-2"><FileDown /> Assigned Documents</h4>
+               <div className="space-y-2 mt-2">
+                {internship.assignedDocuments && internship.assignedDocuments.length > 0 ? (
+                  internship.assignedDocuments.map((doc, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded-md">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-sm truncate" title={doc.name}>{doc.name}</span>
+                      </div>
+                      <Button variant="ghost" size="icon" asChild>
+                        <a href={doc.url} download>
+                          <FileDown className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No documents assigned yet.</p>
+                )}
+              </div>
+            </div>
+             <div>
+              <h4 className="font-semibold text-primary flex items-center gap-2"><Upload /> Upload Your Work</h4>
+               <form onSubmit={handleUpload} className="space-y-2 mt-2">
+                  <Input type="file" onChange={(e) => setNewFile(e.target.files ? e.target.files[0] : null)} />
+                  <Button className="w-full" size="sm" type="submit" disabled={!newFile}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload
+                  </Button>
+              </form>
+            </div>
+          </div>
+        );
+      
+      case 'Selected':
+        if (!application.driveLink) return null;
+        return (
+          <div className="border-t pt-4 mt-4">
+              <h4 className="font-semibold text-primary mb-2 flex items-center gap-2"><CheckCircle/> Internship Completed</h4>
+              <p className="text-xs text-muted-foreground">
+                  All your documents have been moved to a shared folder. This link will be active for one month. Please download your documents before then.
+              </p>
+              <Button variant="link" asChild className="p-0 h-auto mt-2">
+                  <a href={application.driveLink} target="_blank" rel="noopener noreferrer">
+                      View Documents
+                  </a>
+              </Button>
+          </div>
+        );
+      
+       case 'Terminated':
+         if (!application.comments) return null;
+         return (
+            <div className="border-t pt-4 mt-4 space-y-2">
+              <h4 className="font-semibold text-destructive flex items-center gap-2"><UserX /> Internship Terminated</h4>
+              <Label>Reason:</Label>
+              <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: application.comments}} />
+            </div>
+         );
+
+      default:
+        return null;
+    }
+  }
 
   return (
     <Card className="flex flex-col transform transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl">
       <CardHeader>
         <CardTitle className="text-base text-primary">
-          {internship.status === 'Ongoing' ? (
-            internship.title
-          ) : (
             <Link href={`/internships/${internship.id}`} className="hover:underline">
               {internship.title}
             </Link>
-          )}
         </CardTitle>
         <CardDescription className="text-sm">{internship.company}</CardDescription>
       </CardHeader>
@@ -95,16 +209,12 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
       <CardFooter className="flex justify-between items-center">
         <p className="text-xs text-muted-foreground">Posted {format(new Date(internship.postedDate), 'dd-MM-yy')}</p>
         {isLoggedIn ? (
-          internship.status === 'Ongoing' ? (
-             <Button size="sm" asChild>
-               <Link href={`/ongoing/${internship.id}`}>View Details</Link>
-             </Button>
-          ) : internship.applied ? (
+          internship.applied ? (
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="secondary" size="sm">View Status</Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Application Status</DialogTitle>
                   <DialogDescription>
@@ -120,19 +230,9 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
                     <p className="text-muted-foreground">Applied Date</p>
                     <p>{internship.applicationDate ? format(new Date(internship.applicationDate), 'dd-MM-yy') : 'N/A'}</p>
                   </div>
-                   {application?.driveLink && (
-                    <div className="border-t pt-4 mt-2">
-                        <h4 className="font-semibold text-primary mb-2">Post-Internship Documents</h4>
-                        <p className="text-xs text-muted-foreground">
-                            All your documents have been moved to a shared folder. This link will be active for one month. Please download your documents before then.
-                        </p>
-                        <Button variant="link" asChild className="p-0 h-auto mt-2">
-                            <a href={application.driveLink} target="_blank" rel="noopener noreferrer">
-                                View Documents
-                            </a>
-                        </Button>
-                    </div>
-                  )}
+                   
+                   {renderDialogContent()}
+                  
                   <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
                     Note: Applications are reviewed for up to one month. If you are not selected within this timeframe, the application will be automatically removed from your dashboard.
                   </p>
