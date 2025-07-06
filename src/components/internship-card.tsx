@@ -25,7 +25,15 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
   return (
     <Card className="flex flex-col transform transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl">
       <CardHeader>
-        <CardTitle className="text-base text-primary">{internship.title}</CardTitle>
+        <CardTitle className="text-base text-primary">
+          {internship.status === 'Ongoing' ? (
+            internship.title
+          ) : (
+            <Link href={`/internships/${internship.id}`} className="hover:underline">
+              {internship.title}
+            </Link>
+          )}
+        </CardTitle>
         <CardDescription className="text-sm">{internship.company}</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow text-xs space-y-3">
