@@ -200,7 +200,7 @@ export default function SignupPage() {
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>First Name</FormLabel>
+                          <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -211,7 +211,7 @@ export default function SignupPage() {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Last Name (Optional)</FormLabel>
+                          <FormLabel>Last Name</FormLabel>
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -223,7 +223,7 @@ export default function SignupPage() {
                     name="email"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>Email <span className="text-destructive">*</span></FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                     </FormItem>
@@ -234,7 +234,7 @@ export default function SignupPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Password <span className="text-destructive">*</span></FormLabel>
                        <FormControl>
                         <div className="relative">
                           <Input type={showPassword ? 'text' : 'password'} {...field} />
@@ -253,7 +253,7 @@ export default function SignupPage() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>Confirm Password <span className="text-destructive">*</span></FormLabel>
                       <FormControl>
                         <div className="relative">
                            <Input type={showConfirmPassword ? 'text' : 'password'} {...field} />
@@ -276,7 +276,7 @@ export default function SignupPage() {
                             name="countryCode"
                             render={({ field }) => (
                                 <FormItem className="col-span-1">
-                                <FormLabel>Code</FormLabel>
+                                <FormLabel>Code <span className="text-destructive">*</span></FormLabel>
                                 <FormControl><Input {...field} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -287,7 +287,7 @@ export default function SignupPage() {
                             name="phone"
                             render={({ field }) => (
                                 <FormItem className="col-span-2">
-                                <FormLabel>Phone</FormLabel>
+                                <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
                                 <FormControl><Input {...field} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -299,7 +299,7 @@ export default function SignupPage() {
                       name="qualification"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Highest Qualification</FormLabel>
+                          <FormLabel>Highest Qualification <span className="text-destructive">*</span></FormLabel>
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -314,7 +314,7 @@ export default function SignupPage() {
                       name="orgName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Organization/Institute Name</FormLabel>
+                          <FormLabel>Organization/Institute Name <span className="text-destructive">*</span></FormLabel>
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -326,7 +326,7 @@ export default function SignupPage() {
                           name="orgCity"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>City</FormLabel>
+                              <FormLabel>City <span className="text-destructive">*</span></FormLabel>
                               <FormControl><Input {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
@@ -337,7 +337,7 @@ export default function SignupPage() {
                           name="orgState"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>State</FormLabel>
+                              <FormLabel>State <span className="text-destructive">*</span></FormLabel>
                               <FormControl><Input {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
@@ -349,7 +349,7 @@ export default function SignupPage() {
                     name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Status</FormLabel>
+                        <FormLabel>Status <span className="text-destructive">*</span></FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>

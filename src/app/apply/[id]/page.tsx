@@ -244,7 +244,7 @@ export default function ApplyPage() {
                       <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>I agree to the terms and conditions</FormLabel>
+                      <FormLabel>I agree to the terms and conditions <span className="text-destructive">*</span></FormLabel>
                       <FormMessage />
                     </div>
                   </FormItem>
