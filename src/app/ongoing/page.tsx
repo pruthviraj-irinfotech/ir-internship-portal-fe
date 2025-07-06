@@ -1,52 +1,15 @@
 
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { InternshipCard } from '@/components/internship-card';
-import { internships } from '@/lib/mock-data';
-import { useAuth } from '@/context/auth-context';
 
-export default function OngoingInternshipsPage() {
-  const { isLoggedIn } = useAuth();
+export default function OngoingRedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push('/login?redirect=/ongoing');
-    }
-  }, [isLoggedIn, router]);
+    router.replace('/applied');
+  }, [router]);
 
-  const ongoingInternships = useMemo(() => {
-    return internships.filter(internship => internship.applied && internship.status === 'Ongoing');
-  }, []);
-  
-  if (!isLoggedIn) {
-    return null; // or a loading spinner
-  }
-
-  return (
-    <div className="container mx-auto p-4 md:p-8 flex-1">
-      <header className="my-8 md:my-16">
-        <div className="text-center">
-            <h1 className="text-3xl md:text-5xl font-headline text-primary">Ongoing Internships</h1>
-            <p className="text-muted-foreground mt-4 text-sm md:text-base">Your current active quests.</p>
-        </div>
-      </header>
-
-      <section>
-        {ongoingInternships.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ongoingInternships.map((internship) => (
-              <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16 border-2 border-dashed border-border">
-            <p className="text-muted-foreground">You don't have any ongoing internships.</p>
-          </div>
-        )}
-      </section>
-    </div>
-  );
+  return null;
 }

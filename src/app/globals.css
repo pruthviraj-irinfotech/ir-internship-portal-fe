@@ -45,11 +45,6 @@
     --sidebar-ring: 0 72.2% 50.6%;
   }
 
-  .font-readable {
-    --font-body: "Inter", system-ui, sans-serif;
-    --font-headline: "Inter", system-ui, sans-serif;
-  }
-
   .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;

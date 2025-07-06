@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
-import { FileText, LogOut, Award, User, Briefcase, CaseSensitive, LayoutDashboard, Menu, Activity, CheckCircle } from 'lucide-react';
-import { useFont } from '@/context/font-context';
+import { FileText, LogOut, Award, User, Briefcase, LayoutDashboard, Menu } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -19,7 +18,6 @@ import { useState } from 'react';
 export function Header() {
   const pathname = usePathname();
   const { isLoggedIn, isAdmin, logout } = useAuth();
-  const { toggleFont } = useFont();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   if (pathname.startsWith('/admin')) {
@@ -34,9 +32,7 @@ export function Header() {
 
   const loggedInLinks = [
     { href: '/', label: 'Open Internships', icon: <Briefcase /> },
-    { href: '/applied', label: 'Applied', icon: <FileText /> },
-    { href: '/ongoing', label: 'Ongoing', icon: <Activity /> },
-    { href: '/completed', label: 'Completed', icon: <CheckCircle /> },
+    { href: '/applied', label: 'My Applications', icon: <FileText /> },
     { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
     { href: '/profile', label: 'Profile', icon: <User /> },
   ];
@@ -52,11 +48,6 @@ export function Header() {
     
     const handleLogout = () => {
         logout();
-        handleLinkClick();
-    };
-    
-    const handleFontToggle = () => {
-        toggleFont();
         handleLinkClick();
     };
 
@@ -106,10 +97,6 @@ export function Header() {
                     <span className={cn(!isMobile && 'hidden sm:inline-block')}>Logout</span>
                 </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={handleFontToggle} className={cn('text-xs sm:text-sm px-4 sm:px-3 flex items-center gap-1 sm:gap-2', isMobile && 'justify-start text-sm h-12')}>
-                <CaseSensitive />
-                <span className={cn(!isMobile && 'hidden sm:inline-block')}>Font</span>
-            </Button>
         </>
     );
   };
