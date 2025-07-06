@@ -19,7 +19,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import Link from 'next/link';
-import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight, Contact } from 'lucide-react';
+import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight, Contact, UserCheck } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
 export default function AdminLayout({
@@ -74,6 +74,11 @@ export default function AdminLayout({
       href: '/admin/ongoing-interns',
       label: 'Ongoing Interns',
       icon: <Users className="w-5 h-5" />,
+    },
+    {
+      href: '/admin/completed-interns',
+      label: 'Completed Interns',
+      icon: <UserCheck className="w-5 h-5" />,
     },
     {
       href: '/admin/certificates',
