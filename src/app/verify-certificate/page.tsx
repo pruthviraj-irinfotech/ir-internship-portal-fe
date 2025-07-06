@@ -5,11 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { certificates, Certificate } from '@/lib/mock-data';
+import { certificates, Certificate, CertificateStatus } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+
+const statusColors: Record<CertificateStatus, 'default' | 'secondary' | 'destructive'> = {
+    'Active': 'default',
+    'On Hold': 'secondary',
+    'Terminated': 'destructive',
+};
 
 export default function VerifyCertificatePage() {
   const [certificateId, setCertificateId] = useState('');
@@ -130,6 +137,14 @@ export default function VerifyCertificatePage() {
                <div className="space-y-1">
                   <Label>Date Approved</Label>
                   <p>{format(new Date(foundCertificate.approvedDate), 'dd-MM-yy')}</p>
+              </div>
+               <div className="space-y-1">
+                  <Label>Status</Label>
+                  <p>
+                      <Badge variant={statusColors[foundCertificate.status || 'Active']}>
+                          {foundCertificate.status || 'Active'}
+                      </Badge>
+                  </p>
               </div>
               <div className="md:col-span-2 space-y-1">
                   <Label>Description</Label>
