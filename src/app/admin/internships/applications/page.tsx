@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, FilePenLine, Loader2, Calendar as CalendarIcon } from 'lucide-react';
+import { Search, FilePenLine, Loader2, Calendar as CalendarIcon, ArrowUpDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format, parseISO } from 'date-fns';
@@ -64,6 +64,7 @@ export default function ApplicationsPage() {
     const [viewingApplication, setViewingApplication] = useState<Application | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<InternshipStatus | 'all'>('all');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const { toast } = useToast();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -117,12 +118,21 @@ export default function ApplicationsPage() {
     };
 
     const filteredApplications = useMemo(() => {
-        return applicationList.filter(app =>
+        const filtered = applicationList.filter(app =>
             (statusFilter === 'all' || app.status === statusFilter) &&
             (app.internshipTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
             app.userName.toLowerCase().includes(searchTerm.toLowerCase()))
-        ).sort((a, b) => new Date(b.applicationDate).getTime() - new Date(a.applicationDate).getTime());
-    }, [applicationList, searchTerm, statusFilter]);
+        );
+
+        return filtered.sort((a, b) => {
+            const dateA = new Date(a.applicationDate).getTime();
+            const dateB = new Date(b.applicationDate).getTime();
+            if (sortDirection === 'asc') {
+                return dateA - dateB;
+            }
+            return dateB - dateA;
+        });
+    }, [applicationList, searchTerm, statusFilter, sortDirection]);
 
     return (
         <>
@@ -166,7 +176,12 @@ export default function ApplicationsPage() {
                                 <TableRow>
                                     <TableHead>Applicant</TableHead>
                                     <TableHead>Internship</TableHead>
-                                    <TableHead>Applied On</TableHead>
+                                    <TableHead>
+                                        <Button variant="ghost" className="pl-0 hover:bg-transparent" onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}>
+                                            Applied On
+                                            <ArrowUpDown className="ml-2 h-4 w-4" />
+                                        </Button>
+                                    </TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
