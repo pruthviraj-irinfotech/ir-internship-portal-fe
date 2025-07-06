@@ -1,19 +1,5 @@
 import type { SVGProps } from 'react';
 
-export const CompanyLogoIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    stroke="none"
-    {...props}
-  >
-    <path d="M6 4h4v4H6z M6 8h4v4H6z M6 12h4v4H6z M6 16h4v4H6z M12 4h4v4h-4z M16 4h4v4h-4z M12 8h4v4h-4z M20 8h4v4h-4z M12 12h4v4h-4z M16 12h4v4h-4z M12 16h4v4h-4z M20 16h4v4h-4z" />
-  </svg>
-);
-
 export const BriefcaseIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
