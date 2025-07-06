@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { internships } from '@/lib/mock-data';
 import { Loader2 } from 'lucide-react';
+import RichTextEditor from '@/components/rich-text-editor';
 
 const formSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters."),
@@ -201,10 +202,9 @@ export default function PostNewInternshipPage() {
                         <FormItem>
                             <FormLabel>Detailed Role Description</FormLabel>
                             <FormControl>
-                                <Textarea
-                                    placeholder="A full description of the role, responsibilities, and what the intern will learn..."
-                                    className="resize-y min-h-[120px]"
-                                    {...field}
+                                <RichTextEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
                                 />
                             </FormControl>
                             <FormDesc>This will be visible on the internship details page.</FormDesc>
