@@ -32,6 +32,16 @@ export default function Home() {
 
       <section className="mb-16">
          <div className="flex items-center justify-center gap-8">
+             <svg viewBox="0 0 100 100" className="relative w-32 h-32 hidden md:block" data-ai-hint="chess game">
+                <defs>
+                    <pattern id="chess-pattern" patternUnits="userSpaceOnUse" width="25" height="25" className='text-foreground/50'>
+                        <rect width="12.5" height="12.5" fill="currentColor" />
+                        <rect x="12.5" y="12.5" width="12.5" height="12.5" fill="currentColor" />
+                    </pattern>
+                </defs>
+                <rect width="100" height="100" fill="url(#chess-pattern)" className="opacity-50" />
+                <path className="knight-animation" d="M12 2C9.25 2 7.08 4.25 7.08 7c0 1.15.4 2.23 1.07 3.08L5.25 20H3v2h18v-2h-2.25L15.92 10.08A4.9 4.9 0 0016.92 7c0-2.75-2.25-5-5-5h-.01zm-.5 3c.83 0 1.5.67 1.5 1.5S12.33 8 11.5 8 10 7.33 10 6.5 10.67 5 11.5 5z" fill="hsl(var(--primary))"/>
+            </svg>
             <blockquote className="text-lg italic text-muted-foreground max-w-2xl">
               "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."
             </blockquote>
