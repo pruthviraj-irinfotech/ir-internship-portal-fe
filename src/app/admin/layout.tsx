@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -19,7 +20,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import Link from 'next/link';
-import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight, Contact, UserCheck } from 'lucide-react';
+import { Briefcase, Users, Award, User, LayoutDashboard, Loader2, ChevronRight, Contact, UserCheck, UserX } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
 export default function AdminLayout({
@@ -79,6 +80,11 @@ export default function AdminLayout({
       href: '/admin/completed-interns',
       label: 'Completed Interns',
       icon: <UserCheck className="w-5 h-5" />,
+    },
+    {
+      href: '/admin/terminated-interns',
+      label: 'Terminated Interns',
+      icon: <UserX className="w-5 h-5" />,
     },
     {
       href: '/admin/certificates',

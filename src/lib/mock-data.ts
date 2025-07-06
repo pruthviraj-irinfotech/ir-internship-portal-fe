@@ -1,5 +1,5 @@
 
-export type InternshipStatus = 'In Review' | 'Rejected' | 'Shortlisted' | 'Interview Scheduled' | 'Selected' | 'Withdrawn' | 'Ongoing';
+export type InternshipStatus = 'In Review' | 'Rejected' | 'Shortlisted' | 'Interview Scheduled' | 'Selected' | 'Withdrawn' | 'Ongoing' | 'Terminated';
 
 export type Internship = {
   id: number;

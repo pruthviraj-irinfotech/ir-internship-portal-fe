@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -7,14 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Eye, FilePenLine, Search, Trash2 } from 'lucide-react';
+import { Eye, FilePenLine, Search, UserX, CheckCircle } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminOngoingInternsPage() {
     const [ongoingApps, setOngoingApps] = useState<Application[]>(applications.filter(app => app.status === 'Ongoing'));
     const [searchTerm, setSearchTerm] = useState('');
-    const [appToComplete, setAppToComplete] = useState<Application | null>(null);
+    const [appAction, setAppAction] = useState<{ action: 'complete' | 'terminate'; app: Application } | null>(null);
     const { toast } = useToast();
 
     const filteredApps = useMemo(() => {
@@ -25,24 +26,46 @@ export default function AdminOngoingInternsPage() {
     }, [ongoingApps, searchTerm]);
 
     const handleCompleteInternship = (appId: string) => {
-        if (!appToComplete) return;
+        if (!appAction?.app) return;
 
-        // Update main applications list
         const appIndex = applications.findIndex(app => app.id === appId);
         if (appIndex !== -1) {
-            applications[appIndex].status = 'Selected'; // 'Selected' can mean internship completed, ready for certificate
+            applications[appIndex].status = 'Selected';
         }
 
-        // Update local state for the view
         setOngoingApps(prev => prev.filter(app => app.id !== appId));
         
         toast({
             title: 'Internship Completed',
-            description: `${appToComplete.userName}'s internship has been marked as completed.`,
+            description: `${appAction.app.userName}'s internship has been marked as completed.`,
         });
 
-        setAppToComplete(null);
+        setAppAction(null);
     };
+
+    const handleTerminateInternship = (appId: string) => {
+        if (!appAction?.app) return;
+        const appIndex = applications.findIndex(app => app.id === appId);
+        if (appIndex !== -1) {
+            applications[appIndex].status = 'Terminated';
+        }
+        setOngoingApps(prev => prev.filter(app => app.id !== appId));
+        toast({
+            title: 'Internship Terminated',
+            description: `${appAction.app.userName}'s internship has been marked as terminated.`,
+            variant: 'destructive',
+        });
+        setAppAction(null);
+    }
+
+    const handleAction = () => {
+        if (!appAction) return;
+        if (appAction.action === 'complete') {
+            handleCompleteInternship(appAction.app.id);
+        } else {
+            handleTerminateInternship(appAction.app.id);
+        }
+    }
 
     return (
         <>
@@ -96,8 +119,11 @@ export default function AdminOngoingInternsPage() {
                                                             <FilePenLine className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
-                                                    <Button variant="destructive" size="icon" onClick={() => setAppToComplete(app)} title="Mark as Completed">
-                                                        <Trash2 className="h-4 w-4" />
+                                                     <Button variant="outline" size="icon" onClick={() => setAppAction({ action: 'complete', app })} title="Mark as Completed">
+                                                        <CheckCircle className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="destructive" size="icon" onClick={() => setAppAction({ action: 'terminate', app })} title="Terminate Internship">
+                                                        <UserX className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -116,18 +142,23 @@ export default function AdminOngoingInternsPage() {
                 </CardContent>
             </Card>
 
-            {appToComplete && (
-                <AlertDialog open={!!appToComplete} onOpenChange={() => setAppToComplete(null)}>
+            {appAction && (
+                <AlertDialog open={!!appAction} onOpenChange={() => setAppAction(null)}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Complete Internship?</AlertDialogTitle>
+                            <AlertDialogTitle>
+                                {appAction.action === 'complete' ? 'Complete Internship?' : 'Terminate Internship?'}
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                                This will mark the internship for "{appToComplete.userName}" as completed. This action cannot be undone.
+                                {appAction.action === 'complete'
+                                    ? `This will mark the internship for "${appAction.app.userName}" as completed. This action cannot be undone.`
+                                    : `This will mark the internship for "${appAction.app.userName}" as terminated. This action cannot be undone.`
+                                }
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleCompleteInternship(appToComplete.id)}>
+                            <AlertDialogAction onClick={handleAction}>
                                 Continue
                             </AlertDialogAction>
                         </AlertDialogFooter>
