@@ -1,9 +1,10 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { InternshipCard } from '@/components/internship-card';
 import { Input } from '@/components/ui/input';
-import { internships } from '@/lib/mock-data';
+import { internships, Internship } from '@/lib/mock-data';
 import { Search } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,18 @@ import Image from 'next/image';
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredInternships, setFilteredInternships] = useState<Internship[]>(internships);
+
+  useEffect(() => {
+    const lowercasedTerm = searchTerm.toLowerCase();
+    const results = internships.filter(internship =>
+      internship.title.toLowerCase().includes(lowercasedTerm) ||
+      internship.company.toLowerCase().includes(lowercasedTerm) ||
+      (internship.description && internship.description.toLowerCase().includes(lowercasedTerm))
+    );
+    setFilteredInternships(results);
+  }, [searchTerm]);
 
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1">
@@ -61,6 +74,8 @@ export default function Home() {
           <Input
             placeholder="Search by role, company, or skill..."
             className="w-full pl-12 h-14 text-base"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -68,9 +83,16 @@ export default function Home() {
       <section>
         <h2 className="text-2xl font-headline mb-6 text-center">Open Internships</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {internships.map((internship) => (
-            <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
-          ))}
+          {filteredInternships.length > 0 ? (
+            filteredInternships.map((internship) => (
+              <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
+            ))
+          ) : (
+             <div className="md:col-span-3 text-center py-16 border-2 border-dashed border-border">
+              <p className="text-muted-foreground">No internships found matching your search.</p>
+              <p className="text-xs mt-2">Try a different keyword!</p>
+            </div>
+          )}
         </div>
       </section>
     </div>
