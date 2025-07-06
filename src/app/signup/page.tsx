@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,12 +14,14 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Eye, EyeOff } from 'lucide-react';
 
 const formSchema = z.object({
   firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
   lastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters." }),
   countryCode: z.string().min(1, { message: "Country code is required." }),
   phone: z.string().min(10, { message: "Phone number must be at least 10 digits." }),
   qualification: z.string().min(2, { message: "Please enter your qualification." }),
@@ -27,6 +29,9 @@ const formSchema = z.object({
   orgName: z.string().min(2, { message: "Please enter your organization/institute name." }),
   orgCity: z.string().min(2, { message: "Please enter a city." }),
   orgState: z.string().min(2, { message: "Please enter a state." }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 
@@ -37,6 +42,11 @@ export default function SignupPage() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect');
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [countdown, setCountdown] = useState(120);
+  const [isResendDisabled, setIsResendDisabled] = useState(true);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,6 +54,7 @@ export default function SignupPage() {
       lastName: '',
       email: '',
       password: '',
+      confirmPassword: '',
       countryCode: '+91',
       phone: '',
       qualification: '',
@@ -54,10 +65,29 @@ export default function SignupPage() {
     },
   });
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (step === 2 && isResendDisabled) {
+        timer = setInterval(() => {
+            setCountdown((prevCount) => {
+                if (prevCount <= 1) {
+                    clearInterval(timer);
+                    setIsResendDisabled(false);
+                    return 0;
+                }
+                return prevCount - 1;
+            });
+        }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [step, isResendDisabled]);
+
   const handleNextStep = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     toast({ title: "OTP Sent!", description: "A verification code has been sent to your email." });
     setStep(2);
+    setCountdown(120);
+    setIsResendDisabled(true);
   };
   
   const handleSignup = (e: React.FormEvent) => {
@@ -68,6 +98,8 @@ export default function SignupPage() {
   }
 
   const handleResendOtp = () => {
+    setCountdown(120);
+    setIsResendDisabled(true);
     toast({ title: "OTP Resent", description: "A new verification code has been sent." });
   }
 
@@ -127,7 +159,34 @@ export default function SignupPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Password</FormLabel>
-                      <FormControl><Input type="password" {...field} /></FormControl>
+                       <FormControl>
+                        <div className="relative">
+                          <Input type={showPassword ? 'text' : 'password'} {...field} />
+                          <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            <span className="sr-only">Toggle password visibility</span>
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                           <Input type={showConfirmPassword ? 'text' : 'password'} {...field} />
+                           <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                             <span className="sr-only">Toggle confirm password visibility</span>
+                          </Button>
+                        </div>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -248,7 +307,15 @@ export default function SignupPage() {
                 <Label htmlFor="otp">Enter 6-Digit OTP</Label>
                 <Input id="otp" type="text" maxLength={6} required />
                 <div className="text-center text-xs pt-2">
-                  <Button type="button" variant="link" onClick={handleResendOtp} className="p-0 h-auto">Resend OTP</Button>
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={handleResendOtp}
+                    disabled={isResendDisabled}
+                    className="p-0 h-auto"
+                  >
+                     {isResendDisabled ? `Resend OTP in ${String(Math.floor(countdown / 60)).padStart(2, '0')}:${String(countdown % 60).padStart(2, '0')}` : "Resend OTP"}
+                  </Button>
                 </div>
               </div>
             </CardContent>
