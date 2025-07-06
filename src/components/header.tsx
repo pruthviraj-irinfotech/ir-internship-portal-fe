@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -66,9 +67,9 @@ export function Header() {
                     size="sm"
                     asChild
                     className={cn(
-                        'text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2',
+                        'text-xs sm:text-sm px-4 sm:px-3 flex items-center gap-1 sm:gap-2',
                         (pathname.startsWith(href) && href !== '/' || pathname === href) && 'shadow-none translate-x-0 translate-y-0',
-                        isMobile && 'justify-start text-base h-12'
+                        isMobile && 'justify-start text-sm h-12'
                     )}
                     onClick={handleLinkClick}
                 >
@@ -85,9 +86,9 @@ export function Header() {
                     size="sm"
                     asChild
                     className={cn(
-                        'text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2',
+                        'text-xs sm:text-sm px-4 sm:px-3 flex items-center gap-1 sm:gap-2',
                         (pathname.startsWith('/admin')) && 'shadow-none translate-x-0 translate-y-0',
-                        isMobile && 'justify-start text-base h-12'
+                        isMobile && 'justify-start text-sm h-12'
                     )}
                     onClick={handleLinkClick}
                 >
@@ -98,12 +99,12 @@ export function Header() {
                 </Button>
             )}
             {isLoggedIn && (
-                <Button variant="ghost" size="sm" onClick={handleLogout} className={cn('text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2', isMobile && 'justify-start text-base h-12')}>
+                <Button variant="ghost" size="sm" onClick={handleLogout} className={cn('text-xs sm:text-sm px-4 sm:px-3 flex items-center gap-1 sm:gap-2', isMobile && 'justify-start text-sm h-12')}>
                     <LogOut />
                     <span className={cn(!isMobile && 'hidden sm:inline-block')}>Logout</span>
                 </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={handleFontToggle} className={cn('text-xs sm:text-sm px-2 sm:px-3 flex items-center gap-1 sm:gap-2', isMobile && 'justify-start text-base h-12')}>
+            <Button variant="ghost" size="sm" onClick={handleFontToggle} className={cn('text-xs sm:text-sm px-4 sm:px-3 flex items-center gap-1 sm:gap-2', isMobile && 'justify-start text-sm h-12')}>
                 <CaseSensitive />
                 <span className={cn(!isMobile && 'hidden sm:inline-block')}>Font</span>
             </Button>

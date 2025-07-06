@@ -26,14 +26,9 @@ export default function Home() {
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1 relative">
 
-      <header className="text-center my-8 md:my-16">
-        <h1 className="text-4xl md:text-6xl font-headline text-primary animate-pulse">IR Intern Portal</h1>
-        <p className="text-muted-foreground mt-4 text-sm md:text-base">Your quest for the perfect internship begins here.</p>
-      </header>
-
-      <section className="mb-16">
-         <div className="flex items-center justify-center gap-8">
-            <svg viewBox="0 0 100 100" className="relative w-32 h-32 hidden md:block" data-ai-hint="brick game castle">
+      <header className="my-8 md:my-16">
+        <div className="flex items-center justify-center gap-8">
+            <svg viewBox="0 0 100 100" className="relative w-24 h-24 hidden md:block" data-ai-hint="brick game castle">
                 {/* Falling piece 1: L-Shape */}
                 <g className="brick-game-piece-1">
                     <rect y="0" width="10" height="10" fill="hsl(var(--primary))"/>
@@ -56,10 +51,11 @@ export default function Home() {
                     <rect x="10" y="10" width="10" height="10" fill="hsl(var(--primary))"/>
                 </g>
             </svg>
-            <blockquote className="text-lg italic text-muted-foreground max-w-2xl">
-              "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."
-            </blockquote>
-             <div className="relative w-32 h-32 hidden md:block" data-ai-hint="snake ladder">
+            <div className="text-center">
+                <h1 className="text-4xl md:text-6xl font-headline text-primary animate-pulse">IR Intern Portal</h1>
+                <p className="text-muted-foreground mt-4 text-sm md:text-base">Your quest for the perfect internship begins here.</p>
+            </div>
+             <div className="relative w-24 h-24 hidden md:block" data-ai-hint="snake ladder">
                 <svg viewBox="0 0 100 100" className="absolute inset-0 text-foreground/50">
                     {/* Ladder */}
                     <line x1="30" y1="5" x2="30" y2="95" stroke="currentColor" strokeWidth="4" />
@@ -80,6 +76,14 @@ export default function Home() {
                     />
                 </svg>
             </div>
+        </div>
+      </header>
+
+      <section className="mb-16">
+         <div className="flex items-center justify-center">
+            <blockquote className="text-lg italic text-muted-foreground max-w-2xl text-center">
+              "Work life is a game; the sooner you learn the rules, the better you'll play. Master your skills from level one."
+            </blockquote>
          </div>
       </section>
 
