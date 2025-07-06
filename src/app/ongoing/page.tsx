@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect } from 'react';
@@ -8,7 +7,7 @@ export default function OngoingRedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/applied');
+    router.replace('/my-games');
   }, [router]);
 
   return null;

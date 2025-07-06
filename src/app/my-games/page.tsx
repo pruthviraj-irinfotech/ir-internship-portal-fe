@@ -7,31 +7,27 @@ import { internships, InternshipStatus } from '@/lib/mock-data';
 import { useAuth } from '@/context/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const applicationStatuses: InternshipStatus[] = [
-    'In Review',
-    'Shortlisted',
-    'Interview Scheduled',
-    'Terminated',
-    'Rejected',
-    'Withdrawn',
+const gameStatuses: InternshipStatus[] = [
+    'Ongoing',
+    'Completed',
 ];
 
-export default function AppliedInternshipsPage() {
+export default function MyGamesPage() {
   const { isLoggedIn } = useAuth();
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<'all' | InternshipStatus>('all');
 
   useEffect(() => {
     if (!isLoggedIn) {
-      router.push('/login?redirect=/applied');
+      router.push('/login?redirect=/my-games');
     }
   }, [isLoggedIn, router]);
 
-  const appliedInternships = useMemo(() => {
+  const gameInternships = useMemo(() => {
     return internships.filter(internship => 
         internship.applied &&
         internship.status &&
-        applicationStatuses.includes(internship.status) &&
+        gameStatuses.includes(internship.status) &&
         (statusFilter === 'all' || internship.status === statusFilter)
     );
   }, [statusFilter]);
@@ -44,8 +40,8 @@ export default function AppliedInternshipsPage() {
     <div className="container mx-auto p-4 md:p-8 flex-1">
       <header className="my-8 md:my-16">
         <div className="text-center">
-            <h1 className="text-3xl md:text-5xl font-headline text-primary">My Applications</h1>
-            <p className="text-muted-foreground mt-4 text-sm md:text-base">Track the status of all your applications.</p>
+            <h1 className="text-3xl md:text-5xl font-headline text-primary">My Games</h1>
+            <p className="text-muted-foreground mt-4 text-sm md:text-base">Track your ongoing and completed internships.</p>
         </div>
         <div className="mt-8 max-w-xs mx-auto">
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | InternshipStatus)}>
@@ -53,8 +49,8 @@ export default function AppliedInternshipsPage() {
                     <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    {applicationStatuses.map(status => (
+                    <SelectItem value="all">All Games</SelectItem>
+                    {gameStatuses.map(status => (
                         <SelectItem key={status} value={status}>
                             {status}
                         </SelectItem>
@@ -65,16 +61,16 @@ export default function AppliedInternshipsPage() {
       </header>
 
       <section>
-        {appliedInternships.length > 0 ? (
+        {gameInternships.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {appliedInternships.map((internship) => (
+            {gameInternships.map((internship) => (
               <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
             ))}
           </div>
         ) : (
           <div className="text-center py-16 border-2 border-dashed border-border">
-            <p className="text-muted-foreground">You haven't applied to any internships with this status.</p>
-            <p className="text-xs mt-2">Apply for an internship to see it here!</p>
+            <p className="text-muted-foreground">You don't have any ongoing or completed games.</p>
+            <p className="text-xs mt-2">Finish an application to start a new game!</p>
           </div>
         )}
       </section>

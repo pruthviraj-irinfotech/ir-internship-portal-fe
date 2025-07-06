@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
-import { FileText, LogOut, Award, User, Briefcase, LayoutDashboard, Menu } from 'lucide-react';
+import { FileText, LogOut, Award, User, Briefcase, LayoutDashboard, Menu, Gamepad2 } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -33,6 +32,7 @@ export function Header() {
   const loggedInLinks = [
     { href: '/', label: 'Open Internships', icon: <Briefcase /> },
     { href: '/applied', label: 'My Applications', icon: <FileText /> },
+    { href: '/my-games', label: 'My Games', icon: <Gamepad2 /> },
     { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
     { href: '/profile', label: 'Profile', icon: <User /> },
   ];
