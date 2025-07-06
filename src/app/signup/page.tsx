@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,7 +18,7 @@ import { Eye, EyeOff } from 'lucide-react';
 
 const formSchema = z.object({
   firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
-  lastName: z.string().min(2, { message: "Last name must be at least 2 characters." }),
+  lastName: z.string().optional(),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
   confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters." }),
@@ -54,7 +55,7 @@ export default function SignupPage() {
       email: '',
       password: '',
       confirmPassword: '',
-      countryCode: '',
+      countryCode: '+91',
       phone: '',
       qualification: '',
       status: 'student',
