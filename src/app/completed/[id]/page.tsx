@@ -31,7 +31,7 @@ export default function UserCompletedInternshipDetailsPage() {
 
     useEffect(() => {
         const app = applications.find(a => a.id === appId);
-        if (app && app.status === 'Selected') {
+        if (app && app.status === 'Completed') {
             setApplication(app);
             const intern = internships.find(i => i.id === app.internshipId);
             setInternship(intern || null);

@@ -29,13 +29,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 
 const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
-    'Selected': 'default',
+    'Completed': 'default',
     'Interview Scheduled': 'default',
     'Ongoing': 'default',
     'Shortlisted': 'default',
     'In Review': 'secondary',
     'Withdrawn': 'destructive',
     'Rejected': 'destructive',
+    'Terminated': 'destructive',
 };
 
 const allStatuses = Object.keys(statusColors) as InternshipStatus[];

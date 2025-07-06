@@ -1,5 +1,5 @@
 
-export type InternshipStatus = 'In Review' | 'Rejected' | 'Shortlisted' | 'Interview Scheduled' | 'Selected' | 'Withdrawn' | 'Ongoing' | 'Terminated';
+export type InternshipStatus = 'In Review' | 'Rejected' | 'Shortlisted' | 'Interview Scheduled' | 'Completed' | 'Withdrawn' | 'Ongoing' | 'Terminated';
 
 export type Internship = {
   id: number;
@@ -60,7 +60,7 @@ export const internships: Internship[] = [
     active: true,
     applied: true,
     applicationDate: '2024-03-01',
-    status: 'Selected',
+    status: 'Completed',
     description: 'Dive into the world of server-side rendering and static site generation with Next.js. This role involves building high-performance, SEO-friendly web applications and understanding the full-stack capabilities of the Next.js framework.',
     detailedDescription: 'As a Next.js intern, you will build on your React knowledge to create full-stack applications. You will learn about server components, API routes, and advanced routing patterns to build production-grade web apps.',
     selectionProcess: '<ul><li>Application Review</li><li>Portfolio Showcase</li><li>Technical Interview with a focus on Next.js concepts</li><li>Final Interview</li></ul>',
@@ -80,7 +80,7 @@ export const internships: Internship[] = [
     active: true,
     applied: true,
     applicationDate: '2024-02-15',
-    status: 'Selected',
+    status: 'Completed',
     description: 'Become a full-stack developer by mastering the MERN (MongoDB, Express, React, Node.js) stack. You will build and deploy complete web applications, from database design to frontend implementation.',
     detailedDescription: 'This comprehensive MERN stack internship will guide you through building a complete web application from scratch. You will design and implement RESTful APIs, manage databases with MongoDB, and build a dynamic frontend with React.',
     selectionProcess: '<ul><li>Resume Screening</li><li>Coding Challenge (Node.js & React)</li><li>Technical Interview</li><li>Cultural Fit Interview</li></ul>',
@@ -176,7 +176,7 @@ export const internships: Internship[] = [
     active: true,
     applied: true,
     applicationDate: '2024-01-10',
-    status: 'Selected',
+    status: 'Completed',
     description: 'Work on cutting-edge machine learning projects. This internship involves data preprocessing, model training and evaluation, and deploying machine learning models into production environments.',
     detailedDescription: 'This is an advanced internship for students passionate about AI and Machine Learning. You will work on a real-world problem, from data collection and cleaning to model building, evaluation, and deployment. You will be using Python and popular libraries like TensorFlow or PyTorch.',
     selectionProcess: '<ul><li>Technical screening with a focus on algorithms and data structures.</li><li>Machine Learning theory and practical assessment.</li><li>Interview with our AI research team.</li></ul>',
@@ -487,7 +487,7 @@ export const applications: Application[] = [
         userEmail: 'alex.doe@email.com',
         userPhone: '5551234567',
         applicationDate: '2024-03-01',
-        status: 'Selected',
+        status: 'Completed',
         resumeUrl: 'https://placehold.co/600x800.png',
         whyApply: 'Completed the Next.js internship successfully. Ready for the next challenge.',
         qualification: 'MBA',
@@ -511,7 +511,7 @@ export const applications: Application[] = [
         userEmail: 'sam.smith@email.com',
         userPhone: '555-987-6543',
         applicationDate: '2024-02-15',
-        status: 'Selected',
+        status: 'Completed',
         resumeUrl: 'https://placehold.co/600x800.png',
         whyApply: 'Completed the MERN stack internship with flying colors.',
         qualification: 'B.Sc. in IT',
@@ -534,7 +534,7 @@ export const applications: Application[] = [
         userEmail: 'player1@email.com',
         userPhone: '123-456-7890',
         applicationDate: '2024-01-10',
-        status: 'Selected',
+        status: 'Completed',
         resumeUrl: 'https://placehold.co/600x800.png',
         whyApply: 'I have a strong background in mathematics and programming, and I am fascinated by the potential of machine learning to solve complex problems. I have completed several online courses and built personal projects in this domain.',
         qualification: 'B.Tech in Computer Science',
@@ -550,3 +550,4 @@ export const applications: Application[] = [
         driveLink: 'https://docs.google.com/folder/d/some-other-unique-id/view'
     }
 ];
+

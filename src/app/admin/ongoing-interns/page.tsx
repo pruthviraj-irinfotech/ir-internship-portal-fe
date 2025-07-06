@@ -30,7 +30,7 @@ export default function AdminOngoingInternsPage() {
 
         const appIndex = applications.findIndex(app => app.id === appId);
         if (appIndex !== -1) {
-            applications[appIndex].status = 'Selected';
+            applications[appIndex].status = 'Completed';
         }
 
         setOngoingApps(prev => prev.filter(app => app.id !== appId));

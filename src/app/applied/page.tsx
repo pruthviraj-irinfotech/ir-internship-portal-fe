@@ -13,7 +13,7 @@ const applicationStatuses: InternshipStatus[] = [
     'Shortlisted',
     'Interview Scheduled',
     'Ongoing',
-    'Selected',
+    'Completed',
     'Terminated',
     'Rejected',
     'Withdrawn',

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -10,8 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Eye, Search } from 'lucide-react';
 
 export default function AdminCompletedInternsPage() {
-    // Filter for 'Selected' status, which means completed.
-    const [completedApps, setCompletedApps] = useState<Application[]>(applications.filter(app => app.status === 'Selected'));
+    // Filter for 'Completed' status.
+    const [completedApps, setCompletedApps] = useState<Application[]>(applications.filter(app => app.status === 'Completed'));
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredApps = useMemo(() => {

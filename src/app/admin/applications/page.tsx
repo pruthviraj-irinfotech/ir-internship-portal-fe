@@ -29,7 +29,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 
 const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
-    'Selected': 'default',
+    'Completed': 'default',
     'Interview Scheduled': 'default',
     'Ongoing': 'default',
     'Shortlisted': 'default',

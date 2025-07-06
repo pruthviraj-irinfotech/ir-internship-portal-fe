@@ -29,7 +29,7 @@ type InternshipCardProps = {
 };
 
 const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
-    'Selected': 'default',
+    'Completed': 'default',
     'Interview Scheduled': 'default',
     'Ongoing': 'default',
     'Shortlisted': 'default',
@@ -133,7 +133,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
                     <Link href={`/ongoing/${application.id}`}>View Details</Link>
                 </Button>
             );
-        case 'Selected':
+        case 'Completed':
              return (
                 <Button size="sm" asChild>
                     <Link href={`/completed/${application.id}`}>View Details</Link>
