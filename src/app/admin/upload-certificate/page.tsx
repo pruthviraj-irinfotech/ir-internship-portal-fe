@@ -57,7 +57,9 @@ export default function UploadCertificatePage() {
 
     const generateCertId = (internId: string) => {
         if (!internId) return '';
-        return `INT${currentYear}-${internId}`;
+        const intern = interns.find(i => i.id === internId);
+        if (!intern) return '';
+        return `INT${currentYear}-${intern.id.split('-')[1]}`;
     }
 
     form.watch((values, { name }) => {
