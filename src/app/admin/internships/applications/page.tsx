@@ -42,6 +42,7 @@ const formSchema = z.object({
     interviewDate: z.date().optional(),
     interviewTime: z.string().optional(),
     interviewInstructions: z.string().optional(),
+    comments: z.string().optional(),
 }).superRefine((data, ctx) => {
     if (data.status === 'Interview Scheduled') {
         if (!data.interviewDate) {
@@ -77,6 +78,7 @@ export default function ApplicationsPage() {
                 interviewDate: viewingApplication.interviewDate ? parseISO(viewingApplication.interviewDate) : undefined,
                 interviewTime: viewingApplication.interviewTime || '',
                 interviewInstructions: viewingApplication.interviewInstructions || '',
+                comments: viewingApplication.comments || '',
             });
         }
     }, [viewingApplication, form]);
@@ -95,6 +97,7 @@ export default function ApplicationsPage() {
             interviewDate: values.interviewDate ? format(values.interviewDate, 'yyyy-MM-dd') : undefined,
             interviewTime: values.interviewTime,
             interviewInstructions: values.interviewInstructions,
+            comments: values.comments,
         };
 
         updatedApplications[appIndex] = updatedApp;
@@ -235,6 +238,12 @@ export default function ApplicationsPage() {
                                             {viewingApplication.altPhone && <div><Label>Alternative Phone</Label><p className="text-sm text-muted-foreground">{viewingApplication.altPhone}</p></div>}
                                         </div>
                                     )}
+                                     {viewingApplication.comments && (
+                                        <div className="border-t pt-4 sm:col-span-2">
+                                            <h4 className="font-semibold text-primary mb-2">Admin Comments</h4>
+                                            <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingApplication.comments }} />
+                                        </div>
+                                    )}
                                      {viewingApplication.status === 'Interview Scheduled' && (
                                         <div className="border-t pt-4 sm:col-span-2 grid gap-y-4 gap-x-6">
                                             <h4 className="font-semibold text-primary">Interview Details</h4>
@@ -262,7 +271,7 @@ export default function ApplicationsPage() {
                                             </FormItem>
                                         )} />
 
-                                        {watchedStatus === 'Interview Scheduled' && (
+                                        {watchedStatus === 'Interview Scheduled' ? (
                                             <div className="space-y-4 p-4 border rounded-md">
                                                 <h4 className="font-medium">Schedule Interview</h4>
                                                 <FormField control={form.control} name="interviewDate" render={({ field }) => (
@@ -290,6 +299,14 @@ export default function ApplicationsPage() {
                                                     <FormItem><FormLabel>Interview Instructions</FormLabel><FormControl><RichTextEditor value={field.value || ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
                                                 )} />
                                             </div>
+                                        ) : (
+                                            <FormField control={form.control} name="comments" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Admin Comments</FormLabel>
+                                                    <FormControl><RichTextEditor value={field.value || ''} onChange={field.onChange} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
                                         )}
                                     </div>
                                 </div>

@@ -352,6 +352,7 @@ export type Application = {
   interviewDate?: string;
   interviewTime?: string;
   interviewInstructions?: string;
+  comments?: string;
 };
 
 export const applications: Application[] = [
@@ -373,6 +374,7 @@ export const applications: Application[] = [
         orgCity: 'Exampleville',
         orgState: 'Examplestate',
         orgCountry: 'Exampleland',
+        comments: '<p>Good resume, but lacks specific project experience. Keeping in review for now.</p>',
     },
     {
         id: 'APP-1669812346',
@@ -414,6 +416,7 @@ export const applications: Application[] = [
         orgCity: 'Exampleville',
         orgState: 'Examplestate',
         orgCountry: 'Exampleland',
+        comments: '<p>Candidate did not meet the minimum requirements for the role. Portfolio was not a good fit.</p>',
     },
     {
         id: 'APP-1669812348',
