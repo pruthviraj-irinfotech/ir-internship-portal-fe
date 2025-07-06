@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { Clock, IndianRupee, HelpCircle, MapPin, Tag, FileDown, Upload, Paperclip, ListChecks, CheckCircle, UserX, Info } from 'lucide-react';
+import { Clock, IndianRupee, HelpCircle, MapPin, Tag, FileDown, Upload, Paperclip, ListChecks, CheckCircle, UserX, Info, Activity } from 'lucide-react';
 import type { Internship, InternshipStatus } from '@/lib/mock-data';
 import { applications } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
@@ -203,6 +203,13 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
               {internship.amount.toLocaleString('en-IN')}
               {internship.isMonthly ? '/month' : ''}
             </span>
+          </div>
+        )}
+        {internship.status && internship.applied && (
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-muted-foreground" />
+            <span>Status: </span>
+            <Badge variant={statusColors[internship.status]}>{internship.status}</Badge>
           </div>
         )}
       </CardContent>
