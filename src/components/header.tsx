@@ -13,6 +13,7 @@ export function Header() {
   const { isLoggedIn, logout } = useAuth();
 
   const loggedOutLinks = [
+    { href: '/', label: 'Open Internships', icon: <Briefcase /> },
     { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
     { href: '/login', label: 'Login', icon: <User /> },
   ];
@@ -21,6 +22,7 @@ export function Header() {
     { href: '/', label: 'Open Internships', icon: <Briefcase /> },
     { href: '/applied', label: 'Applied', icon: <FileText /> },
     { href: '/ongoing', label: 'Ongoing', icon: <Play /> },
+    { href: '/verify-certificate', label: 'Verify Certificate', icon: <Award /> },
     { href: '/profile', label: 'Profile', icon: <User /> },
   ];
 
