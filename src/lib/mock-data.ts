@@ -298,6 +298,22 @@ export const certificates: Certificate[] = [
     uploadedBy: 2,
     status: 'Active',
   },
+  {
+    id: 5,
+    applicationId: 7,
+    certificateNumber: 'INT25-099',
+    internName: 'Test Intern',
+    internshipRole: 'Quality Assurance',
+    company: 'IR INFOTECH',
+    duration: '2 Months',
+    startDate: '2024-05-01',
+    approvedDate: '2024-07-01',
+    description: 'This is a test certificate for ID `INT25-099` to ensure the verification functionality is working correctly. This intern showed great attention to detail.',
+    imageUrl: 'https://placehold.co/800x600.png',
+    pdfUrl: '#',
+    uploadedBy: 2,
+    status: 'Active',
+  },
 ];
 
 export type User = {
@@ -599,3 +615,4 @@ export const applications: Application[] = [
         driveLink: 'https://docs.google.com/folder/d/some-other-unique-id/view'
     }
 ];
+
