@@ -11,7 +11,7 @@ import { certificates, CertificateStatus } from '@/lib/mock-data';
 import { z } from 'zod';
 
 // Define the output schema based on the Certificate type
-export const CertificateVerificationOutputSchema = z.object({
+const CertificateVerificationOutputSchema = z.object({
   id: z.number(),
   applicationId: z.number(),
   certificateNumber: z.string(),
