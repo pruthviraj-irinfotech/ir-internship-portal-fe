@@ -282,6 +282,22 @@ export const certificates: Certificate[] = [
     uploadedBy: 2,
     status: 'Active',
   },
+  {
+    id: 4,
+    applicationId: 7,
+    certificateNumber: 'ML-TEST-CERT',
+    internName: 'Player One',
+    internshipRole: 'Machine Learning',
+    company: 'IR INFOTECH',
+    duration: '6 Months',
+    startDate: '2024-01-10',
+    approvedDate: '2024-07-15',
+    description: 'This is a test certificate to confirm that Player One has successfully completed the Machine Learning internship. Player one showed great promise.',
+    imageUrl: 'https://placehold.co/800x600.png',
+    pdfUrl: '#',
+    uploadedBy: 2,
+    status: 'Active',
+  },
 ];
 
 export type User = {
