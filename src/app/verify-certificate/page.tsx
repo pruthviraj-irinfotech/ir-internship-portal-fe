@@ -11,10 +11,8 @@ import { Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { CertificateVerificationOutput, verifyCertificate } from '@/ai/flows/verify-certificate-flow';
-
-type Certificate = NonNullable<CertificateVerificationOutput>;
-type CertificateStatus = Certificate['status'];
+import { verifyCertificate } from '@/ai/flows/verify-certificate-flow';
+import type { Certificate, CertificateStatus } from '@/lib/mock-data';
 
 const statusColors: Record<CertificateStatus, 'default' | 'secondary' | 'destructive'> = {
     'Active': 'default',
@@ -44,21 +42,31 @@ export default function VerifyCertificatePage() {
     setSearched(false);
     setFoundCertificate(null);
 
-    const cert = await verifyCertificate(certificateId);
-    
-    if (cert) {
-      setFoundCertificate(cert);
+    try {
+      const cert = await verifyCertificate(certificateId);
+      
+      if (cert) {
+        setFoundCertificate(cert);
+        toast({
+          title: 'Certificate Found!',
+          description: `Details for certificate #${cert.certificateNumber} are displayed below.`,
+        });
+      } else {
+        toast({
+          title: 'Not Found',
+          description: 'No certificate was found with that ID.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error("Verification failed:", error);
       toast({
-        title: 'Certificate Found!',
-        description: `Details for certificate #${cert.certificateNumber} are displayed below.`,
-      });
-    } else {
-      toast({
-        title: 'Not Found',
-        description: 'No certificate was found with that ID.',
+        title: 'An error occurred',
+        description: 'Could not verify the certificate. Please try again later.',
         variant: 'destructive',
       });
     }
+
     setIsLoading(false);
     setSearched(true);
   };

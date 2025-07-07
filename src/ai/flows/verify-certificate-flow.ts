@@ -3,15 +3,14 @@
  * @fileOverview A Genkit flow for verifying internship certificates.
  *
  * - verifyCertificate - A function that fetches certificate details by its number.
- * - CertificateVerificationOutput - The return type for the verifyCertificate function.
  */
 
 import { ai } from '@/ai/genkit';
-import { certificates, CertificateStatus } from '@/lib/mock-data';
+import { certificates, Certificate } from '@/lib/mock-data';
 import { z } from 'zod';
 
 // Define the output schema based on the Certificate type
-const CertificateVerificationOutputSchema = z.object({
+const CertificateSchema = z.object({
   id: z.number(),
   applicationId: z.number(),
   certificateNumber: z.string(),
@@ -26,12 +25,13 @@ const CertificateVerificationOutputSchema = z.object({
   startDate: z.string().optional(),
   uploadedBy: z.number().optional(),
   status: z.enum(['Active', 'On Hold', 'Terminated']),
-}).nullable();
+});
 
-export type CertificateVerificationOutput = z.infer<typeof CertificateVerificationOutputSchema>;
+const CertificateVerificationOutputSchema = CertificateSchema.nullable();
+
 
 // The main function that will be called from the frontend.
-export async function verifyCertificate(certificateNumber: string): Promise<CertificateVerificationOutput> {
+export async function verifyCertificate(certificateNumber: string): Promise<Certificate | null> {
   return verifyCertificateFlow(certificateNumber);
 }
 
@@ -41,7 +41,7 @@ const verifyCertificateFlow = ai.defineFlow(
     inputSchema: z.string(),
     outputSchema: CertificateVerificationOutputSchema,
   },
-  async (certificateNumber) => {
+  async (certificateNumber): Promise<Certificate | null> => {
     // In a real application, you would query your database here.
     // For this example, we'll use the mock data.
     const cert = certificates.find(c => c.certificateNumber.toLowerCase() === certificateNumber.toLowerCase());
