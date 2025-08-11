@@ -131,5 +131,3 @@ Stores details of all internship certificates that have been issued by an admin.
 | `status` | `ENUM('Active', 'On Hold', 'Terminated')` | Not Null, Default: `'Active'` |
 | `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
 | `updated_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` on update |
-
-    
