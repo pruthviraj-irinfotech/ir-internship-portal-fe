@@ -76,7 +76,7 @@ This is the central table linking users to internships they've applied for. It t
 | `internship_id` | `INT` | **Foreign Key** -> `internships(id)` |
 | `user_id` | `INT` | **Foreign Key** -> `users(id)` |
 | `application_date`| `DATE` | Not Null |
-| `status` | `ENUM(...)` | Not Null. Values: 'In Review', 'Rejected', 'Shortlisted', 'Interview Scheduled', 'Completed', 'Withdrawn', 'Ongoing', 'Terminated' |
+| `status` | `ENUM('In Review', 'Rejected', 'Shortlisted', 'Interview Scheduled', 'Completed', 'Withdrawn', 'Ongoing', 'Terminated')` | Not Null |
 | `resume_url` | `VARCHAR(255)` | Not Null, URL to the stored PDF resume |
 | `why_apply` | `TEXT` | Not Null, applicant's cover letter/statement |
 | `alt_email` | `VARCHAR(255)` | Nullable |
@@ -131,3 +131,5 @@ Stores details of all internship certificates that have been issued by an admin.
 | `status` | `ENUM('Active', 'On Hold', 'Terminated')` | Not Null, Default: `'Active'` |
 | `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
 | `updated_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` on update |
+
+    
