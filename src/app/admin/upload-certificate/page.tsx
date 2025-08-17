@@ -4,7 +4,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { interns, certificates, applications } from '@/lib/mock-data';
+import { certificates, applications } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,13 +18,14 @@ import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import RichTextEditor from '@/components/rich-text-editor';
+import { useMemo } from 'react';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/png"];
 const ACCEPTED_PDF_TYPES = ["application/pdf"];
 
 const formSchema = z.object({
-  internId: z.string().min(1, "Please select an intern."),
+  applicationId: z.string().min(1, "Please select an application."),
   certificateNumber: z.string().min(1, "Certificate ID is required."),
   startDate: z.date({ required_error: "Start date is required." }),
   certificateDate: z.date({ required_error: "Certificate date is required." }),
@@ -46,38 +47,49 @@ export default function UploadCertificatePage() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            internId: '',
+            applicationId: '',
             certificateNumber: '',
             description: '',
             uploadedBy: '2', // Default to Admin User ID
         },
     });
 
-    const selectedInternId = form.watch('internId');
+    const completedApplications = useMemo(() => {
+        const issuedCertificateAppIds = new Set(certificates.map(c => c.applicationId));
+        return applications.filter(app => 
+            app.status === 'Completed' && !issuedCertificateAppIds.has(app.id)
+        );
+    }, []);
+
     const currentYear = new Date().getFullYear().toString().slice(-2);
 
-    const generateCertId = (internId: number) => {
-        if (!internId) return '';
-        return `INT${currentYear}-${String(internId).padStart(3, '0')}`;
+    const generateCertId = (appId: number) => {
+        if (!appId) return '';
+        const app = applications.find(a => a.id === appId);
+        if (!app) return '';
+        // Using a combination of App and User ID for more uniqueness
+        return `INT${currentYear}-${String(app.userId).padStart(3, '0')}-${String(appId).padStart(4, '0')}`;
     }
 
     form.watch((values, { name }) => {
-        if (name === 'internId') {
-            form.setValue('certificateNumber', generateCertId(parseInt(values.internId || '0', 10)));
+        if (name === 'applicationId') {
+            const appIdNum = parseInt(values.applicationId || '0', 10);
+            form.setValue('certificateNumber', generateCertId(appIdNum));
+            const app = applications.find(a => a.id === appIdNum);
+            if (app?.applicationDate) {
+                form.setValue('startDate', new Date(app.applicationDate));
+            }
         }
     });
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        const internIdNum = parseInt(values.internId, 10);
-        const intern = interns.find(i => i.id === internIdNum);
-        
-        // Find a completed application for this intern to link the certificate
-        const app = applications.find(a => a.userId === internIdNum && a.status === 'Completed');
+        const appIdNum = parseInt(values.applicationId, 10);
+        const app = applications.find(a => a.id === appIdNum);
 
         if (!app) {
              toast({
                 title: "Error!",
-                description: "Could not find a completed internship for this user to associate the certificate.",
+                description: "Could not find the selected application.",
                 variant: 'destructive'
             });
             return;
@@ -87,7 +99,7 @@ export default function UploadCertificatePage() {
             id: certificates.length + 1,
             applicationId: app.id,
             certificateNumber: values.certificateNumber,
-            internName: intern?.name || 'Unknown Intern',
+            internName: app.userName,
             internshipRole: app.internshipTitle,
             company: 'IR INFOTECH',
             duration: '3 Months', // This should be calculated or retrieved
@@ -114,7 +126,7 @@ export default function UploadCertificatePage() {
     <Card>
       <CardHeader>
         <CardTitle>Upload Internship Certificate</CardTitle>
-        <CardDescription>Fill in the details below to generate and upload a new certificate.</CardDescription>
+        <CardDescription>Fill in the details below to generate and upload a new certificate for a completed internship.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -122,22 +134,26 @@ export default function UploadCertificatePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                         control={form.control}
-                        name="internId"
+                        name="applicationId"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Intern Name</FormLabel>
+                            <FormLabel>Completed Application</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
-                                    <SelectValue placeholder="Select an intern" />
+                                    <SelectValue placeholder="Select an application" />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {interns.map(intern => (
-                                        <SelectItem key={intern.id} value={intern.id.toString()}>
-                                            {intern.name} (ID: {intern.id})
-                                        </SelectItem>
-                                    ))}
+                                    {completedApplications.length > 0 ? (
+                                        completedApplications.map(app => (
+                                            <SelectItem key={app.id} value={app.id.toString()}>
+                                                {app.applicationNumber} - {app.userName} ({app.internshipTitle})
+                                            </SelectItem>
+                                        ))
+                                    ) : (
+                                        <SelectItem value="none" disabled>No completed applications pending certificate</SelectItem>
+                                    )}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -321,3 +337,5 @@ export default function UploadCertificatePage() {
     </Card>
   );
 }
+
+    

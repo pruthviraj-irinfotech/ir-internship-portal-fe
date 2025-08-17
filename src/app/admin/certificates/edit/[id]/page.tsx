@@ -4,7 +4,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { interns, certificates, Certificate, CertificateStatus } from '@/lib/mock-data';
+import { applications, certificates, Certificate, CertificateStatus } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ import { format, parseISO } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import RichTextEditor from '@/components/rich-text-editor';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -25,7 +25,7 @@ const ACCEPTED_IMAGE_TYPES = ["image/png"];
 const ACCEPTED_PDF_TYPES = ["application/pdf"];
 
 const formSchema = z.object({
-  internId: z.string().min(1, "Please select an intern."),
+  applicationId: z.string().min(1, "Please select an application."),
   certificateNumber: z.string().min(1, "Certificate ID is required."),
   startDate: z.date({ required_error: "Start date is required." }),
   certificateDate: z.date({ required_error: "Certificate date is required." }),
@@ -54,6 +54,11 @@ export default function EditCertificatePage() {
         resolver: zodResolver(formSchema),
     });
 
+    const completedApplications = useMemo(() => {
+        // Get applications with 'Completed' status
+        return applications.filter(app => app.status === 'Completed');
+    }, []);
+
     useEffect(() => {
         if (isNaN(certificateId)) {
             toast({ variant: 'destructive', title: 'Invalid URL', description: 'Certificate ID is not valid.' });
@@ -64,14 +69,13 @@ export default function EditCertificatePage() {
         const certToEdit = certificates.find(c => c.id === certificateId);
         if (certToEdit) {
             setCertificate(certToEdit);
-            const intern = interns.find(i => i.name === certToEdit.internName);
             form.reset({
-                internId: intern?.id.toString() || '',
+                applicationId: certToEdit.applicationId.toString(),
                 certificateNumber: certToEdit.certificateNumber,
                 startDate: certToEdit.startDate ? parseISO(certToEdit.startDate) : new Date(),
                 certificateDate: parseISO(certToEdit.approvedDate),
                 description: certToEdit.description,
-                uploadedBy: certToEdit.uploadedBy?.toString() || 'Admin', // Assuming uploadedBy is user ID
+                uploadedBy: certToEdit.uploadedBy?.toString() || '2', // Admin User ID
                 status: certToEdit.status || 'Active',
             });
         } else {
@@ -101,11 +105,13 @@ export default function EditCertificatePage() {
              return;
         }
 
-        const intern = interns.find(i => i.id === parseInt(values.internId, 10));
+        const app = applications.find(i => i.id === parseInt(values.applicationId, 10));
 
         const updatedCertificate: Partial<Certificate> = {
+            applicationId: app?.id || 0,
             certificateNumber: values.certificateNumber,
-            internName: intern?.name || 'Unknown Intern',
+            internName: app?.userName || 'Unknown Intern',
+            internshipRole: app?.internshipTitle || 'Unknown Role',
             startDate: format(values.startDate, 'yyyy-MM-dd'),
             approvedDate: format(values.certificateDate, 'yyyy-MM-dd'),
             description: values.description,
@@ -142,20 +148,20 @@ export default function EditCertificatePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                         control={form.control}
-                        name="internId"
+                        name="applicationId"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Intern Name</FormLabel>
+                            <FormLabel>Application</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
-                                    <SelectValue placeholder="Select an intern" />
+                                    <SelectValue placeholder="Select an application" />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {interns.map(intern => (
-                                        <SelectItem key={intern.id} value={intern.id.toString()}>
-                                            {intern.name} (ID: {intern.id})
+                                    {completedApplications.map(app => (
+                                        <SelectItem key={app.id} value={app.id.toString()}>
+                                            {app.applicationNumber} - {app.userName}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -367,3 +373,5 @@ export default function EditCertificatePage() {
     </Card>
   );
 }
+
+    
