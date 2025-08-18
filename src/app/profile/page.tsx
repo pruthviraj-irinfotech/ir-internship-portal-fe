@@ -246,7 +246,7 @@ export default function ProfilePage() {
               <FormField
                   control={form.control}
                   name="avatar"
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...rest } }) => (
                   <FormItem>
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-24 w-24">
@@ -259,21 +259,19 @@ export default function ProfilePage() {
                               type="file"
                               className="hidden"
                               accept={ACCEPTED_IMAGE_TYPES.join(',')}
-                              ref={field.ref}
-                              onBlur={field.onBlur}
-                              name={field.name}
+                              {...rest}
                               onChange={(e) => {
-                                  field.onChange(e.target.files);
                                   const file = e.target.files?.[0];
                                   if (file) {
                                       const reader = new FileReader();
                                       reader.onloadend = () => setAvatarPreview(reader.result as string);
                                       reader.readAsDataURL(file);
                                   }
+                                  onChange(e.target.files);
                               }}
                             />
                           </FormControl>
-                          <Button type="button" variant="outline" onClick={() => (field.ref as React.RefObject<HTMLInputElement>)?.current?.click()}>
+                          <Button type="button" variant="outline" onClick={() => (rest.ref as React.RefObject<HTMLInputElement>)?.current?.click()}>
                             Change Avatar
                           </Button>
                           <p className="text-xs text-muted-foreground mt-2">Max 100KB. JPG, PNG, GIF, WEBP.</p>
@@ -389,3 +387,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
