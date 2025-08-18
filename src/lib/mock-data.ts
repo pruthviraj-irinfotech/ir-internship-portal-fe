@@ -144,32 +144,33 @@ export type Application = {
   internshipTitle: string;
   appliedDate: string;
   status: ApiInternshipStatus;
-  // Optional detailed fields for the dialog
-  internshipId?: number;
-  userId?: number; 
-  userEmail?: string;
-  userPhone?: string;
-  resumeUrl?: string;
-  whyApply?: string;
-  altEmail?: string;
-  altPhone?: string;
-  qualification?: string;
-  userStatus?: 'student' | 'graduate' | 'professional';
-  orgName?: string;
-  orgCity?: string;
-  orgState?: string;
-  orgCountry?: string;
-  interviewDate?: string;
-  interviewTime?: string;
-  interviewInstructions?: string;
-  comments?: string;
-  adminDocuments?: Document[];
-  userDocuments?: Document[];
-  internId?: number;
-  endDate?: string;
-  reportingTo?: string;
-  workEmail?: string;
-  driveLink?: string;
 };
+
+export type DetailedApplication = {
+    id: number;
+    title: string;
+    applicantName: string;
+    applicantPhone: string;
+    applicantEmail: string;
+    resumeUrl: string;
+    applicationId: string; // This is the applicationNumber
+    applicationDate: string;
+    whyApply: string;
+    highestQualification: string;
+    currentStatus: 'student' | 'graduate' | 'professional';
+    organization: string;
+    city: string;
+    state: string;
+    country: string;
+    alternativeEmail: string | null;
+    alternativePhone: string | null;
+    currentApplicationStatus: ApiInternshipStatus;
+    interviewDetails: {
+        date: string | null;
+        instructions: string | null;
+    };
+    comments: string | null;
+};
+
 
 export let applications: Application[] = [];

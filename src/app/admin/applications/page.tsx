@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import type { Application, InternshipStatus, ApiInternshipStatus } from '@/lib/mock-data';
+import type { Application, InternshipStatus, ApiInternshipStatus, DetailedApplication } from '@/lib/mock-data';
 import * as api from '@/lib/api';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,6 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parseISO } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -78,7 +77,9 @@ const formSchema = z.object({
 export default function ApplicationsPage() {
     const [applicationList, setApplicationList] = useState<Application[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [viewingApplication, setViewingApplication] = useState<Application | null>(null);
+    const [detailedApp, setDetailedApp] = useState<DetailedApplication | null>(null);
+    const [isDialogLoading, setIsDialogLoading] = useState(false);
+    const [viewingAppId, setViewingAppId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<ApiInternshipStatus | 'all'>('all');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -124,31 +125,66 @@ export default function ApplicationsPage() {
         });
     }, [applicationList, sortDirection]);
     
+    const handleViewApplication = async (appId: number) => {
+        setViewingAppId(appId);
+        setIsDialogLoading(true);
+        if (!token) return;
+        try {
+            const data = await api.getApplicationDetails(appId, token);
+            setDetailedApp(data);
+        } catch (error: any) {
+            toast({ title: 'Error', description: `Failed to fetch details: ${error.message}`, variant: 'destructive' });
+            setViewingAppId(null);
+        } finally {
+            setIsDialogLoading(false);
+        }
+    };
+    
     useEffect(() => {
-        if (viewingApplication) {
+        if (detailedApp) {
+            let interviewDate, interviewTime;
+            if (detailedApp.interviewDetails?.date) {
+                const dateObj = new Date(detailedApp.interviewDetails.date);
+                interviewDate = dateObj;
+                interviewTime = format(dateObj, 'hh:mm a');
+            }
+
             form.reset({
-                status: viewingApplication.status,
-                interviewDate: viewingApplication.interviewDate ? parseISO(viewingApplication.interviewDate) : undefined,
-                interviewTime: viewingApplication.interviewTime || '',
-                interviewInstructions: viewingApplication.interviewInstructions || '',
-                comments: viewingApplication.comments || '',
+                status: detailedApp.currentApplicationStatus,
+                interviewDate: interviewDate,
+                interviewTime: interviewTime,
+                interviewInstructions: detailedApp.interviewDetails?.instructions || '',
+                comments: detailedApp.comments || '',
             });
         }
-    }, [viewingApplication, form]);
-
+    }, [detailedApp, form]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!viewingApplication || !token) return;
+        if (!viewingAppId || !token) return;
 
+        let payload: any = { status: values.status };
+        if (values.status === 'Interview_Scheduled') {
+            const [hour, minute, period] = values.interviewTime!.split(/[: ]/);
+            const interviewDateTime = new Date(values.interviewDate!);
+            interviewDateTime.setHours(period === 'PM' && hour !== '12' ? parseInt(hour) + 12 : parseInt(hour));
+            interviewDateTime.setMinutes(parseInt(minute));
+            
+            payload.interviewDate = interviewDateTime.toISOString();
+            payload.interviewInstructions = values.interviewInstructions;
+        } else {
+            payload.adminComments = values.comments;
+        }
+        
         try {
-            const updatedApp = await api.updateApplicationStatus(viewingApplication.id, values.status, token);
-            setApplicationList(prev => prev.map(app => app.id === updatedApp.id ? { ...app, ...updatedApp } : app));
+            const updatedApp = await api.updateApplicationDetails(viewingAppId, payload, token);
+            
+            setApplicationList(prev => prev.map(app => app.id === updatedApp.id ? { ...app, status: updatedApp.status } : app));
 
             toast({
                 title: 'Application Updated',
                 description: `Application status changed to ${statusApiToDisplayMap[values.status]}.`,
             });
-            setViewingApplication(null);
+            setViewingAppId(null);
         } catch (error: any) {
             toast({ title: 'Error', description: error.message, variant: 'destructive' });
         }
@@ -273,7 +309,7 @@ export default function ApplicationsPage() {
                                                 <Badge variant={statusColors[statusApiToDisplayMap[app.status]]}>{statusApiToDisplayMap[app.status]}</Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="outline" size="icon" onClick={() => setViewingApplication(app)} title="View & Edit Application">
+                                                <Button variant="outline" size="icon" onClick={() => handleViewApplication(app.id)} title="View & Edit Application">
                                                     <FilePenLine className="h-4 w-4" />
                                                 </Button>
                                             </TableCell>
@@ -292,65 +328,69 @@ export default function ApplicationsPage() {
                 </CardContent>
             </Card>
 
-            {viewingApplication && (
-                <Dialog open={!!viewingApplication} onOpenChange={() => setViewingApplication(null)}>
-                    <DialogContent className="sm:max-w-6xl h-[90vh] flex flex-col">
+            <Dialog open={!!viewingAppId} onOpenChange={() => setViewingAppId(null)}>
+                <DialogContent className="sm:max-w-6xl h-[90vh] flex flex-col">
+                    {isDialogLoading ? (
+                        <div className="flex-1 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                    ) : !detailedApp ? (
+                        <div className="flex-1 flex items-center justify-center"><p>Could not load application details.</p></div>
+                    ) : (
                         <Form {...form}>
                          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
                             <DialogHeader>
                                 <DialogTitle>Application Details</DialogTitle>
                                 <DialogDescription>
-                                    {viewingApplication.applicantName}'s application for "{viewingApplication.internshipTitle}".
+                                    {detailedApp.title}
                                 </DialogDescription>
                             </DialogHeader>
                            
                             <div className="grid md:grid-cols-2 gap-8 mt-4 overflow-hidden flex-1">
                                 <div className="space-y-6 py-2 overflow-y-auto pr-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                        <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{viewingApplication.applicantName}</p></div>
-                                        <div><Label>Applicant Phone</Label><p className="text-sm text-muted-foreground">{viewingApplication.userPhone}</p></div>
-                                        <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.userEmail}</p></div>
+                                        <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{detailedApp.applicantName}</p></div>
+                                        <div><Label>Applicant Phone</Label><p className="text-sm text-muted-foreground">{detailedApp.applicantPhone}</p></div>
+                                        <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{detailedApp.applicantEmail}</p></div>
                                     </div>
                                     <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                        <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{viewingApplication.applicationNumber}</p></div>
-                                        <div><Label>Application Date</Label><p className="text-sm text-muted-foreground">{format(new Date(viewingApplication.appliedDate), 'dd-MM-yy')}</p></div>
+                                        <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{detailedApp.applicationId}</p></div>
+                                        <div><Label>Application Date</Label><p className="text-sm text-muted-foreground">{format(new Date(detailedApp.applicationDate), 'dd-MM-yy')}</p></div>
                                     </div>
-                                    <div className="border-t pt-4"><Label>Why are you applying for this internship?</Label><p className="text-sm text-muted-foreground mt-1">{viewingApplication.whyApply}</p></div>
+                                    <div className="border-t pt-4"><Label>Why are you applying for this internship?</Label><p className="text-sm text-muted-foreground mt-1">{detailedApp.whyApply}</p></div>
                                     <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                        <div><Label>Highest Qualification</Label><p className="text-sm text-muted-foreground">{viewingApplication.qualification}</p></div>
-                                        <div><Label>Current Status</Label><p className="text-sm text-muted-foreground capitalize">{viewingApplication.userStatus}</p></div>
-                                        <div className="sm:col-span-2"><Label>Organization/Institute</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgName}</p></div>
-                                        <div><Label>City</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgCity}</p></div>
-                                        <div><Label>State</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgState}</p></div>
-                                        <div><Label>Country</Label><p className="text-sm text-muted-foreground">{viewingApplication.orgCountry}</p></div>
+                                        <div><Label>Highest Qualification</Label><p className="text-sm text-muted-foreground">{detailedApp.highestQualification}</p></div>
+                                        <div><Label>Current Status</Label><p className="text-sm text-muted-foreground capitalize">{detailedApp.currentStatus}</p></div>
+                                        <div className="sm:col-span-2"><Label>Organization/Institute</Label><p className="text-sm text-muted-foreground">{detailedApp.organization}</p></div>
+                                        <div><Label>City</Label><p className="text-sm text-muted-foreground">{detailedApp.city}</p></div>
+                                        <div><Label>State</Label><p className="text-sm text-muted-foreground">{detailedApp.state}</p></div>
+                                        <div><Label>Country</Label><p className="text-sm text-muted-foreground">{detailedApp.country}</p></div>
                                     </div>
-                                    {(viewingApplication.altEmail || viewingApplication.altPhone) && (
+                                    {(detailedApp.alternativeEmail || detailedApp.alternativePhone) && (
                                         <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                            {viewingApplication.altEmail && <div className="sm:col-span-2"><Label>Alternative Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.altEmail}</p></div>}
-                                            {viewingApplication.altPhone && <div><Label>Alternative Phone</Label><p className="text-sm text-muted-foreground">{viewingApplication.altPhone}</p></div>}
+                                            {detailedApp.alternativeEmail && <div className="sm:col-span-2"><Label>Alternative Email</Label><p className="text-sm text-muted-foreground">{detailedApp.alternativeEmail}</p></div>}
+                                            {detailedApp.alternativePhone && <div><Label>Alternative Phone</Label><p className="text-sm text-muted-foreground">{detailedApp.alternativePhone}</p></div>}
                                         </div>
                                     )}
-                                     {viewingApplication.comments && (
+                                     {detailedApp.comments && (
                                         <div className="border-t pt-4 sm:col-span-2">
                                             <h4 className="font-semibold text-primary mb-2">Admin Comments</h4>
-                                            <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingApplication.comments }} />
+                                            <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: detailedApp.comments }} />
                                         </div>
                                     )}
-                                     {viewingApplication.status === 'Interview_Scheduled' && (
+                                     {detailedApp.currentApplicationStatus === 'Interview_Scheduled' && detailedApp.interviewDetails?.date && (
                                         <div className="border-t pt-4 sm:col-span-2 grid gap-y-4 gap-x-6">
                                             <h4 className="font-semibold text-primary">Interview Details</h4>
-                                            <div><Label>Interview Date</Label><p className="text-sm text-muted-foreground">{viewingApplication.interviewDate ? format(parseISO(viewingApplication.interviewDate), 'dd-MM-yy') : 'N/A'}</p></div>
-                                            <div><Label>Interview Time</Label><p className="text-sm text-muted-foreground">{viewingApplication.interviewTime || 'N/A'}</p></div>
-                                            <div className="sm:col-span-2"><Label>Interview Instructions</Label><div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingApplication.interviewInstructions || ''}} /></div>
+                                            <div><Label>Interview Date</Label><p className="text-sm text-muted-foreground">{format(parseISO(detailedApp.interviewDetails.date), 'PPP')}</p></div>
+                                            <div><Label>Interview Time</Label><p className="text-sm text-muted-foreground">{format(parseISO(detailedApp.interviewDetails.date), 'p')}</p></div>
+                                            <div className="sm:col-span-2"><Label>Interview Instructions</Label><div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: detailedApp.interviewDetails.instructions || ''}} /></div>
                                         </div>
                                     )}
                                 </div>
                                 <div className="border-l pl-8 flex flex-col gap-6 overflow-y-auto">
                                     <div className="relative flex-1 rounded-md overflow-hidden border min-h-[400px]">
-                                        {viewingApplication.resumeUrl ? (
+                                        {detailedApp.resumeUrl ? (
                                             <iframe
-                                                src={viewingApplication.resumeUrl}
-                                                title={`Resume for ${viewingApplication.applicantName}`}
+                                                src={detailedApp.resumeUrl}
+                                                title={`Resume for ${detailedApp.applicantName}`}
                                                 className="w-full h-full"
                                             />
                                         ) : (
@@ -420,7 +460,7 @@ export default function ApplicationsPage() {
                                 </div>
                             </div>
                             <DialogFooter className="mt-6 pt-4 border-t">
-                                <Button type="button" variant="ghost" onClick={() => setViewingApplication(null)}>Cancel</Button>
+                                <Button type="button" variant="ghost" onClick={() => setViewingAppId(null)}>Cancel</Button>
                                 <Button type="submit" disabled={form.formState.isSubmitting}>
                                     {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Save Changes
@@ -428,9 +468,9 @@ export default function ApplicationsPage() {
                             </DialogFooter>
                           </form>
                         </Form>
-                    </DialogContent>
-                </Dialog>
-            )}
+                    )}
+                </DialogContent>
+            </Dialog>
 
             {isDeleteDialogOpen && (
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -452,3 +492,4 @@ export default function ApplicationsPage() {
             )}
         </>
     );
+}

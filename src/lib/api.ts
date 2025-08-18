@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Internship, Application, ApiInternshipStatus } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus, DetailedApplication } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -97,6 +97,37 @@ export const getApplications = async (token: string, status?: string, search?: s
     if (!response.ok) throw new Error('Failed to fetch applications');
     return response.json();
 };
+
+export const getApplicationDetails = async (id: number, token: string): Promise<DetailedApplication> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/admin/details/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch application details');
+    }
+    const data = await response.json();
+    // Prepend base URL to resumeUrl
+    if (data.resumeUrl) {
+        data.resumeUrl = `${getApiBaseUrl()}${data.resumeUrl}`;
+    }
+    return data;
+};
+
+
+export const updateApplicationDetails = async (id: number, data: any, token: string): Promise<Application> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/admin/update/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update application');
+    }
+    return response.json();
+};
+
 
 export const updateApplicationStatus = async (id: number, status: ApiInternshipStatus, token: string): Promise<Application> => {
     const response = await fetch(`${getApiBaseUrl()}/api/applications/${id}/status`, {
