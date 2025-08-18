@@ -1,11 +1,14 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { internships, Internship } from '@/lib/mock-data';
+import type { Internship } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -46,6 +49,7 @@ export default function EditInternshipPage() {
     const { toast } = useToast();
     const router = useRouter();
     const params = useParams();
+    const { token } = useAuth();
     const internshipId = parseInt(params.id as string, 10);
     
     const [internship, setInternship] = useState<Internship | null>(null);
@@ -54,17 +58,19 @@ export default function EditInternshipPage() {
         resolver: zodResolver(formSchema),
     });
 
-    useEffect(() => {
-        const internToEdit = internships.find(i => i.id === internshipId);
-        if (internToEdit) {
-            setInternship(internToEdit);
+    const fetchInternship = useCallback(async () => {
+        if (!token || isNaN(internshipId)) return;
+        
+        try {
+            const data = await api.getInternshipById(internshipId, token);
+            setInternship(data);
             form.reset({
-                ...internToEdit,
-                amount: internToEdit.amount || undefined,
-                isMonthly: internToEdit.isMonthly || false,
-                announcements: internToEdit.announcements || '',
+                ...data,
+                amount: data.amount ? parseFloat(data.amount) : undefined,
+                isMonthly: data.isMonthly || false,
+                announcements: data.announcements || '',
             });
-        } else {
+        } catch (error) {
              toast({
                 title: "Error!",
                 description: "Internship not found.",
@@ -72,27 +78,35 @@ export default function EditInternshipPage() {
             });
             router.push('/admin/internships');
         }
-    }, [internshipId, form, router, toast]);
+    }, [internshipId, form, router, toast, token]);
+
+    useEffect(() => {
+        fetchInternship();
+    }, [fetchInternship]);
 
     const category = form.watch('category');
 
-    function onSubmit(values: FormValues) {
-        const internIndex = internships.findIndex(i => i.id === internshipId);
-        if (internIndex === -1) {
-             toast({ title: "Error!", description: "Could not find internship to update.", variant: 'destructive'});
+    async function onSubmit(values: FormValues) {
+        if (!token) {
+             toast({ title: "Authentication Error", description: "You are not logged in.", variant: 'destructive'});
              return;
         }
 
-        const updatedInternship = { ...internships[internIndex], ...values };
-        
-        internships[internIndex] = updatedInternship;
-        
-        toast({
-            title: "Success!",
-            description: "The internship has been updated successfully.",
-        });
+        const updatedData = {
+            ...values,
+             amount: values.amount ? String(values.amount) : undefined,
+        };
 
-        router.push('/admin/internships');
+        try {
+            await api.updateInternship(internshipId, updatedData, token);
+            toast({
+                title: "Success!",
+                description: "The internship has been updated successfully.",
+            });
+            router.push('/admin/internships');
+        } catch(error: any) {
+            toast({ title: "Error!", description: error.message, variant: 'destructive'});
+        }
     }
     
     if (!internship) {

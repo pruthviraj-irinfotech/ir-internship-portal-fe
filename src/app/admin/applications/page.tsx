@@ -2,7 +2,9 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { applications, Application, internships, InternshipStatus } from '@/lib/mock-data';
+import type { Application, InternshipStatus } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -63,7 +65,8 @@ const formSchema = z.object({
 
 
 export default function ApplicationsPage() {
-    const [applicationList, setApplicationList] = useState<Application[]>(applications);
+    const [applicationList, setApplicationList] = useState<Application[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [viewingApplication, setViewingApplication] = useState<Application | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<InternshipStatus | 'all'>('all');
@@ -71,19 +74,39 @@ export default function ApplicationsPage() {
     const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const { toast } = useToast();
+    const { token } = useAuth();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
     });
     
     const watchedStatus = form.watch('status');
+    
+    useEffect(() => {
+        const fetchApplications = async () => {
+            if (!token) return;
+            try {
+                setIsLoading(true);
+                const data = await api.getApplications(token);
+                setApplicationList(data);
+            } catch (error: any) {
+                toast({ title: 'Error', description: error.message, variant: 'destructive' });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchApplications();
+    }, [token, toast]);
 
     const filteredApplications = useMemo(() => {
-        const filtered = applicationList.filter(app =>
-            (statusFilter === 'all' || app.status === statusFilter) &&
-            (app.internshipTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            app.userName.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
+        const filtered = applicationList.filter(app => {
+            const userName = `${app.user.profile.firstName} ${app.user.profile.lastName || ''}`.toLowerCase();
+            const internshipTitle = app.internshipTitle.toLowerCase();
+            const searchTermLower = searchTerm.toLowerCase();
+
+            return (statusFilter === 'all' || app.status === statusFilter) &&
+                   (internshipTitle.includes(searchTermLower) || userName.includes(searchTermLower))
+        });
 
         return filtered.sort((a, b) => {
             const dateA = new Date(a.applicationDate).getTime();
@@ -108,35 +131,22 @@ export default function ApplicationsPage() {
     }, [viewingApplication, form]);
 
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
-        if (!viewingApplication) return;
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (!viewingApplication || !token) return;
 
-        const appIndex = applicationList.findIndex(app => app.id === viewingApplication.id);
-        if (appIndex === -1) return;
+        try {
+            const updatedApp = await api.updateApplicationStatus(viewingApplication.id, values.status, token);
+            // Additional fields need a different endpoint, for now we only update status
+            setApplicationList(prev => prev.map(app => app.id === updatedApp.id ? { ...app, ...updatedApp } : app));
 
-        const updatedApplications = [...applicationList];
-        const updatedApp = { 
-            ...updatedApplications[appIndex], 
-            status: values.status,
-            interviewDate: values.interviewDate ? format(values.interviewDate, 'yyyy-MM-dd') : undefined,
-            interviewTime: values.interviewTime,
-            interviewInstructions: values.interviewInstructions,
-            comments: values.comments,
-        };
-
-        updatedApplications[appIndex] = updatedApp;
-        setApplicationList(updatedApplications);
-
-        const internship = internships.find(i => i.id === updatedApp.internshipId);
-        if (internship) {
-            internship.status = values.status;
+            toast({
+                title: 'Application Updated',
+                description: `Application status changed to ${values.status}.`,
+            });
+            setViewingApplication(null);
+        } catch (error: any) {
+            toast({ title: 'Error', description: error.message, variant: 'destructive' });
         }
-
-        toast({
-            title: 'Application Updated',
-            description: `Application status changed to ${values.status}.`,
-        });
-        setViewingApplication(null);
     };
 
     const handleSelectAll = (checked: boolean) => {
@@ -159,18 +169,13 @@ export default function ApplicationsPage() {
     };
 
     const handleDeleteSelected = () => {
+        // This functionality needs a bulk delete API endpoint. For now, it will only work on the client side.
         const newApplicationList = applicationList.filter(app => !selectedRows.has(app.id));
         setApplicationList(newApplicationList);
-        
-        const appIndicesToDelete = applications.map((app, index) => selectedRows.has(app.id) ? index : -1).filter(index => index !== -1);
-        for (let i = appIndicesToDelete.length - 1; i >= 0; i--) {
-            applications.splice(appIndicesToDelete[i], 1);
-        }
-        
         setSelectedRows(new Set());
         toast({
             title: `${selectedRows.size} Application(s) Deleted`,
-            description: 'The selected applications have been removed.',
+            description: 'The selected applications have been removed. (Client-side only)',
         });
         setIsDeleteDialogOpen(false);
     };
@@ -224,7 +229,7 @@ export default function ApplicationsPage() {
                                 <TableRow>
                                     <TableHead className="w-[50px]">
                                         <Checkbox
-                                            checked={filteredApplications.length > 0 && selectedRows.size === filteredApplications.length}
+                                            checked={!isLoading && filteredApplications.length > 0 && selectedRows.size === filteredApplications.length}
                                             onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
                                             aria-label="Select all"
                                         />
@@ -242,7 +247,9 @@ export default function ApplicationsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredApplications.length > 0 ? (
+                                {isLoading ? (
+                                    <TableRow><TableCell colSpan={6} className="text-center h-24"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></TableCell></TableRow>
+                                ) : filteredApplications.length > 0 ? (
                                     filteredApplications.map(app => (
                                         <TableRow key={app.id} data-state={selectedRows.has(app.id) && "selected"}>
                                             <TableCell>
@@ -252,7 +259,7 @@ export default function ApplicationsPage() {
                                                     aria-label={`Select row for ${app.userName}`}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">{app.userName}</TableCell>
+                                            <TableCell className="font-medium">{`${app.user.profile.firstName} ${app.user.profile.lastName || ''}`}</TableCell>
                                             <TableCell>{app.internshipTitle}</TableCell>
                                             <TableCell>{format(new Date(app.applicationDate), 'dd-MM-yy')}</TableCell>
                                             <TableCell>
@@ -286,16 +293,16 @@ export default function ApplicationsPage() {
                             <DialogHeader>
                                 <DialogTitle>Application Details</DialogTitle>
                                 <DialogDescription>
-                                    {viewingApplication.userName}'s application for "{viewingApplication.internshipTitle}".
+                                    {viewingApplication.user.profile.firstName}'s application for "{viewingApplication.internshipTitle}".
                                 </DialogDescription>
                             </DialogHeader>
                            
                             <div className="grid md:grid-cols-2 gap-8 max-h-[80vh] mt-4">
                                 <div className="space-y-6 py-2 overflow-y-auto pr-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                        <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{viewingApplication.userName}</p></div>
+                                        <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{`${viewingApplication.user.profile.firstName} ${viewingApplication.user.profile.lastName || ''}`}</p></div>
                                         <div><Label>Applicant Phone</Label><p className="text-sm text-muted-foreground">{viewingApplication.userPhone}</p></div>
-                                        <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.userEmail}</p></div>
+                                        <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.user.email}</p></div>
                                     </div>
                                     <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
                                         <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{viewingApplication.applicationNumber}</p></div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -12,7 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { internships } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
 import { Loader2 } from 'lucide-react';
 import RichTextEditor from '@/components/rich-text-editor';
 
@@ -44,6 +46,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function PostNewInternshipPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { token } = useAuth();
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -64,34 +67,33 @@ export default function PostNewInternshipPage() {
 
     const category = form.watch('category');
 
-    function onSubmit(values: FormValues) {
-        const newInternship = {
-            id: internships.length + 1,
-            title: values.title,
-            company: 'IR INFOTECH', // Hardcoded as per mock data
-            location: values.location,
-            duration: values.duration,
-            category: values.category,
-            amount: values.amount,
-            isMonthly: values.isMonthly,
+    async function onSubmit(values: FormValues) {
+        if (!token) {
+            toast({ title: 'Authentication Error', description: 'You must be logged in.', variant: 'destructive' });
+            return;
+        }
+
+        const newInternshipData = {
+            ...values,
+            amount: values.amount ? String(values.amount) : undefined,
+            isActive: true, // New internships are active by default
             postedDate: new Date().toISOString().split('T')[0],
-            description: values.description,
-            detailedDescription: values.detailedDescription,
-            whoCanApply: values.whoCanApply,
-            perksAndBenefits: values.perksAndBenefits,
-            selectionProcess: values.selectionProcess,
-            announcements: values.announcements,
-            applied: false,
         };
 
-        internships.unshift(newInternship);
-
-        toast({
-            title: "Internship Posted!",
-            description: `The "${values.title}" internship has been successfully listed.`,
-        });
-
-        router.push('/admin/internships');
+        try {
+            await api.createInternship(newInternshipData, token);
+            toast({
+                title: "Internship Posted!",
+                description: `The "${values.title}" internship has been successfully listed.`,
+            });
+            router.push('/admin/internships');
+        } catch (error: any) {
+            toast({
+                title: "Failed to post internship",
+                description: error.message,
+                variant: 'destructive',
+            });
+        }
     }
 
   return (

@@ -1,9 +1,11 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { internships, Internship } from '@/lib/mock-data';
+import type { Internship } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
 import {
   Card,
   CardContent,
@@ -22,7 +24,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, FilePenLine, Trash2, Search, Eye } from 'lucide-react';
+import { PlusCircle, FilePenLine, Trash2, Search, Eye, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,40 +48,70 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
 export default function AdminInternshipsPage() {
-  const [internshipList, setInternshipList] = useState<Internship[]>(internships);
+  const [internshipList, setInternshipList] = useState<Internship[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [internshipToDelete, setInternshipToDelete] = useState<Internship | null>(null);
   const [viewingInternship, setViewingInternship] = useState<Internship | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
+  const { token } = useAuth();
 
-  const handleDelete = (internshipId: number) => {
-    const index = internships.findIndex(i => i.id === internshipId);
-    if (index > -1) {
-        internships.splice(index, 1);
-    }
-    setInternshipList(internships.slice());
+  useEffect(() => {
+    const fetchInternships = async () => {
+      if (!token) return;
+      try {
+        setIsLoading(true);
+        const data = await api.getInternships(token);
+        setInternshipList(data);
+      } catch (error: any) {
+        toast({ title: 'Error fetching internships', description: error.message, variant: 'destructive' });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchInternships();
+  }, [token, toast]);
+
+  const handleDelete = async () => {
+    if (!internshipToDelete || !token) return;
     
-    setInternshipToDelete(null);
-    toast({
-      title: 'Success!',
-      description: 'The internship listing has been deleted.',
-    });
+    try {
+      await api.deleteInternship(internshipToDelete.id, token);
+      setInternshipList(prev => prev.filter(i => i.id !== internshipToDelete.id));
+      toast({
+        title: 'Success!',
+        description: 'The internship listing has been deleted.',
+      });
+    } catch (error: any) {
+       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setInternshipToDelete(null);
+    }
   };
 
-  const handleStatusChange = (internshipId: number, active: boolean) => {
-    const updatedInternships = internshipList.map(internship => 
-        internship.id === internshipId ? { ...internship, active } : internship
-    );
-    setInternshipList(updatedInternships);
-
-    const index = internships.findIndex(i => i.id === internshipId);
-    if (index > -1) {
-        internships[index].active = active;
+  const handleStatusChange = async (internshipId: number, active: boolean) => {
+    if (!token) return;
+    
+    try {
+      await api.updateInternship(internshipId, { isActive: active }, token);
+      setInternshipList(prev => 
+        prev.map(internship => 
+          internship.id === internshipId ? { ...internship, isActive: active } : internship
+        )
+      );
+      toast({
+        title: 'Status Updated',
+        description: `The internship has been set to ${active ? 'active' : 'inactive'}.`,
+      });
+    } catch (error: any) {
+       toast({ title: 'Error', description: 'Failed to update status.', variant: 'destructive' });
+        // Revert UI change on failure
+       setInternshipList(prev => 
+        prev.map(internship => 
+          internship.id === internshipId ? { ...internship, isActive: !active } : internship
+        )
+      );
     }
-    toast({
-      title: 'Status Updated',
-      description: `The internship has been set to ${active ? 'active' : 'inactive'}.`,
-    });
   };
 
   const filteredInternships = useMemo(() => {
@@ -136,7 +168,13 @@ export default function AdminInternshipsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredInternships.length > 0 ? (
+                {isLoading ? (
+                    <TableRow>
+                        <TableCell colSpan={5} className="text-center h-24">
+                           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                        </TableCell>
+                    </TableRow>
+                ) : filteredInternships.length > 0 ? (
                   filteredInternships.map(internship => (
                     <TableRow key={internship.id}>
                       <TableCell className="font-medium">{internship.title}</TableCell>
@@ -144,7 +182,7 @@ export default function AdminInternshipsPage() {
                       <TableCell>{format(new Date(internship.postedDate), 'dd-MM-yy')}</TableCell>
                        <TableCell>
                         <Switch
-                          checked={internship.active}
+                          checked={internship.isActive}
                           onCheckedChange={(checked) => handleStatusChange(internship.id, checked)}
                           aria-label={`Toggle status for ${internship.title}`}
                         />
@@ -199,7 +237,7 @@ export default function AdminInternshipsPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => handleDelete(internshipToDelete.id)}>
+              <AlertDialogAction onClick={handleDelete}>
                 Continue
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -222,7 +260,7 @@ export default function AdminInternshipsPage() {
                         <Label className="text-sm text-muted-foreground">Amount</Label>
                         <p>
                             {viewingInternship.amount 
-                                ? `₹${viewingInternship.amount.toLocaleString('en-IN')}${viewingInternship.isMonthly ? '/month' : ''}`
+                                ? `₹${Number(viewingInternship.amount).toLocaleString('en-IN')}${viewingInternship.isMonthly ? '/month' : ''}`
                                 : 'N/A'}
                         </p>
                       </div>
