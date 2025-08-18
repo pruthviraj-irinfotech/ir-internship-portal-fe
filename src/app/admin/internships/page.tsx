@@ -83,7 +83,7 @@ export default function AdminInternshipsPage() {
         description: 'The internship listing has been deleted.',
       });
     } catch (error: any) {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+       toast({ title: 'Deletion Failed', description: error.message, variant: 'destructive' });
     } finally {
       setInternshipToDelete(null);
     }
@@ -92,25 +92,25 @@ export default function AdminInternshipsPage() {
   const handleStatusChange = async (internshipId: number, active: boolean) => {
     if (!token) return;
     
+    const originalInternships = [...internshipList];
+    
+    // Optimistically update the UI
+    setInternshipList(prev => 
+      prev.map(internship => 
+        internship.id === internshipId ? { ...internship, isActive: active } : internship
+      )
+    );
+
     try {
       await api.updateInternship(internshipId, { isActive: active }, token);
-      setInternshipList(prev => 
-        prev.map(internship => 
-          internship.id === internshipId ? { ...internship, isActive: active } : internship
-        )
-      );
       toast({
         title: 'Status Updated',
         description: `The internship has been set to ${active ? 'active' : 'inactive'}.`,
       });
     } catch (error: any) {
        toast({ title: 'Error', description: 'Failed to update status.', variant: 'destructive' });
-        // Revert UI change on failure
-       setInternshipList(prev => 
-        prev.map(internship => 
-          internship.id === internshipId ? { ...internship, isActive: !active } : internship
-        )
-      );
+       // Revert UI change on failure
+       setInternshipList(originalInternships);
     }
   };
 

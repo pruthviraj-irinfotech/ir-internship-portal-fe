@@ -23,7 +23,7 @@ const getAuthHeaders = (token: string) => {
 // ====================================================================
 
 export const getInternships = async (token: string): Promise<Internship[]> => {
-    const response = await fetch(`${getApiBaseUrl()}/api/internships`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/internships/admin/all`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!response.ok) throw new Error('Failed to fetch internships');
@@ -70,8 +70,9 @@ export const deleteInternship = async (id: number, token: string): Promise<void>
         headers: { 'Authorization': `Bearer ${token}` },
     });
     if (!response.ok) {
-        if (response.status === 404) {
-             throw new Error('Cannot delete. Internship has active applications.');
+        if (response.status === 409) {
+             const error = await response.json();
+             throw new Error(error.message || 'Cannot delete. Internship has active applications.');
         }
         throw new Error('Failed to delete internship');
     }
