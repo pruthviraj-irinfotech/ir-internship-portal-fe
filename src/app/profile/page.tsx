@@ -187,7 +187,6 @@ export default function ProfilePage() {
         toast({ title: 'Success', description: 'Your password has been changed.' });
         setCurrentPassword('');
         setNewPassword('');
-
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Update Failed', description: error.message });
     } finally {
