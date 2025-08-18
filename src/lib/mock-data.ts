@@ -13,7 +13,7 @@ export type Internship = {
   isMonthly?: boolean;
   category: 'Paid' | 'Free' | 'Stipend';
   postedDate: string;
-  isActive: boolean; // Changed from active
+  isActive: boolean;
   description?: string;
   detailedDescription?: string;
   selectionProcess?: string;
@@ -22,6 +22,7 @@ export type Internship = {
   announcements?: string;
   applicationStatus?: ApiInternshipStatus | null;
   applicationDate?: string;
+  status?: InternshipStatus; // This is for frontend display mapping, API will use applicationStatus
 };
 
 export let internships: Internship[] = [];
@@ -150,16 +151,14 @@ export type Application = {
   id: number;
   applicationNumber: string;
   internshipId: number;
-  // From API, user object is nested
   user: ApplicationUser;
-  // Redundant fields, kept for compatibility if needed, but should be derived from user
   userId: number; 
-  userName: string;
-  userEmail: string;
+  userName: string; // This can be derived from user.profile
+  userEmail: string; // This can be derived from user
   userPhone: string;
   internshipTitle: string;
   applicationDate: string;
-  status: InternshipStatus;
+  status: ApiInternshipStatus;
   resumeUrl: string;
   whyApply: string;
   altEmail?: string;

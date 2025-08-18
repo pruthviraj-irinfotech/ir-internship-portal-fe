@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Internship, Application, InternshipStatus } from './mock-data';
+import type { Internship, Application, InternshipStatus, ApiInternshipStatus } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -38,7 +38,7 @@ export const getInternshipById = async (id: number, token: string): Promise<Inte
     return response.json();
 };
 
-export const createInternship = async (internshipData: Omit<Internship, 'id' | 'company' | 'applicationStatus'>, token: string): Promise<Internship> => {
+export const createInternship = async (internshipData: Omit<Internship, 'id' | 'company' | 'applicationStatus' | 'applicationDate' | 'status'>, token: string): Promise<Internship> => {
     const response = await fetch(`${getApiBaseUrl()}/api/internships`, {
         method: 'POST',
         headers: getAuthHeaders(token),
@@ -82,17 +82,23 @@ export const deleteInternship = async (id: number, token: string): Promise<void>
 // Application API Functions
 // ====================================================================
 
-export const getApplications = async (token: string): Promise<Application[]> => {
-    // Assuming a general endpoint to get all applications for the admin view.
-    // If it's per-internship, the component logic would need to adjust.
-    const response = await fetch(`${getApiBaseUrl()}/api/applications`, {
+export const getApplications = async (token: string, status?: string, search?: string): Promise<Application[]> => {
+    const url = new URL(`${getApiBaseUrl()}/api/applications/admin/all`);
+    if (status && status !== 'all') {
+        url.searchParams.append('status', status);
+    }
+    if (search) {
+        url.searchParams.append('search', search);
+    }
+
+    const response = await fetch(url.toString(), {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!response.ok) throw new Error('Failed to fetch applications');
     return response.json();
 };
 
-export const updateApplicationStatus = async (id: number, status: InternshipStatus, token: string): Promise<Application> => {
+export const updateApplicationStatus = async (id: number, status: ApiInternshipStatus, token: string): Promise<Application> => {
     const response = await fetch(`${getApiBaseUrl()}/api/applications/${id}/status`, {
         method: 'PATCH',
         headers: getAuthHeaders(token),
