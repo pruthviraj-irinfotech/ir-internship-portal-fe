@@ -4,24 +4,49 @@
 import { useState, useEffect } from 'react';
 import { InternshipCard } from '@/components/internship-card';
 import { Input } from '@/components/ui/input';
-import { internships, Internship } from '@/lib/mock-data';
+import { Internship } from '@/lib/mock-data';
 import { Search } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
+
+async function getInternships(): Promise<Internship[]> {
+    try {
+        const response = await fetch('http://localhost:3001/api/internships');
+        if (!response.ok) {
+            console.error('Failed to fetch internships:', response.statusText);
+            return [];
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('An error occurred while fetching internships:', error);
+        return [];
+    }
+}
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredInternships, setFilteredInternships] = useState<Internship[]>(internships);
+  const [allInternships, setAllInternships] = useState<Internship[]>([]);
+  const [filteredInternships, setFilteredInternships] = useState<Internship[]>([]);
+
+  useEffect(() => {
+    const fetchInternships = async () => {
+        const internships = await getInternships();
+        setAllInternships(internships);
+        setFilteredInternships(internships);
+    };
+    fetchInternships();
+  }, []);
 
   useEffect(() => {
     const lowercasedTerm = searchTerm.toLowerCase();
-    const results = internships.filter(internship =>
+    const results = allInternships.filter(internship =>
       internship.title.toLowerCase().includes(lowercasedTerm) ||
       internship.company.toLowerCase().includes(lowercasedTerm) ||
       (internship.description && internship.description.toLowerCase().includes(lowercasedTerm))
     );
     setFilteredInternships(results);
-  }, [searchTerm]);
+  }, [searchTerm, allInternships]);
 
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1 relative">

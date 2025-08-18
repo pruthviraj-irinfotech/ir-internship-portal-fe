@@ -7,12 +7,12 @@ export type Internship = {
   company: string;
   location: string;
   duration: string;
-  amount?: number;
+  amount?: string; // Changed to string to match API
   isMonthly?: boolean;
   category: 'Paid' | 'Free' | 'Stipend';
   postedDate: string;
-  active: boolean;
-  applied?: boolean;
+  isActive: boolean; // Changed from 'active'
+  applied?: boolean; // This will be handled by the authenticated user API
   applicationDate?: string;
   status?: InternshipStatus;
   description?: string;
@@ -23,6 +23,7 @@ export type Internship = {
   announcements?: string;
   adminNotes?: string[];
   assignedDocuments?: { name: string; url: string }[];
+  applicationStatus?: string | null; // Added to match API
 };
 
 export const internships: Internship[] = [
@@ -32,11 +33,11 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: 15000,
+    amount: "15000",
     isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-29',
-    active: true,
+    isActive: true,
     applied: true,
     applicationDate: '2024-07-30',
     status: 'In Review',
@@ -53,11 +54,11 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: 18000,
+    amount: "18000",
     isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-28',
-    active: true,
+    isActive: true,
     applied: true,
     applicationDate: '2024-03-01',
     status: 'Completed',
@@ -73,11 +74,11 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '4 Months',
-    amount: 20000,
+    amount: "20000",
     isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-27',
-    active: true,
+    isActive: true,
     applied: true,
     applicationDate: '2024-02-15',
     status: 'Completed',
@@ -93,11 +94,11 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: 10000,
+    amount: "10000",
     isMonthly: false,
     category: 'Paid',
     postedDate: '2024-07-26',
-    active: true,
+    isActive: true,
     applied: true,
     applicationDate: '2024-07-27',
     status: 'Ongoing',
@@ -119,11 +120,11 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '6 Months',
-    amount: 25000,
+    amount: "25000",
     isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-25',
-    active: true,
+    isActive: true,
     applied: true,
     applicationDate: '2024-07-26',
     status: 'Shortlisted',
@@ -141,7 +142,7 @@ export const internships: Internship[] = [
     duration: '2 Months',
     category: 'Free',
     postedDate: '2024-07-24',
-    active: false,
+    isActive: false,
     description: 'An introductory internship to Microsoft Power Automate. Learn to create automated workflows between your favorite apps and services to synchronize files, get notifications, and collect data.',
     detailedDescription: 'This is a beginner-friendly internship for those interested in low-code/no-code automation. You will learn to use Microsoft Power Automate to build flows that solve real-world business problems, improving efficiency and productivity.',
     selectionProcess: '<ul><li>Online Application</li><li>Shortlisted candidates will be contacted for a brief online interview.</li></ul>',
@@ -156,7 +157,7 @@ export const internships: Internship[] = [
     duration: '3 Months',
     category: 'Free',
     postedDate: '2024-07-23',
-    active: true,
+    isActive: true,
     description: 'Gain practical experience in project management methodologies like Agile and Scrum. You will learn to use tools like Jira, create project timelines, and facilitate team collaboration to deliver projects on time.',
     detailedDescription: 'As a Project Management intern, you will support our project managers in planning, executing, and monitoring projects. You will get hands-on experience with project management software and learn how to manage scope, time, and resources effectively.',
     selectionProcess: '<ul><li>Application & Resume screen</li><li>Situational Judgement Test</li><li>Interview with a Senior Project Manager</li></ul>',
@@ -169,11 +170,11 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '6 Months',
-    amount: 28000,
+    amount: "28000",
     isMonthly: true,
     category: 'Stipend',
     postedDate: '2024-07-23',
-    active: true,
+    isActive: true,
     applied: true,
     applicationDate: '2024-01-10',
     status: 'Completed',
@@ -189,11 +190,11 @@ export const internships: Internship[] = [
     company: 'IR INFOTECH',
     location: 'Remote',
     duration: '3 Months',
-    amount: 8000,
+    amount: "8000",
     isMonthly: false,
     category: 'Paid',
     postedDate: '2024-07-22',
-    active: true,
+    isActive: true,
     applied: true,
     applicationDate: '2024-07-29',
     status: 'Terminated',
@@ -615,4 +616,5 @@ export const applications: Application[] = [
         driveLink: 'https://docs.google.com/folder/d/some-other-unique-id/view'
     }
 ];
+
 

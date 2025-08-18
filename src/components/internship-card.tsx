@@ -227,7 +227,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
           <div className="flex items-center gap-2">
             <IndianRupee className="w-4 h-4 text-muted-foreground" />
             <span>
-              {internship.amount.toLocaleString('en-IN')}
+              {parseInt(internship.amount, 10).toLocaleString('en-IN')}
               {internship.isMonthly ? '/month' : ''}
             </span>
           </div>
