@@ -294,9 +294,9 @@ export default function ApplicationsPage() {
 
             {viewingApplication && (
                 <Dialog open={!!viewingApplication} onOpenChange={() => setViewingApplication(null)}>
-                    <DialogContent className="sm:max-w-6xl">
+                    <DialogContent className="sm:max-w-6xl h-[90vh] flex flex-col">
                         <Form {...form}>
-                         <form onSubmit={form.handleSubmit(onSubmit)}>
+                         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
                             <DialogHeader>
                                 <DialogTitle>Application Details</DialogTitle>
                                 <DialogDescription>
@@ -304,7 +304,7 @@ export default function ApplicationsPage() {
                                 </DialogDescription>
                             </DialogHeader>
                            
-                            <div className="grid md:grid-cols-2 gap-8 max-h-[80vh] mt-4">
+                            <div className="grid md:grid-cols-2 gap-8 mt-4 overflow-hidden flex-1">
                                 <div className="space-y-6 py-2 overflow-y-auto pr-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
                                         <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{viewingApplication.applicantName}</p></div>
@@ -345,8 +345,8 @@ export default function ApplicationsPage() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="border-l pl-8 flex flex-col gap-6">
-                                    <div className="relative flex-1 rounded-md overflow-hidden border">
+                                <div className="border-l pl-8 flex flex-col gap-6 overflow-y-auto">
+                                    <div className="relative flex-1 rounded-md overflow-hidden border min-h-[400px]">
                                         <Image src={viewingApplication.resumeUrl || 'https://placehold.co/400x500.png'} alt={`Resume for ${viewingApplication.applicantName}`} fill className="object-contain p-2" data-ai-hint="resume document" />
                                     </div>
                                     <div className="space-y-4 border-t pt-6">
