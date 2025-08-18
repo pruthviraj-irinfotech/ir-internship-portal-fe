@@ -41,7 +41,6 @@ const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destruct
     'Terminated': 'destructive',
 };
 
-const allStatuses = Object.keys(statusColors) as InternshipStatus[];
 const allApiStatuses: ApiInternshipStatus[] = ['In_Review', 'Shortlisted', 'Interview_Scheduled', 'Ongoing', 'Completed', 'Rejected', 'Withdrawn', 'Terminated'];
 
 const statusApiToDisplayMap: Record<ApiInternshipStatus, InternshipStatus> = {
@@ -116,8 +115,8 @@ export default function ApplicationsPage() {
 
     const sortedApplications = useMemo(() => {
         return [...applicationList].sort((a, b) => {
-            const dateA = new Date(a.applicationDate).getTime();
-            const dateB = new Date(b.applicationDate).getTime();
+            const dateA = new Date(a.appliedDate).getTime();
+            const dateB = new Date(b.appliedDate).getTime();
             if (sortDirection === 'asc') {
                 return dateA - dateB;
             }
@@ -263,13 +262,13 @@ export default function ApplicationsPage() {
                                                 <Checkbox
                                                     checked={selectedRows.has(app.id)}
                                                     onCheckedChange={(checked) => handleSelectRow(app.id, checked as boolean)}
-                                                    aria-label={`Select row for ${app.user.profile.firstName}`}
+                                                    aria-label={`Select row for ${app.applicantName}`}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">{`${app.user.profile.firstName} ${app.user.profile.lastName || ''}`}</TableCell>
+                                            <TableCell className="font-medium">{app.applicantName}</TableCell>
                                             <TableCell className="font-mono text-xs">{app.applicationNumber}</TableCell>
                                             <TableCell>{app.internshipTitle}</TableCell>
-                                            <TableCell>{format(new Date(app.applicationDate), 'dd-MM-yy')}</TableCell>
+                                            <TableCell>{format(new Date(app.appliedDate), 'dd-MM-yy')}</TableCell>
                                             <TableCell>
                                                 <Badge variant={statusColors[statusApiToDisplayMap[app.status]]}>{statusApiToDisplayMap[app.status]}</Badge>
                                             </TableCell>
@@ -301,20 +300,20 @@ export default function ApplicationsPage() {
                             <DialogHeader>
                                 <DialogTitle>Application Details</DialogTitle>
                                 <DialogDescription>
-                                    {viewingApplication.user.profile.firstName}'s application for "{viewingApplication.internshipTitle}".
+                                    {viewingApplication.applicantName}'s application for "{viewingApplication.internshipTitle}".
                                 </DialogDescription>
                             </DialogHeader>
                            
                             <div className="grid md:grid-cols-2 gap-8 max-h-[80vh] mt-4">
                                 <div className="space-y-6 py-2 overflow-y-auto pr-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                        <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{`${viewingApplication.user.profile.firstName} ${viewingApplication.user.profile.lastName || ''}`}</p></div>
+                                        <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{viewingApplication.applicantName}</p></div>
                                         <div><Label>Applicant Phone</Label><p className="text-sm text-muted-foreground">{viewingApplication.userPhone}</p></div>
-                                        <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.user.email}</p></div>
+                                        <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.userEmail}</p></div>
                                     </div>
                                     <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
                                         <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{viewingApplication.applicationNumber}</p></div>
-                                        <div><Label>Application Date</Label><p className="text-sm text-muted-foreground">{format(new Date(viewingApplication.applicationDate), 'dd-MM-yy')}</p></div>
+                                        <div><Label>Application Date</Label><p className="text-sm text-muted-foreground">{format(new Date(viewingApplication.appliedDate), 'dd-MM-yy')}</p></div>
                                     </div>
                                     <div className="border-t pt-4"><Label>Why are you applying for this internship?</Label><p className="text-sm text-muted-foreground mt-1">{viewingApplication.whyApply}</p></div>
                                     <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
@@ -348,7 +347,7 @@ export default function ApplicationsPage() {
                                 </div>
                                 <div className="border-l pl-8 flex flex-col gap-6">
                                     <div className="relative flex-1 rounded-md overflow-hidden border">
-                                        <Image src={viewingApplication.resumeUrl} alt={`Resume for ${viewingApplication.user.profile.firstName}`} fill className="object-contain p-2" data-ai-hint="resume document" />
+                                        <Image src={viewingApplication.resumeUrl || 'https://placehold.co/400x500.png'} alt={`Resume for ${viewingApplication.applicantName}`} fill className="object-contain p-2" data-ai-hint="resume document" />
                                     </div>
                                     <div className="space-y-4 border-t pt-6">
                                         <FormField control={form.control} name="status" render={({ field }) => (
