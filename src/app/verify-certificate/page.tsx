@@ -91,7 +91,7 @@ export default function VerifyCertificatePage() {
               <div className="relative">
                 <Input
                   id="certificateId"
-                  placeholder="e.g., CERT12345"
+                  placeholder="e.g., CERT-2024-001"
                   value={certificateId}
                   onChange={(e) => setCertificateId(e.target.value)}
                   disabled={isLoading}
@@ -138,12 +138,14 @@ export default function VerifyCertificatePage() {
               </div>
               <div className="space-y-1">
                   <Label>Role</Label>
-                  <p>{foundCertificate.internshipRole} at {foundCertificate.company}</p>
+                  <p>{foundCertificate.internshipRole}</p>
               </div>
-               <div className="space-y-1">
-                  <Label>Internship Duration</Label>
-                  <p>{foundCertificate.duration}</p>
-              </div>
+              {foundCertificate.startDate && (
+                 <div className="space-y-1">
+                    <Label>Internship Start Date</Label>
+                    <p>{format(new Date(foundCertificate.startDate), 'dd-MM-yy')}</p>
+                </div>
+              )}
                <div className="space-y-1">
                   <Label>Date Approved</Label>
                   <p>{format(new Date(foundCertificate.approvedDate), 'dd-MM-yy')}</p>
@@ -151,7 +153,7 @@ export default function VerifyCertificatePage() {
                <div className="space-y-1">
                   <Label>Status</Label>
                   <p>
-                      <Badge variant={statusColors[foundCertificate.status]}>
+                      <Badge variant={statusColors[foundCertificate.status] || 'default'}>
                           {foundCertificate.status}
                       </Badge>
                   </p>
