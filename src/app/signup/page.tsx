@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const MAX_AVATAR_SIZE = 100 * 1024; // 100KB
@@ -40,7 +40,7 @@ const formSchema = z.object({
   countryCode: z.string().min(1, { message: "Country code is required." }),
   phone: z.string().min(10, { message: "Phone number must be at least 10 digits." }),
   qualification: z.string().min(2, { message: "Please enter your qualification." }),
-  status: z.enum(['student', 'graduate', 'professional']),
+  currentStatus: z.enum(['student', 'graduate', 'professional']),
   orgName: z.string().min(2, { message: "Please enter your organization/institute name." }),
   orgCity: z.string().min(2, { message: "Please enter a city." }),
   orgState: z.string().min(2, { message: "Please enter a state." }),
@@ -58,6 +58,7 @@ export default function SignupPage() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect');
 
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [countdown, setCountdown] = useState(120);
@@ -79,7 +80,7 @@ export default function SignupPage() {
       countryCode: '+91',
       phone: '',
       qualification: '',
-      status: 'student',
+      currentStatus: 'student',
       orgName: '',
       orgCity: '',
       orgState: '',
@@ -105,15 +106,36 @@ export default function SignupPage() {
     return () => clearInterval(timer);
   }, [step, isResendDisabled]);
 
-  const handleNextStep = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    toast({ title: "OTP Sent!", description: "A verification code has been sent to your email." });
-    setStep(2);
-    setCountdown(120);
-    setIsResendDisabled(true);
+  const handleRequestOtp = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    try {
+        const { confirmPassword, avatar, ...apiData } = values;
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/register/request-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: apiData }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to request OTP.');
+        }
+
+        toast({ title: "OTP Sent!", description: result.message });
+        setStep(2);
+        setCountdown(120);
+        setIsResendDisabled(true);
+
+    } catch (error: any) {
+        toast({ title: "Error", description: error.message, variant: 'destructive' });
+    } finally {
+        setIsLoading(false);
+    }
   };
   
-  const handleSignup = (e: React.FormEvent) => {
+  const handleVerifyOtpAndSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     const otpRegex = /^\d{6}$/;
     if (!otpRegex.test(otp)) {
@@ -121,16 +143,40 @@ export default function SignupPage() {
       return;
     }
     setOtpError('');
+    setIsLoading(true);
 
-    toast({ title: "Success!", description: "Your account has been created. Please log in." });
-    const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
-    router.push(loginHref);
+    try {
+        const { confirmPassword, avatar, ...originalData } = form.getValues();
+        const requestBody = {
+            otp,
+            data: originalData,
+        };
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/register/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'OTP verification failed.');
+        }
+
+        toast({ title: "Success!", description: "Your account has been created. Please log in." });
+        const loginHref = redirectUrl ? `/login?redirect=${redirectUrl}` : '/login';
+        router.push(loginHref);
+
+    } catch (error: any) {
+        toast({ title: "Registration Failed", description: error.message, variant: 'destructive' });
+    } finally {
+        setIsLoading(false);
+    }
   }
 
-  const handleResendOtp = () => {
-    setCountdown(120);
-    setIsResendDisabled(true);
-    toast({ title: "OTP Resent", description: "A new verification code has been sent." });
+  const handleResendOtp = async () => {
+    await handleRequestOtp(form.getValues());
   }
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>, fieldOnChange: (files: FileList | null) => void) => {
@@ -173,7 +219,7 @@ export default function SignupPage() {
         </CardHeader>
         {step === 1 ? (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleNextStep)}>
+            <form onSubmit={form.handleSubmit(handleRequestOtp)}>
               <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto p-6 pt-0">
                 <FormField
                   control={form.control}
@@ -368,7 +414,7 @@ export default function SignupPage() {
                    </div>
                     <FormField
                     control={form.control}
-                    name="status"
+                    name="currentStatus"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status <span className="text-destructive">*</span></FormLabel>
@@ -392,12 +438,14 @@ export default function SignupPage() {
 
               </CardContent>
               <CardFooter className="flex flex-col gap-4">
-                <Button type="submit" className="w-full">Continue</Button>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="animate-spin" /> : 'Continue'}
+                </Button>
               </CardFooter>
             </form>
           </Form>
         ) : (
-          <form onSubmit={handleSignup}>
+          <form onSubmit={handleVerifyOtpAndSignup}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="otp">Enter 6-Digit OTP</Label>
@@ -411,6 +459,7 @@ export default function SignupPage() {
                         setOtp(e.target.value);
                         if (otpError) setOtpError('');
                     }}
+                    disabled={isLoading}
                 />
                 {otpError && <p className="text-xs text-destructive mt-1">{otpError}</p>}
                 <div className="text-center text-xs pt-2">
@@ -418,7 +467,7 @@ export default function SignupPage() {
                     type="button"
                     variant="link"
                     onClick={handleResendOtp}
-                    disabled={isResendDisabled}
+                    disabled={isResendDisabled || isLoading}
                     className="p-0 h-auto"
                   >
                      {isResendDisabled ? `Resend OTP in ${String(Math.floor(countdown / 60)).padStart(2, '0')}:${String(countdown % 60).padStart(2, '0')}` : "Resend OTP"}
@@ -427,7 +476,9 @@ export default function SignupPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-                <Button type="submit" className="w-full">Create Account</Button>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="animate-spin" /> : 'Create Account'}
+                </Button>
             </CardFooter>
           </form>
         )}

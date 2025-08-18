@@ -1,58 +1,102 @@
+
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+
+interface AuthData {
+  userId: number;
+  role: 'user' | 'admin';
+  accessToken: string;
+}
 
 interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
-  login: (email: string, pass: string) => 'admin' | 'user' | null;
+  userId: number | null;
+  token: string | null;
+  login: (email: string, pass: string) => Promise<{ role: 'admin' | 'user' }>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [authData, setAuthData] = useState<AuthData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    // This is a placeholder for checking a token in localStorage, for example.
-    // For now, we just assume the user is logged out on initial load.
+  const loadAuthDataFromStorage = useCallback(() => {
+    try {
+      const storedData = localStorage.getItem('authData');
+      if (storedData) {
+        const parsedData: AuthData = JSON.parse(storedData);
+        // Add token expiration check here in a real app
+        setAuthData(parsedData);
+      }
+    } catch (error) {
+      console.error("Failed to parse auth data from storage", error);
+      localStorage.removeItem('authData');
+    }
     setIsLoading(false);
   }, []);
 
-  const login = (email: string, pass: string): 'admin' | 'user' | null => {
-    // Admin credentials
-    if (email === 'admin@email.com' && pass === 'adminpassword') {
-      setIsLoggedIn(true);
-      setIsAdmin(true);
-      return 'admin';
+  useEffect(() => {
+    loadAuthDataFromStorage();
+  }, [loadAuthDataFromStorage]);
+  
+  const login = async (email: string, pass: string): Promise<{ role: 'admin' | 'user' }> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
     }
-    // Dummy credentials
-    if (email === 'player1@email.com' && pass === 'password123') {
-      setIsLoggedIn(true);
-      setIsAdmin(false);
-      // Redirection is now handled by the component that calls login.
-      return 'user';
-    }
-    return null;
+    
+    const newAuthData: AuthData = {
+        userId: data.userId,
+        role: data.role,
+        accessToken: data.accessToken,
+    };
+
+    setAuthData(newAuthData);
+    localStorage.setItem('authData', JSON.stringify(newAuthData));
+    
+    return { role: newAuthData.role };
   };
 
   const logout = () => {
-    setIsLoggedIn(false);
-    setIsAdmin(false);
+    setAuthData(null);
+    localStorage.removeItem('authData');
     router.push('/login');
   };
 
   if (isLoading) {
-    return null; // Or a loading spinner screen
+    return (
+        <div className="flex-1 flex h-screen w-full items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <p className="text-muted-foreground">Loading session...</p>
+            </div>
+        </div>
+    );
   }
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isAdmin, login, logout }}>
+    <AuthContext.Provider value={{ 
+        isLoggedIn: !!authData, 
+        isAdmin: authData?.role === 'admin',
+        userId: authData?.userId || null,
+        token: authData?.accessToken || null,
+        login, 
+        logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -20,25 +21,27 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect');
 
-  const performLogin = (email: string, password: string) => {
+  const performLogin = async (email: string, password: string) => {
     setIsLoading(true);
+    try {
+      const loginResult = await login(email, password);
 
-    setTimeout(() => {
-      const loginResult = login(email, password);
-
-      if (loginResult === 'admin') {
+      if (loginResult.role === 'admin') {
         router.push('/admin');
-      } else if (loginResult === 'user') {
+        toast({ title: "Login Successful", description: "Welcome, Admin!" });
+      } else if (loginResult.role === 'user') {
         router.push(redirectUrl || '/');
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid credentials. Please try again.",
-          variant: "destructive",
-        });
+        toast({ title: "Login Successful", description: "Welcome back!" });
       }
+    } catch (error: any) {
+       toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 500); // Shortened for faster testing
+    }
   }
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
@@ -48,13 +51,7 @@ export default function LoginPage() {
     const password = formData.get('password') as string;
     performLogin(email, password);
   };
-
-  const handleTestLogin = (role: 'user' | 'admin') => {
-    const email = role === 'user' ? 'player1@email.com' : 'admin@email.com';
-    const password = role === 'user' ? 'password123' : 'adminpassword';
-    performLogin(email, password);
-  }
-
+  
   const forgotPasswordHref = redirectUrl ? `/forgot-password?redirect=${redirectUrl}` : '/forgot-password';
   const signupHref = redirectUrl ? `/signup?redirect=${redirectUrl}` : '/signup';
 
@@ -74,7 +71,6 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 placeholder="player1@email.com"
-                defaultValue="player1@email.com"
                 required
                 disabled={isLoading}
               />
@@ -91,30 +87,12 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Use: password123"
-                  defaultValue="password123"
                   required
                   disabled={isLoading}
                 />
                  <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     <span className="sr-only">Toggle password visibility</span>
-                </Button>
-              </div>
-            </div>
-            <div className="text-xs text-muted-foreground pt-2">
-              <p>Use <b className="text-primary">player1@email.com</b> and <b className="text-primary">password123</b> to log in.</p>
-              <p className="mt-1">Admin: <b className="text-primary">admin@email.com</b> / <b className="text-primary">adminpassword</b>.</p>
-            </div>
-
-            <div className="text-xs text-center text-muted-foreground pt-4 border-t mt-4">
-              <p className="font-medium mb-2">For testing purposes:</p>
-              <div className="flex justify-center gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => handleTestLogin('user')} disabled={isLoading}>
-                    Login as User
-                </Button>
-                <Button type="button" variant="outline" size="sm" onClick={() => handleTestLogin('admin')} disabled={isLoading}>
-                    Login as Admin
                 </Button>
               </div>
             </div>
