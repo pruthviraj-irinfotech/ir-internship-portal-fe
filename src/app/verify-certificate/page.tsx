@@ -45,6 +45,10 @@ async function verifyCertificateApi(certificateNumber: string): Promise<Certific
 
     const data = await response.json();
     
+    const imageUrl = data.imageUrl 
+        ? (data.imageUrl.startsWith('http') ? data.imageUrl : `${baseUrl}${data.imageUrl}`)
+        : 'https://placehold.co/800x600.png';
+
     // Adapt the API response to the existing Certificate type
     return {
         id: 0,
@@ -56,7 +60,7 @@ async function verifyCertificateApi(certificateNumber: string): Promise<Certific
         duration: data.internshipDuration,
         approvedDate: data.certificateDate,
         description: data.description,
-        imageUrl: data.imageUrl.startsWith('http') ? data.imageUrl : `${baseUrl}${data.imageUrl}`,
+        imageUrl: imageUrl,
         status: data.certificateStatus,
     };
 
