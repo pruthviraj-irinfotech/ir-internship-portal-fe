@@ -1,5 +1,7 @@
 
 export type InternshipStatus = 'In Review' | 'Rejected' | 'Shortlisted' | 'Interview Scheduled' | 'Completed' | 'Withdrawn' | 'Ongoing' | 'Terminated';
+export type ApiInternshipStatus = "In_Review" | "Ongoing" | "Completed" | "Terminated" | "Rejected" | "Withdrawn" | "Shortlisted" | "Interview_Scheduled";
+
 
 export type Internship = {
   id: number;
@@ -12,18 +14,17 @@ export type Internship = {
   category: 'Paid' | 'Free' | 'Stipend';
   postedDate: string;
   isActive: boolean;
-  applied?: boolean; 
-  applicationDate?: string;
-  status?: InternshipStatus;
   description?: string;
   detailedDescription?: string;
   selectionProcess?: string;
   perksAndBenefits?: string;
   whoCanApply?: string;
   announcements?: string;
-  adminNotes?: string[];
-  assignedDocuments?: { name: string; url: string }[];
-  applicationStatus?: string | null;
+  applicationStatus?: ApiInternshipStatus | null;
+  // Deprecated fields from old mock data, kept for temporary compatibility
+  applied?: boolean; 
+  applicationDate?: string;
+  status?: InternshipStatus;
 };
 
 export let internships: Internship[] = [];

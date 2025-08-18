@@ -1,23 +1,58 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { internships } from '@/lib/mock-data';
+import type { Internship } from '@/lib/mock-data';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ListChecks, Award, UserCheck, Megaphone } from 'lucide-react';
+import { ListChecks, Award, UserCheck, Megaphone, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-
 
 export default function InternshipDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { isLoggedIn } = useAuth();
   const internshipId = params.id as string;
-  const internship = internships.find(i => i.id.toString() === internshipId);
+  const [internship, setInternship] = useState<Internship | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInternshipDetails = async () => {
+        setIsLoading(true);
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!baseUrl || !internshipId) {
+            setIsLoading(false);
+            return;
+        }
+        try {
+            const response = await fetch(`${baseUrl}/api/internships/${internshipId}`);
+            if (!response.ok) {
+                setInternship(null);
+            } else {
+                const data = await response.json();
+                setInternship(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch internship details", error);
+            setInternship(null);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    fetchInternshipDetails();
+  }, [internshipId]);
+
+  if (isLoading) {
+    return (
+        <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
 
   if (!internship) {
     return (
@@ -93,7 +128,7 @@ export default function InternshipDetailsPage() {
             <Badge variant="outline">{category}</Badge>
             {(category === 'Stipend' || category === 'Paid') && amount && (
               <Badge variant="outline">
-                ₹{amount.toLocaleString('en-IN')}{isMonthly ? '/month' : ''}
+                ₹{parseFloat(amount).toLocaleString('en-IN')}{isMonthly ? '/month' : ''}
               </Badge>
             )}
         </div>

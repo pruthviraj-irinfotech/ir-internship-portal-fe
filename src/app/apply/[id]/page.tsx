@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/context/auth-context';
-import { internships, applications, Application } from '@/lib/mock-data';
+import { internships, applications, Application, Internship } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,9 +17,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CheckCircle, FileText } from 'lucide-react';
+import { Loader2, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = ["application/pdf"];
@@ -39,21 +39,31 @@ const formSchema = z.object({
   terms: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
-  qualification: z.string().min(1, { message: "Qualification is required." }),
-  status: z.enum(['student', 'graduate', 'professional'], { required_error: "Status is required."}),
-  orgName: z.string().min(1, { message: "Organization name is required." }),
-  orgCity: z.string().min(1, { message: "City is required." }),
-  orgState: z.string().min(1, { message: "State is required." }),
-  orgCountry: z.string().min(1, { message: "Country is required." }),
 });
+
+interface UserProfile {
+    avatarUrl: string;
+    name: string;
+    email: string;
+    phone: string;
+    highestQualification: string;
+    status: 'student' | 'graduate' | 'professional';
+    organization: string;
+    city: string;
+    state: string;
+    country: string;
+}
 
 export default function ApplyPage() {
   const params = useParams();
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, token } = useAuth();
+  const { toast } = useToast();
   const internshipId = parseInt(params.id as string, 10);
-  const internship = internships.find(i => i.id === internshipId);
-
+  
+  const [internship, setInternship] = useState<Internship | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submission, setSubmission] = useState<{ number: string; date: string } | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -63,12 +73,6 @@ export default function ApplyPage() {
       altPhone: '',
       whyApply: '',
       terms: false,
-      qualification: 'B.Tech in Computer Science',
-      status: 'student',
-      orgName: 'University of Example',
-      orgCity: 'Exampleville',
-      orgState: 'Examplestate',
-      orgCountry: 'Exampleland',
     },
   });
 
@@ -78,6 +82,35 @@ export default function ApplyPage() {
     }
   }, [isLoggedIn, router, internshipId]);
 
+  useEffect(() => {
+    const fetchInitialData = async () => {
+        if (!isLoggedIn || !token) return;
+
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        if (!baseUrl) return;
+        
+        try {
+            // Fetch internship details
+            const internRes = await fetch(`${baseUrl}/api/internships/${internshipId}`);
+            if (internRes.ok) {
+                setInternship(await internRes.json());
+            }
+
+            // Fetch user profile
+            const profileRes = await fetch(`${baseUrl}/api/users/me/application-profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (profileRes.ok) {
+                setUserProfile(await profileRes.json());
+            }
+        } catch (error) {
+            console.error("Failed to fetch initial data", error);
+            toast({ title: "Error", description: "Could not load page data.", variant: "destructive" });
+        }
+    };
+    fetchInitialData();
+  }, [isLoggedIn, token, internshipId, toast]);
+
   if (!isLoggedIn) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -86,20 +119,14 @@ export default function ApplyPage() {
     );
   }
 
-  if (!internship) {
+  if (!internship || !userProfile) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
-        <Card className="text-center">
-          <CardHeader><CardTitle>Internship Not Found</CardTitle></CardHeader>
-          <CardContent>
-            <p>The internship you are looking for does not exist.</p>
-            <Button onClick={() => router.push('/')} className="mt-4">Back to Internships</Button>
-          </CardContent>
-        </Card>
+        <Loader2 className="animate-spin h-8 w-8 text-primary" />
       </div>
     );
   }
-
+  
   if (submission) {
     return (
         <div className="flex-1 flex items-center justify-center p-4">
@@ -114,7 +141,7 @@ export default function ApplyPage() {
                         <p className="text-muted-foreground">Application Number:</p>
                         <p className="font-mono">{submission.number}</p>
                         <p className="text-muted-foreground">Application Date:</p>
-                        <p>{format(new Date(submission.date), 'dd-MM-yy')}</p>
+                        <p>{submission.date}</p>
                         <p className="text-muted-foreground">Application Status:</p>
                         <p>In Review</p>
                     </div>
@@ -132,51 +159,49 @@ export default function ApplyPage() {
     );
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    const originalFile = values.resume[0];
-    const newFileName = `Player_One_resume_${internship.title.replace(/\s+/g, '_')}.pdf`;
-    console.log(`Simulating upload: renaming ${originalFile.name} to ${newFileName}`);
-    
-    // Simulate API call and update mock data
-    const appDate = format(new Date(), 'yyyy-MM-dd');
-    const internshipIndex = internships.findIndex(i => i.id === internship.id);
-    if (internshipIndex !== -1) {
-      internships[internshipIndex].applied = true;
-      internships[internshipIndex].status = 'In Review';
-      internships[internshipIndex].applicationDate = appDate;
-    }
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-    const newAppId = applications.length + 1;
-    const newApplication: Application = {
-        id: newAppId,
-        applicationNumber: `IRAPPL${String(newAppId).padStart(4, '0')}`,
+    const applicationData = {
         internshipId: internship!.id,
-        internshipTitle: internship!.title,
-        userId: 1, // This would be dynamic in a real app
-        userName: 'Player One', // This would be from auth context
-        userEmail: 'player1@email.com',
-        userPhone: '123-456-7890',
-        applicationDate: appDate,
-        status: 'In Review',
-        resumeUrl: 'https://placehold.co/600x800.png', // In a real app, this would be the URL from file storage
         whyApply: values.whyApply,
         altEmail: values.altEmail,
         altPhone: values.altPhone,
-        qualification: values.qualification,
-        userStatus: values.status,
-        orgName: values.orgName,
-        orgCity: values.orgCity,
-        orgState: values.orgState,
-        orgCountry: values.orgCountry,
+        termsAccepted: values.terms,
     };
 
-    applications.unshift(newApplication);
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(applicationData));
+    formData.append('resume', values.resume[0]);
 
-    setSubmission({
-        number: newApplication.applicationNumber,
-        date: appDate,
-    })
+    try {
+        const response = await fetch(`${baseUrl}/api/applications`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData,
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Failed to submit application.");
+        }
+        
+        setSubmission({
+            number: result.applicationNumber,
+            date: format(new Date(result.applicationDate), 'dd-MM-yy'),
+        });
+
+    } catch (error: any) {
+        toast({
+            title: "Submission Failed",
+            description: error.message,
+            variant: "destructive",
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   }
 
   return (
@@ -194,96 +219,21 @@ export default function ApplyPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-4">
                     <Avatar className="h-16 w-16">
-                        <AvatarImage src="https://placehold.co/100x100.png" alt="Player Avatar" data-ai-hint="user avatar" />
-                        <AvatarFallback>P1</AvatarFallback>
+                        <AvatarImage src={userProfile.avatarUrl || 'https://placehold.co/100x100.png'} alt={userProfile.name} data-ai-hint="user avatar" />
+                        <AvatarFallback>{userProfile.name?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <p className="font-semibold">Player One</p>
-                        <p className="text-sm text-muted-foreground">player1@email.com</p>
-                        <p className="text-sm text-muted-foreground">123-456-7890</p>
+                        <p className="font-semibold">{userProfile.name}</p>
+                        <p className="text-sm text-muted-foreground">{userProfile.email}</p>
+                        <p className="text-sm text-muted-foreground">{userProfile.phone}</p>
                     </div>
                 </div>
 
-                <div className="border-t pt-4 space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="qualification"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Highest Qualification <span className="text-destructive">*</span></FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status <span className="text-destructive">*</span></FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="student">Student</SelectItem>
-                            <SelectItem value="graduate">Graduate</SelectItem>
-                            <SelectItem value="professional">Working Professional</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="orgName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Organization/Institute Name <span className="text-destructive">*</span></FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="orgCity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City <span className="text-destructive">*</span></FormLabel>
-                          <FormControl><Input {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="orgState"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>State <span className="text-destructive">*</span></FormLabel>
-                          <FormControl><Input {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="orgCountry"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country <span className="text-destructive">*</span></FormLabel>
-                          <FormControl><Input {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                <div className="border-t pt-4 space-y-4 text-sm">
+                    <div><Label>Highest Qualification</Label><p className="text-muted-foreground">{userProfile.highestQualification}</p></div>
+                    <div><Label>Current Status</Label><p className="text-muted-foreground capitalize">{userProfile.status}</p></div>
+                    <div><Label>Organization/Institute</Label><p className="text-muted-foreground">{userProfile.organization}</p></div>
+                    <div><Label>Location</Label><p className="text-muted-foreground">{`${userProfile.city}, ${userProfile.state}, ${userProfile.country}`}</p></div>
                 </div>
 
                 <FormField
@@ -383,8 +333,8 @@ export default function ApplyPage() {
           </Card>
 
           <div className="flex justify-end">
-            <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
-               {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : 'Submit Quest'}
+            <Button type="submit" size="lg" disabled={isSubmitting}>
+               {isSubmitting ? <Loader2 className="animate-spin" /> : 'Submit Quest'}
             </Button>
           </div>
         </form>

@@ -2,10 +2,9 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useState } from 'react';
-import { Clock, IndianRupee, HelpCircle, MapPin, Tag, FileDown, Upload, Paperclip, ListChecks, CheckCircle, UserX, Info, Activity } from 'lucide-react';
-import type { Internship, InternshipStatus } from '@/lib/mock-data';
-import { applications } from '@/lib/mock-data';
+import React from 'react';
+import { Clock, IndianRupee, HelpCircle, MapPin, Tag, Activity } from 'lucide-react';
+import type { Internship, InternshipStatus, ApiInternshipStatus } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,79 +17,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { format, parseISO } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { format } from 'date-fns';
 
 type InternshipCardProps = {
   internship: Internship;
   isLoggedIn?: boolean;
 };
 
-const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
-    'Completed': 'default',
-    'Interview Scheduled': 'default',
-    'Ongoing': 'default',
-    'Shortlisted': 'default',
-    'In Review': 'secondary',
-    'Withdrawn': 'destructive',
-    'Rejected': 'destructive',
-    'Terminated': 'destructive',
+const statusDisplayMap: Record<ApiInternshipStatus, { text: InternshipStatus, variant: 'default' | 'secondary' | 'destructive' }> = {
+    'In_Review': { text: 'In Review', variant: 'secondary'},
+    'Shortlisted': { text: 'Shortlisted', variant: 'default' },
+    'Interview_Scheduled': { text: 'Interview Scheduled', variant: 'default'},
+    'Ongoing': { text: 'Ongoing', variant: 'default' },
+    'Completed': { text: 'Completed', variant: 'default' },
+    'Terminated': { text: 'Terminated', variant: 'destructive' },
+    'Rejected': { text: 'Rejected', variant: 'destructive' },
+    'Withdrawn': { text: 'Withdrawn', variant: 'destructive' },
 };
 
 
 export function InternshipCard({ internship, isLoggedIn = false }: InternshipCardProps) {
-  const application = applications.find(app => app.internshipId === internship.id);
-  const { toast } = useToast();
-  const [newFile, setNewFile] = useState<File | null>(null);
-
-  const handleUpload = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!newFile) {
-          toast({ variant: 'destructive', title: 'No file selected' });
-          return;
-      }
-      // In a real app, this would handle the file upload to a server.
-      toast({ title: "Success!", description: "Your document has been uploaded." });
-      setNewFile(null);
-      // Here you would typically update the mock data or refetch
-  }
   
-  const renderDialogContent = () => {
-    if (!application) return null;
-
-    switch(application.status) {
-      case 'Interview Scheduled':
-        return (
-           <div className="border-t pt-4 mt-4 space-y-4">
-              <h4 className="font-semibold text-primary flex items-center gap-2"><ListChecks /> Interview Details</h4>
-              <div className="grid grid-cols-2 gap-2 text-left">
-                  <p className="text-muted-foreground">Interview Date:</p>
-                  <p>{application.interviewDate ? format(parseISO(application.interviewDate), 'PPP') : 'N/A'}</p>
-                  <p className="text-muted-foreground">Interview Time:</p>
-                  <p>{application.interviewTime || 'N/A'}</p>
-              </div>
-               <div className="text-left space-y-1">
-                 <p className="text-muted-foreground">Instructions:</p>
-                 <div className="text-sm" dangerouslySetInnerHTML={{ __html: application.interviewInstructions || 'No instructions provided.'}} />
-              </div>
-            </div>
-        );
-       case 'Terminated':
-         if (!application.comments) return null;
-         return (
-            <div className="border-t pt-4 mt-4 space-y-2">
-              <h4 className="font-semibold text-destructive flex items-center gap-2"><UserX /> Internship Terminated</h4>
-              <Label>Reason:</Label>
-              <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: application.comments}} />
-            </div>
-         );
-      default:
-        return null;
-    }
-  }
-
   const renderActionButton = () => {
     if (!isLoggedIn) {
         return (
@@ -118,7 +65,7 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
         );
     }
 
-    if (!internship.applied || !application) {
+    if (!internship.applicationStatus) {
         return (
             <Button size="sm" asChild>
                 <Link href={`/apply/${internship.id}`}>Apply Now</Link>
@@ -126,63 +73,36 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
         );
     }
     
-    switch (application.status) {
-        case 'Ongoing':
-            return (
-                <Button size="sm" asChild>
-                    <Link href={`/ongoing/${application.id}`}>View Details</Link>
-                </Button>
-            );
-        case 'Completed':
-             return (
-                <Button size="sm" asChild>
-                    <Link href={`/completed/${application.id}`}>View Details</Link>
-                </Button>
-            );
-        case 'Interview Scheduled':
-        case 'Rejected':
-        case 'Terminated':
-        case 'In Review':
-        case 'Shortlisted':
-        case 'Withdrawn':
-             return (
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="secondary" size="sm">View Status</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                        <DialogTitle>Application Status</DialogTitle>
-                        <DialogDescription>
-                            Status for your application to the "{internship.title}" role.
-                        </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4 text-sm">
-                            <div className="flex justify-between items-center">
-                                <p className="text-muted-foreground">Status</p>
-                                {internship.status && <Badge variant={statusColors[internship.status] || 'secondary'}>{internship.status}</Badge>}
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <p className="text-muted-foreground">Applied Date</p>
-                                <p>{internship.applicationDate ? format(new Date(internship.applicationDate), 'dd-MM-yy') : 'N/A'}</p>
-                            </div>
-                            
-                            {renderDialogContent()}
-                            
-                            <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
-                                Note: Applications are reviewed for up to one month. If you are not selected within this timeframe, the application will be automatically removed from your dashboard.
-                            </p>
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            );
-        default:
-             return (
-                <Button size="sm" asChild>
-                    <Link href={`/apply/${internship.id}`}>Apply Now</Link>
-                </Button>
-            );
-    }
+    // For all other statuses, show a "View Status" button
+    const statusInfo = statusDisplayMap[internship.applicationStatus];
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="secondary" size="sm">View Status</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                <DialogTitle>Application Status</DialogTitle>
+                <DialogDescription>
+                    Status for your application to the "{internship.title}" role.
+                </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4 text-sm">
+                    <div className="flex justify-between items-center">
+                        <p className="text-muted-foreground">Status</p>
+                        <Badge variant={statusInfo.variant}>{statusInfo.text}</Badge>
+                    </div>
+                    {internship.applicationDate && <div className="flex justify-between items-center">
+                        <p className="text-muted-foreground">Applied Date</p>
+                        <p>{format(new Date(internship.applicationDate), 'dd-MM-yy')}</p>
+                    </div>}
+                    <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
+                        Note: Applications are reviewed for up to one month. If you are not selected within this timeframe, the application will be automatically removed from your dashboard.
+                    </p>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
   }
 
 
@@ -227,16 +147,18 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
           <div className="flex items-center gap-2">
             <IndianRupee className="w-4 h-4 text-muted-foreground" />
             <span>
-              {parseInt(internship.amount, 10).toLocaleString('en-IN')}
+              {parseFloat(internship.amount).toLocaleString('en-IN')}
               {internship.isMonthly ? '/month' : ''}
             </span>
           </div>
         )}
-        {internship.status && internship.applied && (
+        {internship.applicationStatus && (
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-muted-foreground" />
             <span>Status: </span>
-            <Badge variant={statusColors[internship.status]}>{internship.status}</Badge>
+            <Badge variant={statusDisplayMap[internship.applicationStatus].variant}>
+                {statusDisplayMap[internship.applicationStatus].text}
+            </Badge>
           </div>
         )}
       </CardContent>

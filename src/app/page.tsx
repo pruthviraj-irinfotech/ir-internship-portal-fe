@@ -1,57 +1,73 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { InternshipCard } from '@/components/internship-card';
 import { Input } from '@/components/ui/input';
 import { Internship } from '@/lib/mock-data';
 import { Search } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
+import { Skeleton } from '@/components/ui/skeleton';
 
-async function getInternships(): Promise<Internship[]> {
+
+export default function Home() {
+  const { isLoggedIn, token } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [internships, setInternships] = useState<Internship[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchInternships = useCallback(async (query: string) => {
+    setIsLoading(true);
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (!baseUrl) {
         console.error('API base URL is not configured.');
-        return [];
+        setIsLoading(false);
+        return;
     }
     try {
-        const response = await fetch(`${baseUrl}/api/internships`);
+        const url = new URL(`${baseUrl}/api/internships`);
+        if (query) {
+            url.searchParams.append('search', query);
+        }
+        
+        const headers: HeadersInit = {};
+        if (isLoggedIn && token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url.toString(), { headers });
         if (!response.ok) {
             console.error('Failed to fetch internships:', response.statusText);
-            return [];
+            setInternships([]);
+        } else {
+            const data = await response.json();
+            setInternships(data);
         }
-        const data = await response.json();
-        return data;
     } catch (error) {
         console.error('An error occurred while fetching internships:', error);
-        return [];
+        setInternships([]);
+    } finally {
+        setIsLoading(false);
     }
-}
-
-export default function Home() {
-  const { isLoggedIn } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [allInternships, setAllInternships] = useState<Internship[]>([]);
-  const [filteredInternships, setFilteredInternships] = useState<Internship[]>([]);
+  }, [isLoggedIn, token]);
 
   useEffect(() => {
-    const fetchInternships = async () => {
-        const internships = await getInternships();
-        setAllInternships(internships);
-        setFilteredInternships(internships);
+    // Initial fetch
+    fetchInternships('');
+  }, [fetchInternships]);
+  
+  useEffect(() => {
+    // Debounced search
+    const handler = setTimeout(() => {
+        if (searchTerm.length === 0 || searchTerm.length > 2) {
+             fetchInternships(searchTerm);
+        }
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
     };
-    fetchInternships();
-  }, []);
-
-  useEffect(() => {
-    const lowercasedTerm = searchTerm.toLowerCase();
-    const results = allInternships.filter(internship =>
-      internship.title.toLowerCase().includes(lowercasedTerm) ||
-      internship.company.toLowerCase().includes(lowercasedTerm) ||
-      (internship.description && internship.description.toLowerCase().includes(lowercasedTerm))
-    );
-    setFilteredInternships(results);
-  }, [searchTerm, allInternships]);
+  }, [searchTerm, fetchInternships]);
 
   return (
     <div className="container mx-auto p-4 md:p-8 flex-1 relative">
@@ -132,8 +148,16 @@ export default function Home() {
       <section>
         <h2 className="text-2xl font-headline mb-6 text-center">Open Internships</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInternships.length > 0 ? (
-            filteredInternships.map((internship) => (
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i} className="flex flex-col">
+                    <CardHeader><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2 mt-2" /></CardHeader>
+                    <CardContent className="flex-grow space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /></CardContent>
+                    <CardFooter className="flex justify-between items-center"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-8 w-1/4" /></CardFooter>
+                </Card>
+            ))
+          ) : internships.length > 0 ? (
+            internships.map((internship) => (
               <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
             ))
           ) : (
