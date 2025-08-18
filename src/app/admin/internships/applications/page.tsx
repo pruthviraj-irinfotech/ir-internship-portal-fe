@@ -1,8 +1,10 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { applications, Application, internships, InternshipStatus } from '@/lib/mock-data';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import type { Application, InternshipStatus, ApiInternshipStatus } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -39,16 +41,27 @@ const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destruct
     'Terminated': 'destructive',
 };
 
-const allStatuses = Object.keys(statusColors) as InternshipStatus[];
+const allApiStatuses: ApiInternshipStatus[] = ['In_Review', 'Shortlisted', 'Interview_Scheduled', 'Ongoing', 'Completed', 'Rejected', 'Withdrawn', 'Terminated'];
+
+const statusApiToDisplayMap: Record<ApiInternshipStatus, InternshipStatus> = {
+    'In_Review': 'In Review',
+    'Shortlisted': 'Shortlisted',
+    'Interview_Scheduled': 'Interview Scheduled',
+    'Ongoing': 'Ongoing',
+    'Completed': 'Completed',
+    'Rejected': 'Rejected',
+    'Withdrawn': 'Withdrawn',
+    'Terminated': 'Terminated',
+};
 
 const formSchema = z.object({
-    status: z.enum(allStatuses),
+    status: z.enum(allApiStatuses),
     interviewDate: z.date().optional(),
     interviewTime: z.string().optional(),
     interviewInstructions: z.string().optional(),
     comments: z.string().optional(),
 }).superRefine((data, ctx) => {
-    if (data.status === 'Interview Scheduled') {
+    if (data.status === 'Interview_Scheduled') {
         if (!data.interviewDate) {
             ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Interview date is required.', path: ['interviewDate'] });
         }
@@ -63,14 +76,16 @@ const formSchema = z.object({
 
 
 export default function ApplicationsPage() {
-    const [applicationList, setApplicationList] = useState<Application[]>(applications);
+    const [applicationList, setApplicationList] = useState<Application[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [viewingApplication, setViewingApplication] = useState<Application | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<InternshipStatus | 'all'>('all');
+    const [statusFilter, setStatusFilter] = useState<ApiInternshipStatus | 'all'>('all');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const { toast } = useToast();
+    const { token } = useAuth();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -78,14 +93,28 @@ export default function ApplicationsPage() {
     
     const watchedStatus = form.watch('status');
 
-    const filteredApplications = useMemo(() => {
-        const filtered = applicationList.filter(app =>
-            (statusFilter === 'all' || app.status === statusFilter) &&
-            (app.internshipTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            app.userName.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
+    const fetchApplications = useCallback(async () => {
+        if (!token) return;
+        setIsLoading(true);
+        try {
+            const data = await api.getApplications(token, statusFilter, searchTerm);
+            setApplicationList(data);
+        } catch (error: any) {
+            toast({ title: 'Error', description: error.message, variant: 'destructive' });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [token, statusFilter, searchTerm, toast]);
+    
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            fetchApplications();
+        }, 500); // Debounce search/filter
+        return () => clearTimeout(handler);
+    }, [fetchApplications]);
 
-        return filtered.sort((a, b) => {
+    const sortedApplications = useMemo(() => {
+        return [...applicationList].sort((a, b) => {
             const dateA = new Date(a.applicationDate).getTime();
             const dateB = new Date(b.applicationDate).getTime();
             if (sortDirection === 'asc') {
@@ -93,7 +122,7 @@ export default function ApplicationsPage() {
             }
             return dateB - dateA;
         });
-    }, [applicationList, searchTerm, statusFilter, sortDirection]);
+    }, [applicationList, sortDirection]);
     
     useEffect(() => {
         if (viewingApplication) {
@@ -108,47 +137,33 @@ export default function ApplicationsPage() {
     }, [viewingApplication, form]);
 
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
-        if (!viewingApplication) return;
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (!viewingApplication || !token) return;
 
-        const appIndex = applicationList.findIndex(app => app.id === viewingApplication.id);
-        if (appIndex === -1) return;
+        try {
+            const updatedApp = await api.updateApplicationStatus(viewingApplication.id, values.status, token);
+            setApplicationList(prev => prev.map(app => app.id === updatedApp.id ? { ...app, ...updatedApp } : app));
 
-        const updatedApplications = [...applicationList];
-        const updatedApp = { 
-            ...updatedApplications[appIndex], 
-            status: values.status,
-            interviewDate: values.interviewDate ? format(values.interviewDate, 'yyyy-MM-dd') : undefined,
-            interviewTime: values.interviewTime,
-            interviewInstructions: values.interviewInstructions,
-            comments: values.comments,
-        };
-
-        updatedApplications[appIndex] = updatedApp;
-        setApplicationList(updatedApplications);
-
-        const internship = internships.find(i => i.id === updatedApp.internshipId);
-        if (internship) {
-            internship.status = values.status;
+            toast({
+                title: 'Application Updated',
+                description: `Application status changed to ${statusApiToDisplayMap[values.status]}.`,
+            });
+            setViewingApplication(null);
+        } catch (error: any) {
+            toast({ title: 'Error', description: error.message, variant: 'destructive' });
         }
-
-        toast({
-            title: 'Application Updated',
-            description: `Application status changed to ${values.status}.`,
-        });
-        setViewingApplication(null);
     };
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            const allIds = new Set(filteredApplications.map(app => app.id));
+            const allIds = new Set(sortedApplications.map(app => app.id));
             setSelectedRows(allIds);
         } else {
             setSelectedRows(new Set());
         }
     };
 
-    const handleSelectRow = (appId: string, checked: boolean) => {
+    const handleSelectRow = (appId: number, checked: boolean) => {
         const newSelectedRows = new Set(selectedRows);
         if (checked) {
             newSelectedRows.add(appId);
@@ -159,18 +174,13 @@ export default function ApplicationsPage() {
     };
 
     const handleDeleteSelected = () => {
+        // This functionality needs a bulk delete API endpoint. For now, it will only work on the client side.
         const newApplicationList = applicationList.filter(app => !selectedRows.has(app.id));
         setApplicationList(newApplicationList);
-        
-        const appIndicesToDelete = applications.map((app, index) => selectedRows.has(app.id) ? index : -1).filter(index => index !== -1);
-        for (let i = appIndicesToDelete.length - 1; i >= 0; i--) {
-            applications.splice(appIndicesToDelete[i], 1);
-        }
-        
         setSelectedRows(new Set());
         toast({
             title: `${selectedRows.size} Application(s) Deleted`,
-            description: 'The selected applications have been removed.',
+            description: 'The selected applications have been removed. (Client-side only)',
         });
         setIsDeleteDialogOpen(false);
     };
@@ -192,15 +202,15 @@ export default function ApplicationsPage() {
                                     Delete ({selectedRows.size})
                                 </Button>
                             )}
-                             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as InternshipStatus | 'all')}>
+                             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ApiInternshipStatus | 'all')}>
                                 <SelectTrigger className="w-full sm:w-[180px]">
                                     <SelectValue placeholder="Filter by status" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All Statuses</SelectItem>
-                                    {allStatuses.map(status => (
+                                    {allApiStatuses.map(status => (
                                         <SelectItem key={status} value={status}>
-                                            {status}
+                                            {statusApiToDisplayMap[status]}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -224,12 +234,13 @@ export default function ApplicationsPage() {
                                 <TableRow>
                                     <TableHead className="w-[50px]">
                                         <Checkbox
-                                            checked={filteredApplications.length > 0 && selectedRows.size === filteredApplications.length}
+                                            checked={!isLoading && sortedApplications.length > 0 && selectedRows.size === sortedApplications.length}
                                             onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
                                             aria-label="Select all"
                                         />
                                     </TableHead>
                                     <TableHead>Applicant</TableHead>
+                                    <TableHead>Application #</TableHead>
                                     <TableHead>Internship</TableHead>
                                     <TableHead>
                                         <Button variant="ghost" className="pl-0 hover:bg-transparent" onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}>
@@ -242,21 +253,24 @@ export default function ApplicationsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredApplications.length > 0 ? (
-                                    filteredApplications.map(app => (
+                                {isLoading ? (
+                                    <TableRow><TableCell colSpan={7} className="text-center h-24"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></TableCell></TableRow>
+                                ) : sortedApplications.length > 0 ? (
+                                    sortedApplications.map(app => (
                                         <TableRow key={app.id} data-state={selectedRows.has(app.id) && "selected"}>
                                             <TableCell>
                                                 <Checkbox
                                                     checked={selectedRows.has(app.id)}
                                                     onCheckedChange={(checked) => handleSelectRow(app.id, checked as boolean)}
-                                                    aria-label={`Select row for ${app.userName}`}
+                                                    aria-label={`Select row for ${app.user.profile.firstName}`}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">{app.userName}</TableCell>
+                                            <TableCell className="font-medium">{`${app.user.profile.firstName} ${app.user.profile.lastName || ''}`}</TableCell>
+                                            <TableCell className="font-mono text-xs">{app.applicationNumber}</TableCell>
                                             <TableCell>{app.internshipTitle}</TableCell>
                                             <TableCell>{format(new Date(app.applicationDate), 'dd-MM-yy')}</TableCell>
                                             <TableCell>
-                                                <Badge variant={statusColors[app.status]}>{app.status}</Badge>
+                                                <Badge variant={statusColors[statusApiToDisplayMap[app.status]]}>{statusApiToDisplayMap[app.status]}</Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <Button variant="outline" size="icon" onClick={() => setViewingApplication(app)} title="View & Edit Application">
@@ -267,7 +281,7 @@ export default function ApplicationsPage() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center h-24">
+                                        <TableCell colSpan={7} className="text-center h-24">
                                             No applications found.
                                         </TableCell>
                                     </TableRow>
@@ -286,19 +300,19 @@ export default function ApplicationsPage() {
                             <DialogHeader>
                                 <DialogTitle>Application Details</DialogTitle>
                                 <DialogDescription>
-                                    {viewingApplication.userName}'s application for "{viewingApplication.internshipTitle}".
+                                    {viewingApplication.user.profile.firstName}'s application for "{viewingApplication.internshipTitle}".
                                 </DialogDescription>
                             </DialogHeader>
                            
                             <div className="grid md:grid-cols-2 gap-8 max-h-[80vh] mt-4">
                                 <div className="space-y-6 py-2 overflow-y-auto pr-4">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                        <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{viewingApplication.userName}</p></div>
+                                        <div><Label>Applicant Name</Label><p className="text-sm text-muted-foreground">{`${viewingApplication.user.profile.firstName} ${viewingApplication.user.profile.lastName || ''}`}</p></div>
                                         <div><Label>Applicant Phone</Label><p className="text-sm text-muted-foreground">{viewingApplication.userPhone}</p></div>
-                                        <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.userEmail}</p></div>
+                                        <div className="sm:col-span-2"><Label>Applicant Email</Label><p className="text-sm text-muted-foreground">{viewingApplication.user.email}</p></div>
                                     </div>
                                     <div className="border-t pt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                                        <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{viewingApplication.id}</p></div>
+                                        <div><Label>Application ID</Label><p className="text-sm text-muted-foreground font-mono">{viewingApplication.applicationNumber}</p></div>
                                         <div><Label>Application Date</Label><p className="text-sm text-muted-foreground">{format(new Date(viewingApplication.applicationDate), 'dd-MM-yy')}</p></div>
                                     </div>
                                     <div className="border-t pt-4"><Label>Why are you applying for this internship?</Label><p className="text-sm text-muted-foreground mt-1">{viewingApplication.whyApply}</p></div>
@@ -322,7 +336,7 @@ export default function ApplicationsPage() {
                                             <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: viewingApplication.comments }} />
                                         </div>
                                     )}
-                                     {viewingApplication.status === 'Interview Scheduled' && (
+                                     {viewingApplication.status === 'Interview_Scheduled' && (
                                         <div className="border-t pt-4 sm:col-span-2 grid gap-y-4 gap-x-6">
                                             <h4 className="font-semibold text-primary">Interview Details</h4>
                                             <div><Label>Interview Date</Label><p className="text-sm text-muted-foreground">{viewingApplication.interviewDate ? format(parseISO(viewingApplication.interviewDate), 'dd-MM-yy') : 'N/A'}</p></div>
@@ -333,7 +347,7 @@ export default function ApplicationsPage() {
                                 </div>
                                 <div className="border-l pl-8 flex flex-col gap-6">
                                     <div className="relative flex-1 rounded-md overflow-hidden border">
-                                        <Image src={viewingApplication.resumeUrl} alt={`Resume for ${viewingApplication.userName}`} fill className="object-contain p-2" data-ai-hint="resume document" />
+                                        <Image src={viewingApplication.resumeUrl} alt={`Resume for ${viewingApplication.user.profile.firstName}`} fill className="object-contain p-2" data-ai-hint="resume document" />
                                     </div>
                                     <div className="space-y-4 border-t pt-6">
                                         <FormField control={form.control} name="status" render={({ field }) => (
@@ -342,14 +356,14 @@ export default function ApplicationsPage() {
                                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                     <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                                     <SelectContent>
-                                                        {allStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+                                                        {allApiStatuses.map(status => <SelectItem key={status} value={status}>{statusApiToDisplayMap[status]}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                                 <FormMessage />
                                             </FormItem>
                                         )} />
 
-                                        {watchedStatus === 'Interview Scheduled' ? (
+                                        {watchedStatus === 'Interview_Scheduled' ? (
                                             <div className="space-y-4 p-4 border rounded-md">
                                                 <h4 className="font-medium">Schedule Interview</h4>
                                                 <FormField control={form.control} name="interviewDate" render={({ field }) => (

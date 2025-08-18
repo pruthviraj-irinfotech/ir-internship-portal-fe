@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Internship, Application, InternshipStatus, ApiInternshipStatus } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
