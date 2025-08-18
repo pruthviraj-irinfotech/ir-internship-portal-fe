@@ -65,9 +65,11 @@ export default function SignupPage() {
   const [isResendDisabled, setIsResendDisabled] = useState(true);
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState('');
+  
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState("https://placehold.co/100x100.png");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [avatarPreview, setAvatarPreview] = useState("https://placehold.co/100x100.png");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -111,10 +113,15 @@ export default function SignupPage() {
     try {
         const { confirmPassword, avatar, ...apiData } = values;
 
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(apiData));
+        if (avatarFile) {
+            formData.append('avatar', avatarFile);
+        }
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/register/request-otp`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: apiData }),
+            body: formData,
         });
 
         const result = await response.json();
@@ -152,10 +159,15 @@ export default function SignupPage() {
             data: originalData,
         };
 
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(requestBody));
+        if (avatarFile) {
+            formData.append('avatar', avatarFile);
+        }
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/register/verify`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody),
+            body: formData,
         });
 
         const result = await response.json();
@@ -182,6 +194,7 @@ export default function SignupPage() {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>, fieldOnChange: (files: FileList | null) => void) => {
     const file = e.target.files?.[0];
     if (!file) {
+      setAvatarFile(null);
       fieldOnChange(null);
       return;
     }
@@ -202,7 +215,7 @@ export default function SignupPage() {
       setAvatarPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
-    
+    setAvatarFile(file);
     fieldOnChange(e.target.files);
   };
 
@@ -492,3 +505,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
