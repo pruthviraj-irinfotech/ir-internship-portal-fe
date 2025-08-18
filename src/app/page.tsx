@@ -9,8 +9,13 @@ import { Search } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
 async function getInternships(): Promise<Internship[]> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!baseUrl) {
+        console.error('API base URL is not configured.');
+        return [];
+    }
     try {
-        const response = await fetch('http://localhost:3001/api/internships');
+        const response = await fetch(`${baseUrl}/api/internships`);
         if (!response.ok) {
             console.error('Failed to fetch internships:', response.statusText);
             return [];
