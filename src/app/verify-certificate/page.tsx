@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import type { Certificate, CertificateStatus } from '@/lib/mock-data';
 
@@ -196,7 +196,7 @@ export default function VerifyCertificatePage() {
               </div>
                <div className="space-y-1">
                   <Label>Date Approved</Label>
-                  <p>{format(new Date(foundCertificate.approvedDate), 'dd-MM-yy')}</p>
+                  <p>{format(parseISO(foundCertificate.approvedDate), 'dd-MM-yy')}</p>
               </div>
                <div className="space-y-1">
                   <Label>Status</Label>
