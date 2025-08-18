@@ -224,7 +224,9 @@ export default function ProfilePage() {
   }
 
   if (!profile) {
-     return <div className="flex-1 flex items-center justify-center">Failed to load profile. Please try again.</div>;
+     return (
+        <div className="flex-1 flex items-center justify-center">Failed to load profile. Please try again.</div>
+     );
   }
 
   return (
@@ -388,3 +390,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
