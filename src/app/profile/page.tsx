@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -49,7 +49,6 @@ interface UserProfile {
     city: string;
     state: string;
     country: string;
-    // For form population
     firstName: string;
     lastName?: string;
     countryCode: string;
@@ -91,7 +90,7 @@ export default function ProfilePage() {
             ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${data.avatarUrl}`
             : data.avatarUrl;
         
-        const profileData = {
+        const profileData: UserProfile = {
           ...data,
           firstName,
           lastName: lastNameParts.join(' '),
@@ -152,7 +151,7 @@ export default function ProfilePage() {
         }
 
         toast({ title: 'Success', description: 'Your profile has been updated.' });
-        fetchProfile(); // Re-fetch to show updated data
+        fetchProfile();
 
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Update Failed', description: error.message });
@@ -390,5 +389,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
