@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -12,9 +12,31 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const MAX_AVATAR_SIZE = 100 * 1024; // 100KB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+const profileFormSchema = z.object({
+  firstName: z.string().min(2, "First name is required."),
+  lastName: z.string().optional(),
+  countryCode: z.string().min(1, "Country code is required."),
+  qualification: z.string().min(2, "Qualification is required."),
+  currentStatus: z.enum(['student', 'graduate', 'professional']),
+  orgName: z.string().min(2, "Organization name is required."),
+  orgCity: z.string().min(2, "City is required."),
+  orgState: z.string().min(2, "State is required."),
+  orgCountry: z.string().min(2, "Country is required."),
+  avatar: z.any().optional()
+    .refine((files) => !files || files.length === 0 || files?.[0]?.size <= MAX_AVATAR_SIZE, `Max image size is 100KB.`)
+    .refine((files) => !files || files.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type), "Only .jpg, .png, .gif and .webp formats are supported."),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 interface UserProfile {
     avatarUrl: string;
@@ -27,16 +49,21 @@ interface UserProfile {
     city: string;
     state: string;
     country: string;
+    // For form population
+    firstName: string;
+    lastName?: string;
+    countryCode: string;
 }
 
 export default function ProfilePage() {
   const { isLoggedIn, token } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(undefined);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -45,62 +72,128 @@ export default function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+  });
+
+  const fetchProfile = useCallback(async () => {
+    if (!isLoggedIn || !token) return;
+    setIsLoading(true);
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me/application-profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch profile.');
+        
+        const data = await response.json();
+        const [firstName, ...lastNameParts] = data.name.split(' ');
+        const fullAvatarUrl = data.avatarUrl && !data.avatarUrl.startsWith('http') 
+            ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${data.avatarUrl}`
+            : data.avatarUrl;
+        
+        const profileData = {
+          ...data,
+          firstName,
+          lastName: lastNameParts.join(' '),
+          avatarUrl: fullAvatarUrl,
+        };
+
+        setProfile(profileData);
+        setAvatarPreview(fullAvatarUrl);
+
+        form.reset({
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          countryCode: profileData.countryCode || '+91',
+          qualification: profileData.highestQualification,
+          currentStatus: profileData.status,
+          orgName: profileData.organization,
+          orgCity: profileData.city,
+          orgState: profileData.state,
+          orgCountry: profileData.country,
+        });
+
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error', description: error.message });
+    } finally {
+        setIsLoading(false);
+    }
+  }, [isLoggedIn, token, toast, form]);
+
   useEffect(() => {
     if (!isLoggedIn) {
       router.push('/login?redirect=/profile');
-    }
-  }, [isLoggedIn, router]);
-
-  useEffect(() => {
-      const fetchProfile = async () => {
-          if (!isLoggedIn || !token) return;
-          setIsLoading(true);
-          try {
-              const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me/application-profile`, {
-                  headers: { 'Authorization': `Bearer ${token}` }
-              });
-              if (!response.ok) throw new Error('Failed to fetch profile.');
-              const data = await response.json();
-              setProfile(data);
-              setAvatarPreview(data.avatarUrl);
-          } catch (error: any) {
-              toast({ variant: 'destructive', title: 'Error', description: error.message });
-          } finally {
-              setIsLoading(false);
-          }
-      };
+    } else {
       fetchProfile();
-  }, [isLoggedIn, token, toast]);
+    }
+  }, [isLoggedIn, router, fetchProfile]);
 
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const onProfileSubmit: SubmitHandler<ProfileFormValues> = async (values) => {
+    setIsSubmittingProfile(true);
+    const { avatar, ...jsonData } = values;
 
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      toast({ variant: 'destructive', title: 'Invalid file type', description: 'Please select a PNG, JPG, GIF, or WEBP file.' });
-      return;
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(jsonData));
+
+    if (avatar && avatar.length > 0) {
+        formData.append('avatar', avatar[0]);
     }
     
-    if (file.size > MAX_AVATAR_SIZE) {
-      toast({ variant: 'destructive', title: 'Image too large', description: 'Please upload an image smaller than 100KB.' });
-      return;
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me/profile`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update profile.');
+        }
+
+        toast({ title: 'Success', description: 'Your profile has been updated.' });
+        fetchProfile(); // Re-fetch to show updated data
+
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Update Failed', description: error.message });
+    } finally {
+        setIsSubmittingProfile(false);
     }
-
-    const reader = new FileReader();
-    reader.onloadend = () => setAvatarPreview(reader.result as string);
-    reader.readAsDataURL(file);
   };
-
-  const handleSaveChanges = (e: React.FormEvent) => {
+  
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPassword || !newPassword) {
-        toast({ title: 'Info', description: 'No password changes were made.'});
+        toast({ variant: 'destructive', title: 'Missing Fields', description: 'Please fill out both password fields.'});
         return;
     }
-     // Placeholder for API call
-    console.log({ currentPassword, newPassword });
-    toast({ title: 'Password Update', description: 'Password change functionality is not yet implemented.' });
-  }
+    setIsSubmittingPassword(true);
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me/password`, {
+            method: 'PATCH',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+             },
+            body: JSON.stringify({ currentPassword, newPassword }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update password.');
+        }
+
+        toast({ title: 'Success', description: 'Your password has been changed.' });
+        setCurrentPassword('');
+        setNewPassword('');
+
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Update Failed', description: error.message });
+    } finally {
+        setIsSubmittingPassword(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -141,82 +234,135 @@ export default function ProfilePage() {
         <h1 className="text-3xl md:text-5xl font-headline text-primary">Your Profile</h1>
         <p className="text-muted-foreground mt-4 text-sm md:text-base">Manage your player stats.</p>
       </header>
-
-      <form onSubmit={handleSaveChanges} className="w-full max-w-2xl">
-        <Card>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onProfileSubmit)} className="w-full max-w-2xl space-y-8">
+          <Card>
             <CardHeader>
-            <CardTitle>Profile Details</CardTitle>
-            <CardDescription>Update your personal and organization information here.</CardDescription>
+              <CardTitle>Profile Details</CardTitle>
+              <CardDescription>Update your personal and organization information here.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-            <div className="flex items-center space-x-4">
-                <Avatar className="h-24 w-24">
-                <AvatarImage src={avatarPreview} alt={profile.name} data-ai-hint="user avatar" />
-                <AvatarFallback>{profile.name?.[0] || 'U'}</AvatarFallback>
-                </Avatar>
-                <div>
-                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>Change Avatar</Button>
-                <Input 
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                    accept={ACCEPTED_IMAGE_TYPES.join(',')}
-                />
-                <p className="text-xs text-muted-foreground mt-2">Max 100KB. JPG, PNG, GIF, WEBP.</p>
-                </div>
-            </div>
+              <FormField
+                  control={form.control}
+                  name="avatar"
+                  render={({ field }) => (
+                  <FormItem>
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-24 w-24">
+                          <AvatarImage src={avatarPreview} alt={profile.name} data-ai-hint="user avatar" />
+                          <AvatarFallback>{profile.name?.[0] || 'U'}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              className="hidden"
+                              accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                              ref={field.ref}
+                              onBlur={field.onBlur}
+                              name={field.name}
+                              onChange={(e) => {
+                                  field.onChange(e.target.files);
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => setAvatarPreview(reader.result as string);
+                                      reader.readAsDataURL(file);
+                                  }
+                              }}
+                            />
+                          </FormControl>
+                          <Button type="button" variant="outline" onClick={() => (field.ref as React.RefObject<HTMLInputElement>)?.current?.click()}>
+                            Change Avatar
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-2">Max 100KB. JPG, PNG, GIF, WEBP.</p>
+                          <FormMessage />
+                        </div>
+                      </div>
+                  </FormItem>
+                  )}
+              />
             
-            <div className="border-t pt-6 space-y-4">
+              <div className="border-t pt-6 space-y-4">
                 <h3 className="text-lg font-medium">Personal Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue={profile.name} disabled />
-                    </div>
-                    <div className="space-y-2">
+                  <FormField control={form.control} name="firstName" render={({ field }) => (
+                    <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="lastName" render={({ field }) => (
+                    <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" defaultValue={profile.email} disabled />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <FormField control={form.control} name="countryCode" render={({ field }) => (
+                      <FormItem className="col-span-1"><FormLabel>Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <div className="space-y-2 col-span-2">
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input id="phone" defaultValue={profile.phone} disabled />
                     </div>
-                    <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" defaultValue={profile.phone} disabled />
-                    </div>
-                    <div className="space-y-2">
-                    <Label htmlFor="qualification">Highest Qualification</Label>
-                    <Input id="qualification" defaultValue={profile.highestQualification} disabled />
-                    </div>
+                  </div>
+                  <FormField control={form.control} name="qualification" render={({ field }) => (
+                    <FormItem className="md:col-span-2"><FormLabel>Highest Qualification</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
                 </div>
-            </div>
+              </div>
 
-            <div className="border-t pt-6 space-y-4">
-                <h3 className="text-lg font-medium">Organization / Institute Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="org-name">Organization/Institute Name</Label>
-                        <Input id="org-name" defaultValue={profile.organization} disabled />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="org-city">City</Label>
-                        <Input id="org-city" defaultValue={profile.city} disabled />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="org-state">State</Label>
-                        <Input id="org-state" defaultValue={profile.state} disabled />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="org-country">Country</Label>
-                        <Input id="org-country" defaultValue={profile.country} disabled />
-                    </div>
-                </div>
-            </div>
-            
-            <div className="border-t pt-6 space-y-4">
-                <h3 className="text-lg font-medium">Change Password</h3>
+              <div className="border-t pt-6 space-y-4">
+                  <h3 className="text-lg font-medium">Organization / Institute Information</h3>
+                  <FormField control={form.control} name="currentStatus" render={({ field }) => (
+                    <FormItem><FormLabel>Current Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="student">Student</SelectItem>
+                          <SelectItem value="graduate">Graduate</SelectItem>
+                          <SelectItem value="professional">Working Professional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="orgName" render={({ field }) => (
+                    <FormItem><FormLabel>Organization/Institute Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <FormField control={form.control} name="orgCity" render={({ field }) => (
+                      <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="orgState" render={({ field }) => (
+                      <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="orgCountry" render={({ field }) => (
+                      <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormMessage>
+                    )} />
+                  </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button type="submit" disabled={isSubmittingProfile}>
+                {isSubmittingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Profile Changes
+              </Button>
+            </CardFooter>
+          </Card>
+        </form>
+      </Form>
+
+       <form onSubmit={handlePasswordChange} className="w-full max-w-2xl mt-8">
+         <Card>
+            <CardHeader>
+                <CardTitle>Change Password</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="current-password">Current Password</Label>
                     <div className="relative">
-                        <Input id="current-password" type={showCurrentPassword ? 'text' : 'password'} placeholder="Enter current password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                        <Input id="current-password" type={showCurrentPassword ? 'text' : 'password'} placeholder="Enter current password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} disabled={isSubmittingPassword}/>
                         <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
                             {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
@@ -225,19 +371,21 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                     <Label htmlFor="new-password">New Password</Label>
                     <div className="relative">
-                        <Input id="new-password" type={showNewPassword ? 'text' : 'password'} placeholder="Enter new password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                        <Input id="new-password" type={showNewPassword ? 'text' : 'password'} placeholder="Enter new password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isSubmittingPassword} />
                         <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowNewPassword(!showNewPassword)}>
                             {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                     </div>
                 </div>
-            </div>
-            <div className="flex justify-end pt-6 border-t">
-                <Button type="submit">Save Changes</Button>
-            </div>
             </CardContent>
-        </Card>
-      </form>
+             <CardFooter className="flex justify-end">
+                <Button type="submit" disabled={isSubmittingPassword}>
+                    {isSubmittingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Update Password
+                </Button>
+            </CardFooter>
+         </Card>
+       </form>
     </div>
   );
 }
