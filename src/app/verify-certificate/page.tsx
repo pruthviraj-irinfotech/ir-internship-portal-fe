@@ -11,7 +11,6 @@ import { Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { verifyCertificate } from '@/ai/flows/verify-certificate-flow';
 import type { Certificate, CertificateStatus } from '@/lib/mock-data';
 
 const statusColors: Record<CertificateStatus, 'default' | 'secondary' | 'destructive'> = {
@@ -19,6 +18,53 @@ const statusColors: Record<CertificateStatus, 'default' | 'secondary' | 'destruc
     'On Hold': 'secondary',
     'Terminated': 'destructive',
 };
+
+async function verifyCertificateApi(certificateNumber: string): Promise<Certificate | null> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!baseUrl) {
+    console.error('API base URL is not configured.');
+    return null;
+  }
+  
+  if (!certificateNumber) {
+      return null;
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/api/certificates/verify/${certificateNumber}`);
+    
+    if (response.status === 404) {
+        return null; // Certificate not found
+    }
+
+    if (!response.ok) {
+        // Log other server-side errors
+        console.error('API error:', response.status, await response.text());
+        return null;
+    }
+
+    const data = await response.json();
+    
+    // Adapt the API response to the existing Certificate type
+    return {
+        id: 0,
+        applicationId: 0,
+        certificateNumber: certificateNumber,
+        internName: data.internName,
+        internshipRole: data.role,
+        company: 'IR INFOTECH',
+        duration: data.internshipDuration,
+        approvedDate: data.certificateDate,
+        description: data.description,
+        imageUrl: data.imageUrl.startsWith('http') ? data.imageUrl : `${baseUrl}${data.imageUrl}`,
+        status: data.certificateStatus,
+    };
+
+  } catch (error) {
+    console.error('An error occurred while fetching the certificate:', error);
+    return null;
+  }
+}
 
 export default function VerifyCertificatePage() {
   const [certificateId, setCertificateId] = useState('');
@@ -43,7 +89,7 @@ export default function VerifyCertificatePage() {
     setFoundCertificate(null);
 
     try {
-      const cert = await verifyCertificate(certificateId);
+      const cert = await verifyCertificateApi(certificateId);
       
       if (cert) {
         setFoundCertificate(cert);
@@ -140,12 +186,10 @@ export default function VerifyCertificatePage() {
                   <Label>Role</Label>
                   <p>{foundCertificate.internshipRole}</p>
               </div>
-              {foundCertificate.startDate && (
-                 <div className="space-y-1">
-                    <Label>Internship Start Date</Label>
-                    <p>{format(new Date(foundCertificate.startDate), 'dd-MM-yy')}</p>
-                </div>
-              )}
+               <div className="space-y-1">
+                  <Label>Internship Duration</Label>
+                  <p>{foundCertificate.duration}</p>
+              </div>
                <div className="space-y-1">
                   <Label>Date Approved</Label>
                   <p>{format(new Date(foundCertificate.approvedDate), 'dd-MM-yy')}</p>

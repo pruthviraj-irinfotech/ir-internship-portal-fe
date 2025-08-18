@@ -43,18 +43,17 @@ export async function verifyCertificate(certificateNumber: string): Promise<Cert
 
     // Adapt the API response to the existing Certificate type
     const adaptedCertificate: Certificate = {
-        id: 0, // Not provided by this API, default to 0
-        applicationId: 0, // Not provided
+        id: 0, 
+        applicationId: 0,
         certificateNumber: certificateNumber,
-        internName: data.intern_name,
+        internName: data.internName,
         internshipRole: data.role,
-        company: 'IR INFOTECH', // Assuming a default, as it's not in the response
-        duration: '', // Not provided
-        approvedDate: data.certificate_issue_date,
-        description: data.description_of_the_internship,
-        imageUrl: data.image_url.startsWith('http') ? data.image_url : `${baseUrl}${data.image_url}`, // Handle relative vs absolute URLs
-        startDate: data.internship_start_date,
-        status: data.status_of_the_certificate.replace('_', ' ') as Certificate['status'], // Convert 'On_Hold' to 'On Hold'
+        company: 'IR INFOTECH', 
+        duration: data.internshipDuration,
+        approvedDate: data.certificateDate,
+        description: data.description,
+        imageUrl: data.imageUrl.startsWith('http') ? data.imageUrl : `${baseUrl}${data.imageUrl}`,
+        status: data.certificateStatus,
     };
 
     return adaptedCertificate;
