@@ -198,5 +198,13 @@ export type DetailedApplication = {
     comments: string | null;
 };
 
+export type Intern = {
+    id: number;
+    internName: string;
+    internshipRole: string;
+    email: string;
+    phone: string;
+}
+
 
 export let applications: Application[] = [];

@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -143,6 +144,29 @@ export const deleteManyApplications = async (applicationIds: number[], token: st
         throw new Error(result.message || 'Failed to delete applications');
     }
     return result;
+};
+
+export const deleteApplication = async (id: number, token: string): Promise<void> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/admin/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (response.status !== 204 && response.status !== 200) {
+        throw new Error('Failed to delete application');
+    }
+};
+
+export const getInternsByStatus = async (token: string, status: 'Ongoing' | 'Completed' | 'Terminated', search?: string): Promise<Intern[]> => {
+    const url = new URL(`${getApiBaseUrl()}/api/applications/admin/interns-by-status`);
+    url.searchParams.append('status', status);
+    if (search) {
+        url.searchParams.append('search', search);
+    }
+    const response = await fetch(url.toString(), {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error(`Failed to fetch ${status.toLowerCase()} interns`);
+    return response.json();
 };
 
 

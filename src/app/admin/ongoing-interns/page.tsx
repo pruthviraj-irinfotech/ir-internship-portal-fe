@@ -1,71 +1,59 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { applications, Application } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import type { Intern } from '@/lib/mock-data';
+import { useAuth } from '@/context/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Eye, FilePenLine, Search, UserX, CheckCircle } from 'lucide-react';
+import { Eye, Search, Trash2, Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminOngoingInternsPage() {
-    const [ongoingApps, setOngoingApps] = useState<Application[]>(applications.filter(app => app.status === 'Ongoing'));
+    const [interns, setInterns] = useState<Intern[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [appAction, setAppAction] = useState<{ action: 'complete' | 'terminate'; app: Application } | null>(null);
+    const [internToDelete, setInternToDelete] = useState<Intern | null>(null);
+    const { token } = useAuth();
     const { toast } = useToast();
 
-    const filteredApps = useMemo(() => {
-        return ongoingApps.filter(app =>
-            app.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            app.internshipTitle.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [ongoingApps, searchTerm]);
-
-    const handleCompleteInternship = (appId: number) => {
-        if (!appAction?.app) return;
-
-        const appIndex = applications.findIndex(app => app.id === appId);
-        if (appIndex !== -1) {
-            applications[appIndex].status = 'Completed';
+    const fetchInterns = useCallback(async () => {
+        if (!token) return;
+        setIsLoading(true);
+        try {
+            const data = await api.getInternsByStatus(token, 'Ongoing', searchTerm);
+            setInterns(data);
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error', description: error.message });
+        } finally {
+            setIsLoading(false);
         }
+    }, [token, searchTerm, toast]);
 
-        setOngoingApps(prev => prev.filter(app => app.id !== appId));
-        
-        toast({
-            title: 'Internship Completed',
-            description: `${appAction.app.userName}'s internship has been marked as completed.`,
-        });
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            fetchInterns();
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [fetchInterns]);
 
-        setAppAction(null);
+    const handleDelete = async () => {
+        if (!internToDelete || !token) return;
+        try {
+            await api.deleteApplication(internToDelete.id, token);
+            setInterns(prev => prev.filter(i => i.id !== internToDelete.id));
+            toast({ title: 'Success', description: `Application for ${internToDelete.internName} deleted.` });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error', description: error.message });
+        } finally {
+            setInternToDelete(null);
+        }
     };
-
-    const handleTerminateInternship = (appId: number) => {
-        if (!appAction?.app) return;
-        const appIndex = applications.findIndex(app => app.id === appId);
-        if (appIndex !== -1) {
-            applications[appIndex].status = 'Terminated';
-        }
-        setOngoingApps(prev => prev.filter(app => app.id !== appId));
-        toast({
-            title: 'Internship Terminated',
-            description: `${appAction.app.userName}'s internship has been marked as terminated.`,
-            variant: 'destructive',
-        });
-        setAppAction(null);
-    }
-
-    const handleAction = () => {
-        if (!appAction) return;
-        if (appAction.action === 'complete') {
-            handleCompleteInternship(appAction.app.id);
-        } else {
-            handleTerminateInternship(appAction.app.id);
-        }
-    }
 
     return (
         <>
@@ -100,30 +88,24 @@ export default function AdminOngoingInternsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredApps.length > 0 ? (
-                                    filteredApps.map(app => (
-                                        <TableRow key={app.id}>
-                                            <TableCell className="font-medium">{app.userName}</TableCell>
-                                            <TableCell>{app.internshipTitle}</TableCell>
-                                            <TableCell>{app.userEmail}</TableCell>
-                                            <TableCell>{app.userPhone}</TableCell>
+                                {isLoading ? (
+                                    <TableRow><TableCell colSpan={5} className="text-center h-24"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></TableCell></TableRow>
+                                ) : interns.length > 0 ? (
+                                    interns.map(intern => (
+                                        <TableRow key={intern.id}>
+                                            <TableCell className="font-medium">{intern.internName}</TableCell>
+                                            <TableCell>{intern.internshipRole}</TableCell>
+                                            <TableCell>{intern.email}</TableCell>
+                                            <TableCell>{intern.phone}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
-                                                    <Button variant="outline" size="icon" asChild title="View Details">
-                                                        <Link href={`/admin/ongoing-interns/${app.id}`}>
+                                                    <Button variant="outline" size="icon" asChild title="View & Manage Application">
+                                                        <Link href={`/admin/applications?view=${intern.id}`}>
                                                             <Eye className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
-                                                    <Button variant="outline" size="icon" asChild title="Edit User Profile">
-                                                        <Link href={`/admin/users/edit/${app.userId}`}>
-                                                            <FilePenLine className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                     <Button variant="outline" size="icon" onClick={() => setAppAction({ action: 'complete', app })} title="Mark as Completed">
-                                                        <CheckCircle className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="destructive" size="icon" onClick={() => setAppAction({ action: 'terminate', app })} title="Terminate Internship">
-                                                        <UserX className="h-4 w-4" />
+                                                    <Button variant="destructive" size="icon" onClick={() => setInternToDelete(intern)} title="Delete Application">
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -142,25 +124,18 @@ export default function AdminOngoingInternsPage() {
                 </CardContent>
             </Card>
 
-            {appAction && (
-                <AlertDialog open={!!appAction} onOpenChange={() => setAppAction(null)}>
+             {internToDelete && (
+                 <AlertDialog open={!!internToDelete} onOpenChange={() => setInternToDelete(null)}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>
-                                {appAction.action === 'complete' ? 'Complete Internship?' : 'Terminate Internship?'}
-                            </AlertDialogTitle>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                {appAction.action === 'complete'
-                                    ? `This will mark the internship for "${appAction.app.userName}" as completed. This action cannot be undone.`
-                                    : `This will mark the internship for "${appAction.app.userName}" as terminated. This action cannot be undone.`
-                                }
+                                This action cannot be undone. This will permanently delete the application for {internToDelete.internName}.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleAction}>
-                                Continue
-                            </AlertDialogAction>
+                            <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>

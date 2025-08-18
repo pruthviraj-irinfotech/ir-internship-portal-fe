@@ -28,6 +28,7 @@ import RichTextEditor from '@/components/rich-text-editor';
 import { cn } from '@/lib/utils';
 import TimePicker from '@/components/time-picker';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 
 const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
@@ -88,6 +89,8 @@ export default function ApplicationsPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const { toast } = useToast();
     const { token } = useAuth();
+    const searchParams = useSearchParams();
+    const router = useRouter();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -114,6 +117,14 @@ export default function ApplicationsPage() {
         }, 500); // Debounce search/filter
         return () => clearTimeout(handler);
     }, [fetchApplications]);
+
+    // Effect to open dialog from URL param
+    useEffect(() => {
+        const viewId = searchParams.get('view');
+        if (viewId) {
+            setViewingAppId(parseInt(viewId, 10));
+        }
+    }, [searchParams]);
 
     const sortedApplications = useMemo(() => {
         return [...applicationList].sort((a, b) => {
@@ -167,6 +178,13 @@ export default function ApplicationsPage() {
         }
     }, [detailedApp, form]);
 
+    const handleCloseDialog = () => {
+        setViewingAppId(null);
+        // Remove the 'view' query param from URL
+        const newPath = pathname.split('?')[0];
+        router.replace(newPath, { scroll: false });
+    };
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!viewingAppId || !token) return;
 
@@ -195,7 +213,7 @@ export default function ApplicationsPage() {
                 title: 'Application Updated',
                 description: `Application status changed to ${statusApiToDisplayMap[values.status]}.`,
             });
-            setViewingAppId(null);
+            handleCloseDialog();
         } catch (error: any) {
             toast({ title: 'Error', description: error.message, variant: 'destructive' });
         }
@@ -241,6 +259,8 @@ export default function ApplicationsPage() {
             setIsDeleteDialogOpen(false);
         }
     };
+
+    const pathname = usePathname();
 
 
     return (
@@ -349,7 +369,7 @@ export default function ApplicationsPage() {
                 </CardContent>
             </Card>
 
-            <Dialog open={!!viewingAppId} onOpenChange={() => setViewingAppId(null)}>
+            <Dialog open={!!viewingAppId} onOpenChange={handleCloseDialog}>
                 <DialogContent className="sm:max-w-6xl h-[90vh] flex flex-col">
                     {isDialogLoading ? (
                         <div className="flex-1 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
@@ -481,7 +501,7 @@ export default function ApplicationsPage() {
                                 </div>
                             </div>
                             <DialogFooter className="mt-6 pt-4 border-t">
-                                <Button type="button" variant="ghost" onClick={() => setViewingAppId(null)}>Cancel</Button>
+                                <Button type="button" variant="ghost" onClick={handleCloseDialog}>Cancel</Button>
                                 <Button type="submit" disabled={form.formState.isSubmitting}>
                                     {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Save Changes
@@ -513,5 +533,4 @@ export default function ApplicationsPage() {
             )}
         </>
     );
-
-    
+}
