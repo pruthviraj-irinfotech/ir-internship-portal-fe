@@ -121,24 +121,29 @@ export default function ApplicationsPage() {
             if (sortDirection === 'asc') {
                 return dateA - dateB;
             }
-            return dateB - dateA;
+            return dateB - a.id;
         });
     }, [applicationList, sortDirection]);
     
-    const handleViewApplication = async (appId: number) => {
-        setViewingAppId(appId);
-        setIsDialogLoading(true);
-        if (!token) return;
-        try {
-            const data = await api.getApplicationDetails(appId, token);
-            setDetailedApp(data);
-        } catch (error: any) {
-            toast({ title: 'Error', description: `Failed to fetch details: ${error.message}`, variant: 'destructive' });
-            setViewingAppId(null);
-        } finally {
-            setIsDialogLoading(false);
-        }
-    };
+    useEffect(() => {
+        const fetchDetails = async () => {
+            if (!viewingAppId || !token) return;
+
+            setIsDialogLoading(true);
+            setDetailedApp(null);
+            try {
+                const data = await api.getApplicationDetails(viewingAppId, token);
+                setDetailedApp(data);
+            } catch (error: any) {
+                toast({ title: 'Error', description: `Failed to fetch details: ${error.message}`, variant: 'destructive' });
+                setViewingAppId(null);
+            } finally {
+                setIsDialogLoading(false);
+            }
+        };
+
+        fetchDetails();
+    }, [viewingAppId, token, toast]);
     
     useEffect(() => {
         if (detailedApp) {
@@ -166,7 +171,10 @@ export default function ApplicationsPage() {
         if (values.status === 'Interview_Scheduled') {
             const [hour, minute, period] = values.interviewTime!.split(/[: ]/);
             const interviewDateTime = new Date(values.interviewDate!);
-            interviewDateTime.setHours(period === 'PM' && hour !== '12' ? parseInt(hour) + 12 : parseInt(hour));
+            let h = parseInt(hour);
+            if (period.toUpperCase() === 'PM' && h < 12) h += 12;
+            if (period.toUpperCase() === 'AM' && h === 12) h = 0;
+            interviewDateTime.setHours(h);
             interviewDateTime.setMinutes(parseInt(minute));
             
             payload.interviewDate = interviewDateTime.toISOString();
@@ -309,7 +317,7 @@ export default function ApplicationsPage() {
                                                 <Badge variant={statusColors[statusApiToDisplayMap[app.status]]}>{statusApiToDisplayMap[app.status]}</Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="outline" size="icon" onClick={() => handleViewApplication(app.id)} title="View & Edit Application">
+                                                <Button variant="outline" size="icon" onClick={() => setViewingAppId(app.id)} title="View & Edit Application">
                                                     <FilePenLine className="h-4 w-4" />
                                                 </Button>
                                             </TableCell>
@@ -492,4 +500,5 @@ export default function ApplicationsPage() {
             )}
         </>
     );
-}
+
+    
