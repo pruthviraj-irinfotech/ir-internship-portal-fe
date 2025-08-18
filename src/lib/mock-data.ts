@@ -137,38 +137,28 @@ export type Document = {
   size: number; // in bytes
 };
 
-// Simplified User for Application context
-export interface ApplicationUser {
-    id: number;
-    email: string;
-    profile: {
-        firstName: string;
-        lastName?: string;
-    };
-}
-
 export type Application = {
   id: number;
   applicationNumber: string;
-  internshipId: number;
-  user: ApplicationUser;
-  userId: number; 
-  userName: string; // This can be derived from user.profile
-  userEmail: string; // This can be derived from user
-  userPhone: string;
+  applicantName: string;
   internshipTitle: string;
-  applicationDate: string;
+  appliedDate: string;
   status: ApiInternshipStatus;
-  resumeUrl: string;
-  whyApply: string;
+  // Optional detailed fields for the dialog
+  internshipId?: number;
+  userId?: number; 
+  userEmail?: string;
+  userPhone?: string;
+  resumeUrl?: string;
+  whyApply?: string;
   altEmail?: string;
   altPhone?: string;
-  qualification: string;
-  userStatus: 'student' | 'graduate' | 'professional';
-  orgName: string;
-  orgCity: string;
-  orgState: string;
-  orgCountry: string;
+  qualification?: string;
+  userStatus?: 'student' | 'graduate' | 'professional';
+  orgName?: string;
+  orgCity?: string;
+  orgState?: string;
+  orgCountry?: string;
   interviewDate?: string;
   interviewTime?: string;
   interviewInstructions?: string;
