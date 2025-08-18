@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -11,11 +11,14 @@ const getApiBaseUrl = () => {
     return baseUrl;
 };
 
-const getAuthHeaders = (token: string) => {
-    return {
-        'Content-Type': 'application/json',
+const getAuthHeaders = (token: string, contentType: 'json' | 'multipart' = 'json') => {
+    const headers: HeadersInit = {
         'Authorization': `Bearer ${token}`,
     };
+    if (contentType === 'json') {
+        headers['Content-Type'] = 'application/json';
+    }
+    return headers;
 };
 
 // ====================================================================
@@ -203,4 +206,72 @@ export const deleteUser = async (id: number, token: string): Promise<User> => {
         throw new Error(result.message || 'Failed to delete user');
     }
     return result;
+};
+
+// ====================================================================
+// Certificate API Functions
+// ====================================================================
+
+export const getCertificates = async (token: string, search?: string): Promise<CertificateListItem[]> => {
+    const url = new URL(`${getApiBaseUrl()}/api/certificates/admin`);
+    if (search) url.searchParams.append('search', search);
+    const response = await fetch(url.toString(), { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!response.ok) throw new Error('Failed to fetch certificates');
+    return response.json();
+};
+
+export const getCertificateById = async (id: number, token: string): Promise<DetailedCertificate> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/certificates/admin/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch certificate details');
+    return response.json();
+};
+
+export const getEligibleApplications = async (token: string): Promise<{ id: number; name: string }[]> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/eligible-for-certificate`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch eligible applications');
+    return response.json();
+};
+
+export const getAllApplicationsForDropdown = async (token: string): Promise<{ id: number; name: string }[]> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/all-for-dropdown`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch applications for dropdown');
+    return response.json();
+};
+
+export const createCertificate = async (formData: FormData, token: string): Promise<Certificate> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/certificates/admin`, {
+        method: 'POST',
+        headers: getAuthHeaders(token, 'multipart'),
+        body: formData,
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to create certificate');
+    return result;
+};
+
+export const updateCertificate = async (id: number, formData: FormData, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/certificates/admin/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(token, 'multipart'),
+        body: formData,
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to update certificate');
+    return result;
+};
+
+export const deleteCertificate = async (id: number, token: string): Promise<void> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/certificates/admin/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) {
+        throw new Error('Failed to delete certificate');
+    }
 };

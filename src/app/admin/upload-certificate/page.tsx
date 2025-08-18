@@ -4,7 +4,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { certificates, applications } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,7 +17,9 @@ import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import RichTextEditor from '@/components/rich-text-editor';
-import { useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useAuth } from '@/context/auth-context';
+import * as api from '@/lib/api';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/png"];
@@ -28,7 +29,7 @@ const formSchema = z.object({
   applicationId: z.string().min(1, "Please select an application."),
   certificateNumber: z.string().min(1, "Certificate ID is required."),
   startDate: z.date({ required_error: "Start date is required." }),
-  certificateDate: z.date({ required_error: "Certificate date is required." }),
+  issueDate: z.date({ required_error: "Certificate date is required." }),
   description: z.string().min(50, "Description must be at least 50 characters."),
   pngFile: z.any()
     .refine((files) => files?.length === 1, "PNG certificate is required.")
@@ -38,88 +39,80 @@ const formSchema = z.object({
     .refine((files) => files?.length === 1, "PDF certificate is required.")
     .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
     .refine((files) => ACCEPTED_PDF_TYPES.includes(files?.[0]?.type), "Only .pdf format is supported."),
-  uploadedBy: z.string().min(1, "Uploader name is required."),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function UploadCertificatePage() {
     const { toast } = useToast();
     const router = useRouter();
-    const form = useForm<z.infer<typeof formSchema>>({
+    const { token, userId } = useAuth();
+    const [eligibleApps, setEligibleApps] = useState<{ id: number; name: string }[]>([]);
+
+    const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             applicationId: '',
             certificateNumber: '',
             description: '',
-            uploadedBy: '2', // Default to Admin User ID
         },
     });
 
-    const completedApplications = useMemo(() => {
-        const issuedCertificateAppIds = new Set(certificates.map(c => c.applicationId));
-        return applications.filter(app => 
-            app.status === 'Completed' && !issuedCertificateAppIds.has(app.id)
-        );
-    }, []);
+    const fetchEligibleApps = useCallback(async () => {
+        if (!token) return;
+        try {
+            const data = await api.getEligibleApplications(token);
+            setEligibleApps(data);
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error', description: `Failed to load applications: ${error.message}`});
+        }
+    }, [token, toast]);
+
+    useEffect(() => {
+        fetchEligibleApps();
+    }, [fetchEligibleApps]);
 
     const currentYear = new Date().getFullYear().toString().slice(-2);
 
     const generateCertId = (appId: number) => {
-        if (!appId) return '';
-        const app = applications.find(a => a.id === appId);
-        if (!app) return '';
-        // Using a combination of App and User ID for more uniqueness
-        return `INT${currentYear}-${String(app.userId).padStart(3, '0')}-${String(appId).padStart(4, '0')}`;
+        if (!appId || !userId) return '';
+        return `INT${currentYear}-${String(userId).padStart(3, '0')}-${String(appId).padStart(4, '0')}`;
     }
 
     form.watch((values, { name }) => {
         if (name === 'applicationId') {
             const appIdNum = parseInt(values.applicationId || '0', 10);
             form.setValue('certificateNumber', generateCertId(appIdNum));
-            const app = applications.find(a => a.id === appIdNum);
-            if (app?.applicationDate) {
-                form.setValue('startDate', new Date(app.applicationDate));
-            }
         }
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        const appIdNum = parseInt(values.applicationId, 10);
-        const app = applications.find(a => a.id === appIdNum);
+    async function onSubmit(values: FormValues) {
+        if (!token) return;
 
-        if (!app) {
-             toast({
-                title: "Error!",
-                description: "Could not find the selected application.",
-                variant: 'destructive'
-            });
-            return;
-        }
-        
-        const newCertificate = {
-            id: certificates.length + 1,
-            applicationId: app.id,
-            certificateNumber: values.certificateNumber,
-            internName: app.userName,
-            internshipRole: app.internshipTitle,
-            company: 'IR INFOTECH',
-            duration: '3 Months', // This should be calculated or retrieved
-            startDate: format(values.startDate, 'yyyy-MM-dd'),
-            approvedDate: format(values.certificateDate, 'yyyy-MM-dd'),
+        const dataToSubmit = {
+            application_id: parseInt(values.applicationId, 10),
+            certificate_number: values.certificateNumber,
+            start_date: format(values.startDate, 'yyyy-MM-dd'),
+            issue_date: format(values.issueDate, 'yyyy-MM-dd'),
             description: values.description,
-            imageUrl: URL.createObjectURL(values.pngFile[0]), // Temporary URL for display
-            pdfUrl: URL.createObjectURL(values.pdfFile[0]), // Temporary URL
-            uploadedBy: parseInt(values.uploadedBy, 10),
-            status: 'Active' as const,
+            status: 'Active',
         };
-        
-        certificates.push(newCertificate);
-        
-        toast({
-            title: "Success!",
-            description: "The certificate has been uploaded successfully.",
-        });
 
-        router.push('/admin/certificates');
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(dataToSubmit));
+        formData.append('pngFile', values.pngFile[0]);
+        formData.append('pdfFile', values.pdfFile[0]);
+
+        try {
+            await api.createCertificate(formData, token);
+            toast({
+                title: "Success!",
+                description: "The certificate has been uploaded successfully.",
+            });
+            router.push('/admin/certificates');
+        } catch (error: any) {
+             toast({ title: "Error!", description: error.message, variant: 'destructive'});
+        }
     }
 
   return (
@@ -145,14 +138,14 @@ export default function UploadCertificatePage() {
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {completedApplications.length > 0 ? (
-                                        completedApplications.map(app => (
+                                    {eligibleApps.length > 0 ? (
+                                        eligibleApps.map(app => (
                                             <SelectItem key={app.id} value={app.id.toString()}>
-                                                {app.applicationNumber} - {app.userName} ({app.internshipTitle})
+                                                {app.name}
                                             </SelectItem>
                                         ))
                                     ) : (
-                                        <SelectItem value="none" disabled>No completed applications pending certificate</SelectItem>
+                                        <SelectItem value="none" disabled>No eligible applications</SelectItem>
                                     )}
                                 </SelectContent>
                             </Select>
@@ -216,7 +209,7 @@ export default function UploadCertificatePage() {
                         />
                      <FormField
                         control={form.control}
-                        name="certificateDate"
+                        name="issueDate"
                         render={({ field }) => (
                             <FormItem className="flex flex-col">
                             <FormLabel>Certificate Issue Date</FormLabel>
@@ -310,21 +303,7 @@ export default function UploadCertificatePage() {
                         )}
                     />
                 </div>
-
-                <FormField
-                    control={form.control}
-                    name="uploadedBy"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Uploaded By (User ID)</FormLabel>
-                        <FormControl>
-                        <Input placeholder="Admin User ID" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-
+                
                 <div className="flex justify-end">
                     <Button type="submit" disabled={form.formState.isSubmitting}>
                         {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -337,5 +316,3 @@ export default function UploadCertificatePage() {
     </Card>
   );
 }
-
-    

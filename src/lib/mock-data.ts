@@ -31,22 +31,57 @@ export let internships: Internship[] = [];
 
 export type CertificateStatus = 'Active' | 'Terminated' | 'On Hold';
 
+// For legacy and API verification page
 export type Certificate = {
   id: number;
   applicationId: number;
   certificateNumber: string;
   internName: string;
-  internshipRole: string; // Mapped from 'role'
+  internshipRole: string; 
   company: string;
-  duration: string; // Mapped from 'internshipDuration'
-  approvedDate: string; // Mapped from 'certificateDate'
+  duration: string; 
+  approvedDate: string; 
   description: string;
   imageUrl: string;
   pdfUrl?: string;
   startDate?: string;
   uploadedBy?: number;
-  status: CertificateStatus; // Mapped from 'certificateStatus'
+  status: CertificateStatus;
 };
+
+// For the main admin list view
+export type CertificateListItem = {
+    certificate_id: number;
+    certificate_number: string;
+    intern_name: string;
+    role: string;
+    date_approved: string;
+    status: CertificateStatus;
+    pdf_url: string;
+    image_url: string;
+};
+
+// For the detailed admin view/edit page
+export type DetailedCertificate = {
+    id: number;
+    certificate_number: string;
+    application_id: number;
+    start_date: string;
+
+    issue_date: string;
+    description: string;
+    image_url: string;
+    pdf_url: string;
+    status: CertificateStatus;
+    uploaded_by_id: number;
+    intern_details: {
+        name: string;
+        role: string;
+        duration: string;
+        company: string;
+    };
+};
+
 
 
 export const interns = [
