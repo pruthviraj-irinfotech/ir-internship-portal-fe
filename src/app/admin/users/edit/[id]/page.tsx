@@ -1,12 +1,14 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { users, User } from '@/lib/mock-data';
+import type { DetailedUser } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,7 +26,7 @@ const formSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters.").optional().or(z.literal('')),
   role: z.enum(['user', 'admin'], { required_error: "Please select a role." }),
   qualification: z.string().min(2, "Qualification is required."),
-  status: z.enum(['student', 'graduate', 'professional'], { required_error: "Please select a status." }),
+  currentStatus: z.enum(['student', 'graduate', 'professional'], { required_error: "Please select a status." }),
   orgName: z.string().min(2, "Organization name is required."),
   orgCity: z.string().min(2, "City is required."),
   orgState: z.string().min(2, "State is required."),
@@ -37,28 +39,46 @@ export default function EditUserPage() {
     const { toast } = useToast();
     const router = useRouter();
     const params = useParams();
+    const { token } = useAuth();
     const userId = parseInt(params.id as string, 10);
     
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<DetailedUser | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
     });
 
-    useEffect(() => {
-        const userToEdit = users.find(u => u.id === userId);
-        if (userToEdit) {
-            setUser(userToEdit);
+    const fetchUser = useCallback(async () => {
+        if (!token || isNaN(userId)) return;
+
+        try {
+            const data = await api.getUserById(userId, token);
+            setUser(data);
             form.reset({
-                ...userToEdit,
+                firstName: data.profile.firstName,
+                lastName: data.profile.lastName || '',
+                email: data.email,
+                phone: data.profile.phone,
+                countryCode: data.profile.countryCode,
                 password: '', // Don't pre-fill password
+                role: data.role,
+                qualification: data.education?.[0]?.qualification || '',
+                currentStatus: data.education?.[0]?.currentStatus || 'student',
+                orgName: data.education?.[0]?.orgName || '',
+                orgCity: data.education?.[0]?.orgCity || '',
+                orgState: data.education?.[0]?.orgState || '',
+                orgCountry: data.education?.[0]?.orgCountry || '',
             });
-        } else {
+        } catch (error) {
              toast({ title: "Error!", description: "User not found.", variant: 'destructive' });
             router.push('/admin/users');
         }
-    }, [userId, form, router, toast]);
+    }, [userId, form, router, toast, token]);
+
+    useEffect(() => {
+        fetchUser();
+    }, [fetchUser]);
 
     if (!user) {
         return (
@@ -68,35 +88,51 @@ export default function EditUserPage() {
         );
     }
 
-    function onSubmit(values: FormValues) {
-        const userIndex = users.findIndex(u => u.id === userId);
-        if (userIndex === -1) {
-             toast({ title: "Error!", description: "Could not find user to update.", variant: 'destructive'});
-             return;
-        }
+    async function onSubmit(values: FormValues) {
+        if (!token) return;
 
-        const updatedUser = { ...users[userIndex], ...values };
-
-        // Only update password if a new one is provided
-        if (!values.password) {
-            delete updatedUser.password;
-        }
-
-        users[userIndex] = updatedUser;
+        const updatePayload: Partial<FormValues> = {};
         
-        toast({
-            title: "Success!",
-            description: "The user has been updated successfully.",
-        });
+        // Compare with fetched data to only send changed values
+        if(values.firstName !== user?.profile.firstName) updatePayload.firstName = values.firstName;
+        if(values.lastName !== user?.profile.lastName) updatePayload.lastName = values.lastName;
+        if(values.email !== user?.email) updatePayload.email = values.email;
+        if(values.phone !== user?.profile.phone) updatePayload.phone = values.phone;
+        if(values.countryCode !== user?.profile.countryCode) updatePayload.countryCode = values.countryCode;
+        if(values.role !== user?.role) updatePayload.role = values.role;
+        if(values.qualification !== user?.education?.[0]?.qualification) updatePayload.qualification = values.qualification;
+        if(values.currentStatus !== user?.education?.[0]?.currentStatus) updatePayload.currentStatus = values.currentStatus;
+        if(values.orgName !== user?.education?.[0]?.orgName) updatePayload.orgName = values.orgName;
+        if(values.orgCity !== user?.education?.[0]?.orgCity) updatePayload.orgCity = values.orgCity;
+        if(values.orgState !== user?.education?.[0]?.orgState) updatePayload.orgState = values.orgState;
+        if(values.orgCountry !== user?.education?.[0]?.orgCountry) updatePayload.orgCountry = values.orgCountry;
+        
+        if (values.password) {
+            updatePayload.password = values.password;
+        }
 
-        router.push('/admin/users');
+        if (Object.keys(updatePayload).length === 0) {
+            toast({ title: "No changes", description: "No information was modified."});
+            return;
+        }
+
+        try {
+            await api.updateUser(userId, updatePayload, token);
+            toast({
+                title: "Success!",
+                description: "The user has been updated successfully.",
+            });
+            router.push('/admin/users');
+        } catch(error: any) {
+             toast({ title: "Error!", description: error.message, variant: 'destructive'});
+        }
     }
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>Edit User</CardTitle>
-                <CardDescription>Update the details for {user.firstName} {user.lastName || ''}.</CardDescription>
+                <CardDescription>Update the details for {user.profile.firstName} {user.profile.lastName || ''}.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -154,7 +190,7 @@ export default function EditUserPage() {
                             )} />
                          </div>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="status" render={({ field }) => (
+                            <FormField control={form.control} name="currentStatus" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Status</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>

@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { users } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,7 +25,7 @@ const formSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters."),
   role: z.enum(['user', 'admin'], { required_error: "Please select a role." }),
   qualification: z.string().min(2, "Qualification is required."),
-  status: z.enum(['student', 'graduate', 'professional'], { required_error: "Please select a status." }),
+  currentStatus: z.enum(['student', 'graduate', 'professional'], { required_error: "Please select a status." }),
   orgName: z.string().min(2, "Organization name is required."),
   orgCity: z.string().min(2, "City is required."),
   orgState: z.string().min(2, "State is required."),
@@ -36,6 +37,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function AddNewUserPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { token } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -48,7 +50,7 @@ export default function AddNewUserPage() {
             password: '',
             role: 'user',
             qualification: '',
-            status: 'student',
+            currentStatus: 'student',
             orgName: '',
             orgCity: '',
             orgState: '',
@@ -56,21 +58,25 @@ export default function AddNewUserPage() {
         },
     });
 
-    function onSubmit(values: FormValues) {
-        const newUser = {
-            id: users.length + 1,
-            avatarUrl: 'https://placehold.co/100x100.png',
-            ...values,
-        };
-
-        users.push(newUser);
-
-        toast({
-            title: "User Created!",
-            description: `The account for ${values.firstName} has been created.`,
-        });
-
-        router.push('/admin/users');
+    async function onSubmit(values: FormValues) {
+        if (!token) {
+            toast({ title: 'Error', description: 'Authentication token not found.', variant: 'destructive' });
+            return;
+        }
+        try {
+            await api.createUser(values, token);
+            toast({
+                title: "User Created!",
+                description: `The account for ${values.firstName} has been created.`,
+            });
+            router.push('/admin/users');
+        } catch (error: any) {
+             toast({
+                title: "Failed to create user",
+                description: error.message,
+                variant: 'destructive',
+            });
+        }
     }
 
     return (
@@ -135,7 +141,7 @@ export default function AddNewUserPage() {
                             )} />
                          </div>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField control={form.control} name="status" render={({ field }) => (
+                            <FormField control={form.control} name="currentStatus" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Status</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>

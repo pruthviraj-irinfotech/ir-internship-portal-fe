@@ -1,4 +1,5 @@
 
+
 export type InternshipStatus = 'In Review' | 'Rejected' | 'Shortlisted' | 'Interview Scheduled' | 'Completed' | 'Withdrawn' | 'Ongoing' | 'Terminated';
 export type ApiInternshipStatus = "In_Review" | "Ongoing" | "Completed" | "Terminated" | "Rejected" | "Withdrawn" | "Shortlisted" | "Interview_Scheduled";
 
@@ -76,58 +77,48 @@ export const certificates: Certificate[] = [
   },
 ];
 
+// For the main admin user list
 export type User = {
     id: number;
-    firstName: string;
-    lastName?: string;
+    avatarUrl: string | null;
+    name: string;
     email: string;
     phone: string;
+    role: 'user' | 'admin';
+};
+
+
+// For the detailed user view/edit page
+export type DetailedUser = {
+  id: number;
+  email: string;
+  role: 'user' | 'admin';
+  createdAt: string;
+  updatedAt: string;
+  profile: {
+    id: number;
+    userId: number;
+    firstName: string;
+    lastName: string | null;
+    phone: string;
     countryCode: string;
-    avatarUrl: string;
+    avatarUrl: string | null;
+  };
+  education: {
+    id: number;
+    userId: number;
     qualification: string;
-    status: 'student' | 'graduate' | 'professional';
+    currentStatus: 'student' | 'graduate' | 'professional';
     orgName: string;
     orgCity: string;
     orgState: string;
     orgCountry: string;
-    role: 'user' | 'admin';
-    password?: string;
+    isCurrent: boolean;
+  }[];
 };
 
-export const users: User[] = [
-    {
-        id: 1,
-        firstName: 'Player',
-        lastName: 'One',
-        email: 'player1@email.com',
-        phone: '1234567890',
-        countryCode: '+91',
-        avatarUrl: 'https://placehold.co/100x100.png',
-        qualification: 'B.Tech in Computer Science',
-        status: 'student',
-        orgName: 'University of Example',
-        orgCity: 'Exampleville',
-        orgState: 'Examplestate',
-        orgCountry: 'Exampleland',
-        role: 'user',
-    },
-    {
-        id: 2,
-        firstName: 'Admin',
-        lastName: 'User',
-        email: 'admin@email.com',
-        phone: '0987654321',
-        countryCode: '+91',
-        avatarUrl: 'https://placehold.co/100x100.png',
-        qualification: 'M.Tech in Systems Engineering',
-        status: 'professional',
-        orgName: 'IR INFOTECH',
-        orgCity: 'Tech City',
-        orgState: 'InfoState',
-        orgCountry: 'Stateland',
-        role: 'admin',
-    },
-];
+
+export const users: User[] = [];
 
 export type Document = {
   id: number;

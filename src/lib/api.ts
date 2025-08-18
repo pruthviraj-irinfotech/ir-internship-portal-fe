@@ -1,8 +1,7 @@
 
-
 'use client';
 
-import type { Internship, Application, ApiInternshipStatus, DetailedApplication } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -144,3 +143,64 @@ export const deleteManyApplications = async (applicationIds: number[], token: st
 };
 
 
+// ====================================================================
+// User Management API Functions
+// ====================================================================
+
+export const getUsers = async (token: string, search?: string): Promise<User[]> => {
+    const url = new URL(`${getApiBaseUrl()}/api/users/admin/all`);
+    if (search) {
+        url.searchParams.append('search', search);
+    }
+    const response = await fetch(url.toString(), {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch users');
+    return response.json();
+};
+
+export const getUserById = async (id: number, token: string): Promise<DetailedUser> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/users/admin/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch user details');
+    return response.json();
+};
+
+export const createUser = async (userData: any, token: string): Promise<User> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/users/admin/create`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(userData),
+    });
+     const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.message || 'Failed to create user');
+    }
+    return result;
+};
+
+export const updateUser = async (id: number, userData: any, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/users/admin/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(userData),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.message || 'Failed to update user');
+    }
+    return result;
+};
+
+export const deleteUser = async (id: number, token: string): Promise<User> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/users/admin/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+    });
+    const result = await response.json();
+     if (!response.ok) {
+        throw new Error(result.message || 'Failed to delete user');
+    }
+    return result;
+};
