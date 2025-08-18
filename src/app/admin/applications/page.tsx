@@ -347,7 +347,17 @@ export default function ApplicationsPage() {
                                 </div>
                                 <div className="border-l pl-8 flex flex-col gap-6 overflow-y-auto">
                                     <div className="relative flex-1 rounded-md overflow-hidden border min-h-[400px]">
-                                        <Image src={viewingApplication.resumeUrl || 'https://placehold.co/400x500.png'} alt={`Resume for ${viewingApplication.applicantName}`} fill className="object-contain p-2" data-ai-hint="resume document" />
+                                        {viewingApplication.resumeUrl ? (
+                                            <iframe
+                                                src={viewingApplication.resumeUrl}
+                                                title={`Resume for ${viewingApplication.applicantName}`}
+                                                className="w-full h-full"
+                                            />
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                                                No resume uploaded.
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="space-y-4 border-t pt-6">
                                         <FormField control={form.control} name="status" render={({ field }) => (
@@ -442,4 +452,3 @@ export default function ApplicationsPage() {
             )}
         </>
     );
-}
