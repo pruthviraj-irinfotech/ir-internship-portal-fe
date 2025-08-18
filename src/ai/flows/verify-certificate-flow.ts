@@ -54,7 +54,7 @@ export async function verifyCertificate(certificateNumber: string): Promise<Cert
         description: data.description_of_the_internship,
         imageUrl: data.image_url.startsWith('http') ? data.image_url : `${baseUrl}${data.image_url}`, // Handle relative vs absolute URLs
         startDate: data.internship_start_date,
-        status: data.status_of_the_certificate.replace('_', ' '), // Convert 'On_Hold' to 'On Hold'
+        status: data.status_of_the_certificate.replace('_', ' ') as Certificate['status'], // Convert 'On_Hold' to 'On Hold'
     };
 
     return adaptedCertificate;
