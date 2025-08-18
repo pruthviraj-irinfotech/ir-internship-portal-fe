@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Internship, Application, ApiInternshipStatus, DetailedApplication } from './mock-data';
@@ -108,7 +109,7 @@ export const getApplicationDetails = async (id: number, token: string): Promise<
     }
     const data = await response.json();
     // Prepend base URL to resumeUrl
-    if (data.resumeUrl) {
+    if (data.resumeUrl && !data.resumeUrl.startsWith('http')) {
         data.resumeUrl = `${getApiBaseUrl()}${data.resumeUrl}`;
     }
     return data;
@@ -128,16 +129,18 @@ export const updateApplicationDetails = async (id: number, data: any, token: str
     return response.json();
 };
 
-
-export const updateApplicationStatus = async (id: number, status: ApiInternshipStatus, token: string): Promise<Application> => {
-    const response = await fetch(`${getApiBaseUrl()}/api/applications/${id}/status`, {
-        method: 'PATCH',
+export const deleteManyApplications = async (applicationIds: number[], token: string): Promise<{ message: string; count: number }> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/admin/delete-many`, {
+        method: 'POST',
         headers: getAuthHeaders(token),
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ applicationIds }),
     });
+
+    const result = await response.json();
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update application status');
+        throw new Error(result.message || 'Failed to delete applications');
     }
-    return response.json();
+    return result;
 };
+
+

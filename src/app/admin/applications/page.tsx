@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -142,7 +143,9 @@ export default function ApplicationsPage() {
             }
         };
 
-        fetchDetails();
+        if (viewingAppId) {
+            fetchDetails();
+        }
     }, [viewingAppId, token, toast]);
     
     useEffect(() => {
@@ -217,16 +220,26 @@ export default function ApplicationsPage() {
         setSelectedRows(newSelectedRows);
     };
 
-    const handleDeleteSelected = () => {
-        // This functionality needs a bulk delete API endpoint. For now, it will only work on the client side.
-        const newApplicationList = applicationList.filter(app => !selectedRows.has(app.id));
-        setApplicationList(newApplicationList);
-        setSelectedRows(new Set());
-        toast({
-            title: `${selectedRows.size} Application(s) Deleted`,
-            description: 'The selected applications have been removed. (Client-side only)',
-        });
-        setIsDeleteDialogOpen(false);
+    const handleDeleteSelected = async () => {
+        if (!token) return;
+
+        try {
+            const result = await api.deleteManyApplications(Array.from(selectedRows), token);
+            setApplicationList(prev => prev.filter(app => !selectedRows.has(app.id)));
+            setSelectedRows(new Set());
+            toast({
+                title: 'Applications Deleted',
+                description: result.message,
+            });
+        } catch (error: any) {
+            toast({
+                title: 'Error Deleting Applications',
+                description: error.message,
+                variant: 'destructive',
+            });
+        } finally {
+            setIsDeleteDialogOpen(false);
+        }
     };
 
 
