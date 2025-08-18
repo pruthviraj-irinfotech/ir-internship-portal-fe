@@ -8,6 +8,7 @@ import { Internship } from '@/lib/mock-data';
 import { Search } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
 
 export default function Home() {
@@ -153,7 +154,7 @@ export default function Home() {
                 <Card key={i} className="flex flex-col">
                     <CardHeader><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2 mt-2" /></CardHeader>
                     <CardContent className="flex-grow space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /></CardContent>
-                    <CardFooter className="flex justify-between items-center"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-8 w-1/4" /></CardFooter>
+                    <CardFooter className="flex justify-between items-center"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-10 w-1/3" /></CardFooter>
                 </Card>
             ))
           ) : internships.length > 0 ? (
