@@ -52,75 +52,77 @@ export default function EditCertificatePage() {
     const { token } = useAuth();
     const certificateId = parseInt(params.id as string, 10);
     
-    const [certificate, setCertificate] = useState<DetailedCertificate | null>(null);
-    const [allApps, setAllApps] = useState<{ id: number, name: string }[]>([]);
+    const [initialData, setInitialData] = useState<FormValues | null>(null);
+    const [allApps, setAllApps] = useState<{ value: number, label: string }[]>([]);
     
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
     });
 
-    const fetchDropdownData = useCallback(async () => {
-        if (!token) return;
-        try {
-            const appsData = await api.getAllApplicationsForDropdown(token);
-            setAllApps(appsData);
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Error', description: `Failed to load applications list: ${error.message}`});
-        }
-    }, [token, toast]);
-
-    const fetchCertificateData = useCallback(async () => {
+    const fetchPageData = useCallback(async () => {
         if (!token || isNaN(certificateId)) return;
         try {
-            const certData = await api.getCertificateById(certificateId, token);
-            setCertificate(certData);
-            form.reset({
-                applicationId: certData.application_id.toString(),
-                certificateNumber: certData.certificate_number,
-                startDate: parseISO(certData.start_date),
-                issueDate: parseISO(certData.issue_date),
+            const [certData, appsData] = await Promise.all([
+                api.getCertificateById(certificateId, token),
+                api.getAllApplicationsForDropdown(token)
+            ]);
+
+            setAllApps(appsData);
+
+            const fetchedData = {
+                applicationId: certData.applicationId.toString(),
+                certificateNumber: certData.certificateId,
+                startDate: parseISO(certData.internshipStartDate),
+                issueDate: parseISO(certData.certificateIssueDate),
                 description: certData.description,
-                status: certData.status,
-            });
+                status: certData.certificateStatus,
+            };
+
+            setInitialData(fetchedData as FormValues);
+            form.reset(fetchedData);
+
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Error', description: `Failed to load certificate data: ${error.message}`});
+            toast({ variant: 'destructive', title: 'Error', description: `Failed to load data: ${error.message}`});
             router.push('/admin/certificates');
         }
     }, [token, certificateId, form, router, toast]);
 
     useEffect(() => {
-        fetchDropdownData();
-        fetchCertificateData();
-    }, [fetchDropdownData, fetchCertificateData]);
+        fetchPageData();
+    }, [fetchPageData]);
 
 
     async function onSubmit(values: FormValues) {
-        if (!token || !certificate) return;
+        if (!token || !initialData) return;
 
         const dataToSubmit: any = {};
-        if (parseInt(values.applicationId, 10) !== certificate.application_id) dataToSubmit.applicationId = parseInt(values.applicationId, 10);
-        if (values.certificateNumber !== certificate.certificate_number) dataToSubmit.certificateNumber = values.certificateNumber;
-        if (format(values.startDate, 'yyyy-MM-dd') !== format(parseISO(certificate.start_date), 'yyyy-MM-dd')) dataToSubmit.startDate = format(values.startDate, 'yyyy-MM-dd');
-        if (format(values.issueDate, 'yyyy-MM-dd') !== format(parseISO(certificate.issue_date), 'yyyy-MM-dd')) dataToSubmit.issueDate = format(values.issueDate, 'yyyy-MM-dd');
-        if (values.description !== certificate.description) dataToSubmit.description = values.description;
-        if (values.status !== certificate.status) dataToSubmit.status = values.status;
+        
+        if (values.applicationId !== initialData.applicationId) dataToSubmit.applicationId = parseInt(values.applicationId, 10);
+        if (values.certificateNumber !== initialData.certificateNumber) dataToSubmit.certificateNumber = values.certificateNumber;
+        if (format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = format(values.startDate, 'yyyy-MM-dd');
+        if (format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = format(values.issueDate, 'yyyy-MM-dd');
+        if (values.description !== initialData.description) dataToSubmit.description = values.description;
+        if (values.status !== initialData.status) dataToSubmit.status = values.status;
         
         const formData = new FormData();
         
-        if (Object.keys(dataToSubmit).length > 0) {
-            formData.append('data', JSON.stringify(dataToSubmit));
-        }
+        const hasDataChanges = Object.keys(dataToSubmit).length > 0;
+        const hasPngFile = values.pngFile && values.pngFile.length > 0;
+        const hasPdfFile = values.pdfFile && values.pdfFile.length > 0;
 
-        if (values.pngFile && values.pngFile.length > 0) {
-            formData.append('pngFile', values.pngFile[0]);
-        }
-        if (values.pdfFile && values.pdfFile.length > 0) {
-            formData.append('pdfFile', values.pdfFile[0]);
-        }
-
-        if (!formData.has('data') && !formData.has('pngFile') && !formData.has('pdfFile')) {
+        if (!hasDataChanges && !hasPngFile && !hasPdfFile) {
             toast({ title: "No Changes", description: "You haven't made any changes to save." });
             return;
+        }
+
+        if (hasDataChanges) {
+            formData.append('data', JSON.stringify(dataToSubmit));
+        }
+        if (hasPngFile) {
+            formData.append('pngFile', values.pngFile[0]);
+        }
+        if (hasPdfFile) {
+            formData.append('pdfFile', values.pdfFile[0]);
         }
 
         try {
@@ -135,7 +137,7 @@ export default function EditCertificatePage() {
         }
     }
 
-    if (!certificate) {
+    if (!initialData) {
         return (
             <div className="flex-1 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -147,7 +149,7 @@ export default function EditCertificatePage() {
     <Card>
       <CardHeader>
         <CardTitle>Edit Internship Certificate</CardTitle>
-        <CardDescription>Update the details for certificate ID: {certificate.certificate_number}</CardDescription>
+        <CardDescription>Update the details for certificate ID: {initialData.certificateNumber}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -167,8 +169,8 @@ export default function EditCertificatePage() {
                                 </FormControl>
                                 <SelectContent>
                                     {allApps.map(app => (
-                                        <SelectItem key={app.id} value={app.id.toString()}>
-                                            {app.name}
+                                        <SelectItem key={app.value} value={String(app.value)}>
+                                            {app.label}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

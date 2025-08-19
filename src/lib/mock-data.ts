@@ -29,7 +29,7 @@ export type Internship = {
 export let internships: Internship[] = [];
 
 
-export type CertificateStatus = 'Active' | 'Terminated' | 'On Hold';
+export type CertificateStatus = 'Active' | 'Terminated' | 'On_Hold';
 
 // For the public verification page
 export type Certificate = {
@@ -63,22 +63,23 @@ export type CertificateListItem = {
 
 // For the detailed admin view/edit page
 export type DetailedCertificate = {
-    id: number;
-    certificate_number: string;
-    application_id: number;
-    start_date: string;
-    issue_date: string;
+    applicationDisplay: string;
+    applicationId: number;
+    certificateId: string;
+    internshipStartDate: string;
+    certificateIssueDate: string;
+    certificateStatus: CertificateStatus;
     description: string;
-    image_url: string;
-    pdf_url: string;
-    status: CertificateStatus;
-    uploaded_by_id: number;
-    intern_details: {
+    imageUrl?: string | null;
+    pdfUrl?: string | null;
+    // The following fields may not be available on this specific endpoint
+    intern_details?: {
         name: string;
         role: string;
         duration: string;
         company: string;
     };
+    uploaded_by_id?: number;
 };
 
 
