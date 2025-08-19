@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { applications, internships, Application, Internship } from '@/lib/mock-data';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,55 +22,58 @@ const formSchema = z.object({
   driveLink: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
+// Mock data as the API for this page is not ready yet
+const mockApplication = {
+    id: 1,
+    userName: 'Pruthviraj B',
+    userEmail: 'test@yopmail.com',
+    userPhone: '7019985842',
+    internshipId: 1,
+    applicationDate: '2024-01-15T00:00:00.000Z',
+    status: 'Completed',
+    internId: 101,
+    workEmail: 'pruthviraj.b@irinfotech.com',
+    reportingTo: 'Mr. John Doe',
+    endDate: '2024-04-15T00:00:00.000Z',
+    driveLink: 'https://docs.google.com/folder/123'
+};
+
+const mockInternship = {
+    id: 1,
+    title: 'Full Stack Developer',
+};
+
+
 export default function CompletedInternDetailsPage() {
-    const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
-    const appId = parseInt(params.id as string, 10);
-
-    const [application, setApplication] = useState<Application | null>(null);
-    const [internship, setInternship] = useState<Internship | null>(null);
+    
+    // Using mock data directly
+    const [application, setApplication] = useState(mockApplication);
+    const [internship, setInternship] = useState(mockInternship);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
+        defaultValues: {
+            userEmail: mockApplication.userEmail,
+            userPhone: mockApplication.userPhone,
+            workEmail: mockApplication.workEmail || '',
+            driveLink: mockApplication.driveLink || '',
+        }
     });
 
-    useEffect(() => {
-        const app = applications.find(a => a.id === appId);
-        if (app && app.status === 'Completed') {
-            setApplication(app);
-            const intern = internships.find(i => i.id === app.internshipId);
-            setInternship(intern || null);
-            
-            form.reset({
-                userEmail: app.userEmail,
-                userPhone: app.userPhone,
-                workEmail: app.workEmail || '',
-                driveLink: app.driveLink || '',
-            });
-
-        } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Completed internship application not found.' });
-            router.replace('/admin/completed-interns');
-        }
-    }, [appId, router, toast, form]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         if (!application) return;
         
-        const appIndex = applications.findIndex(a => a.id === application.id);
-        if (appIndex === -1) return;
-
-        // We only update the editable fields
         const updatedApp = { 
-            ...applications[appIndex], 
+            ...application, 
             userEmail: values.userEmail,
             userPhone: values.userPhone,
             workEmail: values.workEmail,
             driveLink: values.driveLink,
         };
 
-        applications[appIndex] = updatedApp;
         setApplication(updatedApp); // Update local state to reflect changes immediately
 
         toast({ title: 'Success', description: 'Intern details have been updated.' });

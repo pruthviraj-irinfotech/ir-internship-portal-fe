@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { applications, internships, Application, Internship, Document } from '@/lib/mock-data';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, File, Loader2, Trash2, Upload, CalendarIcon, FileDown } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import type { Document } from '@/lib/mock-data';
 
 const formSchema = z.object({
   internId: z.string().optional(),
@@ -25,6 +25,34 @@ const formSchema = z.object({
   reportingTo: z.string().optional(),
   endDate: z.date().optional(),
 });
+
+// Mock data as the API for this page is not ready yet
+const mockApplication = {
+    id: 1,
+    userName: 'Pruthviraj B',
+    userEmail: 'test@yopmail.com',
+    userPhone: '7019985842',
+    internshipId: 1,
+    applicationDate: '2024-05-20T00:00:00.000Z',
+    status: 'Ongoing',
+    internId: 101,
+    workEmail: 'pruthviraj.b@irinfotech.com',
+    reportingTo: 'Mr. John Doe',
+    endDate: '2024-08-20T00:00:00.000Z',
+    adminDocuments: [
+        { id: 1, name: 'Offer_Letter.pdf', url: '#', uploadedAt: '2024-05-20T00:00:00.000Z', size: 123456 },
+        { id: 2, name: 'NDA.pdf', url: '#', uploadedAt: '2024-05-21T00:00:00.000Z', size: 789012 },
+    ],
+    userDocuments: [
+        { id: 3, name: 'Intern_ID_Proof.pdf', url: '#', uploadedAt: '2024-05-22T00:00:00.000Z', size: 345678 },
+    ],
+};
+
+const mockInternship = {
+    id: 1,
+    title: 'Full Stack Developer',
+    duration: '3 Months',
+};
 
 function formatBytes(bytes: number, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
@@ -36,38 +64,24 @@ function formatBytes(bytes: number, decimals = 2) {
 }
 
 export default function OngoingInternDetailsPage() {
-    const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
-    const appId = parseInt(params.id as string, 10);
-
-    const [application, setApplication] = useState<Application | null>(null);
-    const [internship, setInternship] = useState<Internship | null>(null);
+    
+    // Using mock data directly
+    const [application, setApplication] = useState(mockApplication);
+    const [internship, setInternship] = useState(mockInternship);
     const [newFile, setNewFile] = useState<File | null>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
+        defaultValues: {
+            internId: mockApplication.internId?.toString() || '',
+            workEmail: mockApplication.workEmail || '',
+            reportingTo: mockApplication.reportingTo || '',
+            endDate: mockApplication.endDate ? parseISO(mockApplication.endDate) : undefined,
+        }
     });
 
-    useEffect(() => {
-        const app = applications.find(a => a.id === appId);
-        if (app && app.status === 'Ongoing') {
-            setApplication(app);
-            const intern = internships.find(i => i.id === app.internshipId);
-            setInternship(intern || null);
-            
-            form.reset({
-                internId: app.internId?.toString() || '',
-                workEmail: app.workEmail || '',
-                reportingTo: app.reportingTo || '',
-                endDate: app.endDate ? parseISO(app.endDate) : undefined,
-            });
-
-        } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Ongoing internship application not found.' });
-            router.replace('/admin/ongoing-interns');
-        }
-    }, [appId, router, toast, form]);
 
     const handleDocDelete = (docId: number, type: 'admin' | 'user') => {
         if (!application) return;
@@ -80,12 +94,6 @@ export default function OngoingInternDetailsPage() {
         };
         
         setApplication(updatedApplication);
-        
-        const appIndex = applications.findIndex(a => a.id === appId);
-        if (appIndex !== -1) {
-            applications[appIndex] = updatedApplication;
-        }
-
         toast({ title: 'Document Deleted', description: 'The document has been removed.' });
     };
     
@@ -111,11 +119,6 @@ export default function OngoingInternDetailsPage() {
 
         setApplication(updatedApplication);
         
-        const appIndex = applications.findIndex(a => a.id === appId);
-        if (appIndex !== -1) {
-            applications[appIndex] = updatedApplication;
-        }
-        
         setNewFile(null);
         (e.target as HTMLFormElement).reset();
         toast({ title: 'File Uploaded', description: `${newFile.name} has been added.` });
@@ -124,17 +127,13 @@ export default function OngoingInternDetailsPage() {
     function onSubmit(values: z.infer<typeof formSchema>) {
         if (!application) return;
         
-        const appIndex = applications.findIndex(a => a.id === application.id);
-        if (appIndex === -1) return;
-
         const updatedApp = { 
-            ...applications[appIndex], 
+            ...application, 
             ...values,
             internId: values.internId ? parseInt(values.internId, 10) : undefined,
             endDate: values.endDate ? format(values.endDate, 'yyyy-MM-dd') : undefined,
         };
 
-        applications[appIndex] = updatedApp;
         setApplication(updatedApp);
 
         toast({ title: 'Success', description: 'Intern details have been updated.' });

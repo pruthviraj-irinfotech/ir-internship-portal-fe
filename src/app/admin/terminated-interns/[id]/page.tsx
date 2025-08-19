@@ -3,35 +3,41 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { applications, internships, Application, Internship } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
+// Mock data as the API for this page is not ready yet
+const mockApplication = {
+    id: 1,
+    userName: 'Pruthviraj B',
+    userEmail: 'test@yopmail.com',
+    userPhone: '7019985842',
+    internshipId: 1,
+    applicationDate: '2024-06-01T00:00:00.000Z',
+    status: 'Terminated',
+    internId: 102,
+    workEmail: 'pruthviraj.b@irinfotech.com',
+    reportingTo: 'Mr. John Doe',
+    endDate: '2024-06-30T00:00:00.000Z', // Termination date
+    comments: '<p>Internship was terminated due to repeated violations of company policy regarding deadlines.</p>'
+};
+
+const mockInternship = {
+    id: 1,
+    title: 'Full Stack Developer',
+};
+
 export default function TerminatedInternDetailsPage() {
-    const params = useParams();
     const router = useRouter();
-    const { toast } = useToast();
-    const appId = parseInt(params.id as string, 10);
 
-    const [application, setApplication] = useState<Application | null>(null);
-    const [internship, setInternship] = useState<Internship | null>(null);
+    // Using mock data directly
+    const [application, setApplication] = useState(mockApplication);
+    const [internship, setInternship] = useState(mockInternship);
 
-    useEffect(() => {
-        const app = applications.find(a => a.id === appId);
-        if (app && app.status === 'Terminated') {
-            setApplication(app);
-            const intern = internships.find(i => i.id === app.internshipId);
-            setInternship(intern || null);
-        } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Terminated internship application not found.' });
-            router.replace('/admin/terminated-interns');
-        }
-    }, [appId, router, toast]);
 
     if (!application || !internship) {
         return (
