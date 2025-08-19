@@ -2,7 +2,7 @@
 
 'use client';
 
-import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern, Document as DocType } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -297,5 +297,35 @@ export const deleteCertificate = async (id: number, token: string): Promise<void
     });
     if (!response.ok) {
         throw new Error('Failed to delete certificate');
+    }
+};
+
+
+// ====================================================================
+// Document API Functions
+// ====================================================================
+
+export const uploadDocument = async (applicationId: number, file: File, token: string): Promise<DocType> => {
+    const formData = new FormData();
+    formData.append('document', file);
+    const response = await fetch(`${getApiBaseUrl()}/api/documents/application/${applicationId}`, {
+        method: 'POST',
+        headers: getAuthHeaders(token, 'multipart'),
+        body: formData,
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to upload document');
+    }
+    return response.json();
+};
+
+export const deleteDocument = async (documentId: number, token: string): Promise<void> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/documents/${documentId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (response.status !== 204 && response.status !== 200) {
+        throw new Error('Failed to delete document');
     }
 };

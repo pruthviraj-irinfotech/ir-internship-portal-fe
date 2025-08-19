@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,45 +17,20 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, File, Loader2, Trash2, Upload, CalendarIcon, FileDown } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import type { Document } from '@/lib/mock-data';
+import type { DetailedApplication, Document as DocType } from '@/lib/mock-data';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
+
 
 const formSchema = z.object({
-  internId: z.string().optional(),
+  companyInternId: z.string().optional(),
   workEmail: z.string().email({ message: "Invalid email address." }).optional().or(z.literal('')),
   reportingTo: z.string().optional(),
-  endDate: z.date().optional(),
+  internshipEndDate: z.date().optional(),
 });
 
-// Mock data as the API for this page is not ready yet
-const mockApplication = {
-    id: 1,
-    userName: 'Pruthviraj B',
-    userEmail: 'test@yopmail.com',
-    userPhone: '7019985842',
-    internshipId: 1,
-    applicationDate: '2024-05-20T00:00:00.000Z',
-    status: 'Ongoing',
-    internId: 101,
-    workEmail: 'pruthviraj.b@irinfotech.com',
-    reportingTo: 'Mr. John Doe',
-    endDate: '2024-08-20T00:00:00.000Z',
-    adminDocuments: [
-        { id: 1, name: 'Offer_Letter.pdf', url: '#', uploadedAt: '2024-05-20T00:00:00.000Z', size: 123456 },
-        { id: 2, name: 'NDA.pdf', url: '#', uploadedAt: '2024-05-21T00:00:00.000Z', size: 789012 },
-    ],
-    userDocuments: [
-        { id: 3, name: 'Intern_ID_Proof.pdf', url: '#', uploadedAt: '2024-05-22T00:00:00.000Z', size: 345678 },
-    ],
-};
-
-const mockInternship = {
-    id: 1,
-    title: 'Full Stack Developer',
-    duration: '3 Months',
-};
-
 function formatBytes(bytes: number, decimals = 2) {
-    if (bytes === 0) return '0 Bytes';
+    if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -65,87 +40,127 @@ function formatBytes(bytes: number, decimals = 2) {
 
 export default function OngoingInternDetailsPage() {
     const router = useRouter();
+    const params = useParams();
+    const { token } = useAuth();
     const { toast } = useToast();
+    const appId = parseInt(params.id as string, 10);
     
-    // Using mock data directly
-    const [application, setApplication] = useState(mockApplication);
-    const [internship, setInternship] = useState(mockInternship);
+    const [application, setApplication] = useState<DetailedApplication | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [newFile, setNewFile] = useState<File | null>(null);
-
+    const [isUploading, setIsUploading] = useState(false);
+    
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            internId: mockApplication.internId?.toString() || '',
-            workEmail: mockApplication.workEmail || '',
-            reportingTo: mockApplication.reportingTo || '',
-            endDate: mockApplication.endDate ? parseISO(mockApplication.endDate) : undefined,
-        }
     });
 
+    const fetchApplicationDetails = useCallback(async () => {
+        if (!token || isNaN(appId)) return;
+        setIsLoading(true);
+        try {
+            const data = await api.getApplicationDetails(appId, token);
+            setApplication(data);
+            form.reset({
+                companyInternId: data.companyInternId || '',
+                workEmail: data.workEmail || '',
+                reportingTo: data.reportingTo || '',
+                internshipEndDate: data.internshipEndDate ? parseISO(data.internshipEndDate) : undefined,
+            });
+        } catch (error: any) {
+            toast({ title: 'Error', description: 'Failed to fetch application details.', variant: 'destructive' });
+            router.push('/admin/ongoing-interns');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [appId, token, toast, router, form]);
 
-    const handleDocDelete = (docId: number, type: 'admin' | 'user') => {
-        if (!application) return;
-
-        const updatedDocs = (type === 'admin' ? application.adminDocuments : application.userDocuments)?.filter(d => d.id !== docId);
-
-        const updatedApplication = {
-            ...application,
-            [type === 'admin' ? 'adminDocuments' : 'userDocuments']: updatedDocs,
-        };
-        
-        setApplication(updatedApplication);
-        toast({ title: 'Document Deleted', description: 'The document has been removed.' });
-    };
+    useEffect(() => {
+        fetchApplicationDetails();
+    }, [fetchApplicationDetails]);
     
-    const handleFileUpload = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newFile || !application) {
-            toast({ variant: 'destructive', title: 'No file selected' });
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        if (!application || !token) return;
+        
+        const payload: Partial<z.infer<typeof formSchema>> = {};
+        if (values.companyInternId !== (application.companyInternId || '')) payload.companyInternId = values.companyInternId;
+        if (values.workEmail !== (application.workEmail || '')) payload.workEmail = values.workEmail;
+        if (values.reportingTo !== (application.reportingTo || '')) payload.reportingTo = values.reportingTo;
+        if (values.internshipEndDate && (!application.internshipEndDate || format(values.internshipEndDate, 'yyyy-MM-dd') !== format(parseISO(application.internshipEndDate), 'yyyy-MM-dd'))) {
+            payload.internshipEndDate = values.internshipEndDate;
+        }
+
+        if (Object.keys(payload).length === 0) {
+            toast({ title: 'No changes', description: 'No information was modified.' });
             return;
         }
 
-        const newDoc: Document = {
-            id: Date.now(),
-            name: newFile.name,
-            url: '#', 
-            uploadedAt: new Date().toISOString(),
-            size: newFile.size,
-        };
+        try {
+            await api.updateApplicationDetails(appId, payload, token);
+            toast({ title: 'Success', description: 'Intern details have been updated.' });
+            fetchApplicationDetails(); // Refresh data
+        } catch (error: any) {
+            toast({ title: 'Update Failed', description: error.message, variant: 'destructive' });
+        }
+    }
+    
+    const handleFileUpload = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newFile || !application || !token) {
+            toast({ variant: 'destructive', title: 'No file selected or invalid state' });
+            return;
+        }
+        setIsUploading(true);
+        try {
+            const uploadedDoc = await api.uploadDocument(application.id, newFile, token);
+            setApplication(prev => prev ? ({
+                ...prev,
+                documentsForIntern: [...(prev.documentsForIntern || []), uploadedDoc]
+            }) : null);
+            
+            setNewFile(null);
+            (e.target as HTMLFormElement).reset();
+            toast({ title: 'File Uploaded', description: `${newFile.name} has been added.` });
+        } catch (error: any) {
+            toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+    
+    const handleDocDelete = async (docId: number) => {
+        if (!application || !token) return;
 
-        const updatedApplication = {
-            ...application,
-            adminDocuments: [...(application.adminDocuments || []), newDoc],
-        };
-
-        setApplication(updatedApplication);
-        
-        setNewFile(null);
-        (e.target as HTMLFormElement).reset();
-        toast({ title: 'File Uploaded', description: `${newFile.name} has been added.` });
+        try {
+            await api.deleteDocument(docId, token);
+            setApplication(prev => {
+                if (!prev) return null;
+                return {
+                    ...prev,
+                    documentsForIntern: prev.documentsForIntern?.filter(d => d.id !== docId),
+                    documentsFromIntern: prev.documentsFromIntern?.filter(d => d.id !== docId),
+                };
+            });
+            toast({ title: 'Document Deleted', description: 'The document has been removed.' });
+        } catch (error: any) {
+            toast({ title: 'Deletion Failed', description: error.message, variant: 'destructive' });
+        }
+    };
+    
+    const getFullUrl = (relativeUrl: string | null | undefined) => {
+        if (!relativeUrl) return '#';
+        if (relativeUrl.startsWith('http')) return relativeUrl;
+        return `${process.env.NEXT_PUBLIC_API_BASE_URL}${relativeUrl}`;
     };
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        if (!application) return;
-        
-        const updatedApp = { 
-            ...application, 
-            ...values,
-            internId: values.internId ? parseInt(values.internId, 10) : undefined,
-            endDate: values.endDate ? format(values.endDate, 'yyyy-MM-dd') : undefined,
-        };
-
-        setApplication(updatedApp);
-
-        toast({ title: 'Success', description: 'Intern details have been updated.' });
-    }
-
-    if (!application || !internship) {
+    if (isLoading || !application) {
         return (
             <div className="flex-1 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         );
     }
+    
+    const { internInfo } = application;
 
     return (
         <div className="space-y-6">
@@ -154,8 +169,8 @@ export default function OngoingInternDetailsPage() {
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold">Ongoing Internship: {internship.title}</h1>
-                    <p className="text-muted-foreground">Managing intern: {application.userName}</p>
+                    <h1 className="text-2xl font-bold">{application.pageTitle || 'Ongoing Internship'}</h1>
+                    <p className="text-muted-foreground">Managing intern: {application.managingInternName || 'N/A'}</p>
                 </div>
             </div>
         <Form {...form}>
@@ -165,8 +180,8 @@ export default function OngoingInternDetailsPage() {
                      <Card>
                         <CardHeader><CardTitle>Intern Management</CardTitle></CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                           <FormField control={form.control} name="internId" render={({ field }) => (
-                                <FormItem><FormLabel>Intern ID</FormLabel><FormControl><Input placeholder="e.g., 1" {...field} /></FormControl><FormMessage /></FormItem>
+                           <FormField control={form.control} name="companyInternId" render={({ field }) => (
+                                <FormItem><FormLabel>Intern ID</FormLabel><FormControl><Input placeholder="e.g., 101" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                              <FormField control={form.control} name="workEmail" render={({ field }) => (
                                 <FormItem><FormLabel>Work Email ID</FormLabel><FormControl><Input placeholder="work.email@company.com" {...field} /></FormControl><FormMessage /></FormItem>
@@ -174,7 +189,7 @@ export default function OngoingInternDetailsPage() {
                             <FormField control={form.control} name="reportingTo" render={({ field }) => (
                                 <FormItem><FormLabel>Reporting To</FormLabel><FormControl><Input placeholder="e.g., Mr. Smith" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
-                             <FormField control={form.control} name="endDate" render={({ field }) => (
+                             <FormField control={form.control} name="internshipEndDate" render={({ field }) => (
                                 <FormItem className="flex flex-col"><FormLabel>Internship End Date</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
@@ -199,25 +214,25 @@ export default function OngoingInternDetailsPage() {
                         <CardHeader><CardTitle>Documents for Intern (Admin Uploads)</CardTitle></CardHeader>
                         <CardContent>
                            <ul className="space-y-2">
-                                {(application.adminDocuments || []).length > 0 ? (
-                                    application.adminDocuments!.map(doc => (
+                                {(application.documentsForIntern || []).length > 0 ? (
+                                    application.documentsForIntern!.map(doc => (
                                         <li key={doc.id} className="flex items-center justify-between p-2 border rounded-md">
                                             <div className="flex items-center gap-3 overflow-hidden">
                                                 <File className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                                                 <div>
                                                     <p className="text-sm font-medium truncate" title={doc.name}>{doc.name}</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {format(new Date(doc.uploadedAt), 'dd-MM-yy')} - {formatBytes(doc.size)}
+                                                        {format(parseISO(doc.uploadedAt), 'dd-MM-yy')} - {formatBytes(doc.sizeBytes)}
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center">
                                                 <Button variant="ghost" size="icon" asChild>
-                                                    <a href={doc.url} download={doc.name} title="Download Document">
+                                                    <a href={getFullUrl(doc.url)} download={doc.name} title="Download Document" target="_blank" rel="noopener noreferrer">
                                                         <FileDown className="h-4 w-4" />
                                                     </a>
                                                 </Button>
-                                                <Button variant="ghost" size="icon" onClick={() => handleDocDelete(doc.id, 'admin')} title="Delete Document">
+                                                <Button variant="ghost" size="icon" onClick={() => handleDocDelete(doc.id)} title="Delete Document">
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>
                                             </div>
@@ -234,25 +249,25 @@ export default function OngoingInternDetailsPage() {
                         <CardHeader><CardTitle>Documents from Intern</CardTitle></CardHeader>
                         <CardContent>
                            <ul className="space-y-2">
-                                {(application.userDocuments || []).length > 0 ? (
-                                    application.userDocuments!.map(doc => (
+                                {(application.documentsFromIntern || []).length > 0 ? (
+                                    application.documentsFromIntern!.map(doc => (
                                          <li key={doc.id} className="flex items-center justify-between p-2 border rounded-md">
                                             <div className="flex items-center gap-3 overflow-hidden">
                                                 <File className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                                                 <div>
                                                     <p className="text-sm font-medium truncate" title={doc.name}>{doc.name}</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {format(new Date(doc.uploadedAt), 'dd-MM-yy')} - {formatBytes(doc.size)}
+                                                        {format(parseISO(doc.uploadedAt), 'dd-MM-yy')} - {formatBytes(doc.sizeBytes)}
                                                     </p>
                                                 </div>
                                             </div>
                                              <div className="flex items-center">
                                                 <Button variant="ghost" size="icon" asChild>
-                                                    <a href={doc.url} download={doc.name} title="Download Document">
+                                                    <a href={getFullUrl(doc.url)} download={doc.name} title="Download Document" target="_blank" rel="noopener noreferrer">
                                                         <FileDown className="h-4 w-4" />
                                                     </a>
                                                 </Button>
-                                                <Button variant="ghost" size="icon" onClick={() => handleDocDelete(doc.id, 'user')} title="Delete Document">
+                                                <Button variant="ghost" size="icon" onClick={() => handleDocDelete(doc.id)} title="Delete Document">
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>
                                             </div>
@@ -271,21 +286,22 @@ export default function OngoingInternDetailsPage() {
                             <CardTitle>Intern Information</CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm space-y-4">
-                            <div><Label>Intern Name</Label><p>{application.userName}</p></div>
-                            <div><Label>Email ID</Label><p>{application.userEmail}</p></div>
-                            <div><Label>Phone Number</Label><p>{application.userPhone}</p></div>
-                            <div><Label>Internship Start Date</Label><p>{format(new Date(application.applicationDate), 'dd-MM-yy')}</p></div>
-                            <div><Label>Role</Label><p>{internship.title}</p></div>
-                            <div><Label>Duration</Label><p>{internship.duration}</p></div>
+                            <div><Label>Intern Name</Label><p>{internInfo?.internName || 'N/A'}</p></div>
+                            <div><Label>Email ID</Label><p>{internInfo?.emailId || 'N/A'}</p></div>
+                            <div><Label>Phone Number</Label><p>{internInfo?.phoneNumber || 'N/A'}</p></div>
+                            <div><Label>Internship Start Date</Label><p>{internInfo?.internshipStartDate ? format(parseISO(internInfo.internshipStartDate), 'dd-MM-yy') : 'N/A'}</p></div>
+                            <div><Label>Role</Label><p>{internInfo?.role || 'N/A'}</p></div>
+                            <div><Label>Duration</Label><p>{internInfo?.duration || 'N/A'}</p></div>
                         </CardContent>
                     </Card>
                      <Card>
                         <CardHeader><CardTitle>Upload New Document</CardTitle></CardHeader>
                         <CardContent>
                             <form onSubmit={handleFileUpload} className="space-y-4">
-                                <Input type="file" onChange={(e) => setNewFile(e.target.files ? e.target.files[0] : null)} />
-                                <Button className="w-full" type="submit" disabled={!newFile}>
-                                    <Upload className="mr-2 h-4 w-4" /> Upload
+                                <Input type="file" onChange={(e) => setNewFile(e.target.files ? e.target.files[0] : null)} disabled={isUploading}/>
+                                <Button className="w-full" type="submit" disabled={!newFile || isUploading}>
+                                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                    {isUploading ? 'Uploading...' : 'Upload'}
                                 </Button>
                             </form>
                         </CardContent>

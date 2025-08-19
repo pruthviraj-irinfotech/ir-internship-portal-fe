@@ -160,7 +160,7 @@ export type Document = {
   name: string;
   url: string;
   uploadedAt: string;
-  size: number; // in bytes
+  sizeBytes: number;
 };
 
 export type Application = {
@@ -202,6 +202,20 @@ export type DetailedApplication = {
     reportingTo?: string | null;
     internshipEndDate?: string | null;
     driveLink?: string | null;
+
+    // fields for ongoing intern details page
+    pageTitle?: string;
+    managingInternName?: string;
+    documentsForIntern?: Document[];
+    documentsFromIntern?: Document[];
+    internInfo?: {
+        internName: string;
+        emailId: string;
+        phoneNumber: string;
+        internshipStartDate: string;
+        role: string;
+        duration: string;
+    }
 };
 
 export type Intern = {
