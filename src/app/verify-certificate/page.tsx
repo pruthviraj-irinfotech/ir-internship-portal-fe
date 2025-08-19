@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Search } from 'lucide-react';
 import Image from 'next/image';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInMonths } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import type { Certificate, CertificateStatus } from '@/lib/mock-data';
 
@@ -49,6 +49,14 @@ async function verifyCertificateApi(certificateNumber: string): Promise<Certific
         ? (data.image_url.startsWith('http') ? data.image_url : `${baseUrl}${data.image_url}`)
         : 'https://placehold.co/800x600.png';
 
+    let durationText = 'N/A';
+    if (data.internship_start_date && data.certificate_issue_date) {
+        const startDate = parseISO(data.internship_start_date);
+        const endDate = parseISO(data.certificate_issue_date);
+        const months = differenceInMonths(endDate, startDate);
+        durationText = `${months} Month${months !== 1 ? 's' : ''}`;
+    }
+
     // Adapt the API response to the existing Certificate type
     return {
         id: 0,
@@ -57,7 +65,7 @@ async function verifyCertificateApi(certificateNumber: string): Promise<Certific
         internName: data.intern_name,
         internshipRole: data.role,
         company: 'IR INFOTECH',
-        duration: data.internship_duration,
+        duration: durationText,
         approvedDate: data.certificate_issue_date,
         description: data.description_of_the_internship,
         imageUrl: imageUrl,
@@ -200,11 +208,11 @@ export default function VerifyCertificatePage() {
               </div>
                <div className="space-y-1">
                   <Label>Status</Label>
-                  <p>
+                  <div>
                       <Badge variant={statusColors[foundCertificate.status] || 'default'}>
                           {foundCertificate.status}
                       </Badge>
-                  </p>
+                  </div>
               </div>
               <div className="md:col-span-2 space-y-1">
                   <Label>Description</Label>
