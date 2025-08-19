@@ -28,7 +28,7 @@ import RichTextEditor from '@/components/rich-text-editor';
 import { cn } from '@/lib/utils';
 import TimePicker from '@/components/time-picker';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 
 const statusColors: Record<InternshipStatus, 'default' | 'secondary' | 'destructive'> = {
