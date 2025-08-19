@@ -195,7 +195,13 @@ export type DetailedApplication = {
         date: string | null;
         instructions: string | null;
     };
-    comments: string | null;
+    adminComments: string | null;
+    // New fields for completed/terminated pages
+    workEmail?: string | null;
+    companyInternId?: string | null;
+    reportingTo?: string | null;
+    internshipEndDate?: string | null;
+    driveLink?: string | null;
 };
 
 export type Intern = {

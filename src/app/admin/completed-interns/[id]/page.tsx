@@ -1,11 +1,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import * as api from '@/lib/api';
+import { useAuth } from '@/context/auth-context';
+import type { DetailedApplication } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,70 +19,74 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 const formSchema = z.object({
-  userEmail: z.string().email({ message: "Invalid email address." }),
-  userPhone: z.string().min(1, "Phone number is required."),
   workEmail: z.string().email({ message: "Invalid email address." }).optional().or(z.literal('')),
   driveLink: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+  reportingTo: z.string().optional(),
 });
 
-// Mock data as the API for this page is not ready yet
-const mockApplication = {
-    id: 1,
-    userName: 'Pruthviraj B',
-    userEmail: 'test@yopmail.com',
-    userPhone: '7019985842',
-    internshipId: 1,
-    applicationDate: '2024-01-15T00:00:00.000Z',
-    status: 'Completed',
-    internId: 101,
-    workEmail: 'pruthviraj.b@irinfotech.com',
-    reportingTo: 'Mr. John Doe',
-    endDate: '2024-04-15T00:00:00.000Z',
-    driveLink: 'https://docs.google.com/folder/123'
-};
-
-const mockInternship = {
-    id: 1,
-    title: 'Full Stack Developer',
-};
-
+type FormValues = z.infer<typeof formSchema>;
 
 export default function CompletedInternDetailsPage() {
     const router = useRouter();
+    const params = useParams();
+    const { token } = useAuth();
     const { toast } = useToast();
+    const appId = parseInt(params.id as string, 10);
     
-    // Using mock data directly
-    const [application, setApplication] = useState(mockApplication);
-    const [internship, setInternship] = useState(mockInternship);
+    const [application, setApplication] = useState<DetailedApplication | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            userEmail: mockApplication.userEmail,
-            userPhone: mockApplication.userPhone,
-            workEmail: mockApplication.workEmail || '',
-            driveLink: mockApplication.driveLink || '',
-        }
     });
 
+    const fetchApplicationDetails = useCallback(async () => {
+        if (!token || isNaN(appId)) return;
+        setIsLoading(true);
+        try {
+            const data = await api.getApplicationDetails(appId, token);
+            setApplication(data);
+            form.reset({
+                workEmail: data.workEmail || '',
+                driveLink: data.driveLink || '',
+                reportingTo: data.reportingTo || '',
+            });
+        } catch (error: any) {
+            toast({ title: 'Error', description: 'Failed to fetch application details.', variant: 'destructive' });
+            router.push('/admin/completed-interns');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [appId, token, toast, router, form]);
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        if (!application) return;
+    useEffect(() => {
+        fetchApplicationDetails();
+    }, [fetchApplicationDetails]);
+
+
+    async function onSubmit(values: FormValues) {
+        if (!application || !token) return;
         
-        const updatedApp = { 
-            ...application, 
-            userEmail: values.userEmail,
-            userPhone: values.userPhone,
-            workEmail: values.workEmail,
-            driveLink: values.driveLink,
-        };
+        const payload: Partial<FormValues> = {};
+        if (values.workEmail !== (application.workEmail || '')) payload.workEmail = values.workEmail;
+        if (values.driveLink !== (application.driveLink || '')) payload.driveLink = values.driveLink;
+        if (values.reportingTo !== (application.reportingTo || '')) payload.reportingTo = values.reportingTo;
+        
+        if (Object.keys(payload).length === 0) {
+            toast({ title: 'No changes', description: 'No information was modified.' });
+            return;
+        }
 
-        setApplication(updatedApp); // Update local state to reflect changes immediately
-
-        toast({ title: 'Success', description: 'Intern details have been updated.' });
+        try {
+            await api.updateApplicationDetails(appId, payload, token);
+            toast({ title: 'Success', description: 'Intern details have been updated.' });
+            fetchApplicationDetails(); // Refresh data
+        } catch (error: any) {
+            toast({ title: 'Update Failed', description: error.message, variant: 'destructive' });
+        }
     }
 
-    if (!application || !internship) {
+    if (isLoading || !application) {
         return (
             <div className="flex-1 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -94,8 +101,8 @@ export default function CompletedInternDetailsPage() {
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold">Completed Internship: {internship.title}</h1>
-                    <p className="text-muted-foreground">Viewing details for intern: {application.userName}</p>
+                    <h1 className="text-2xl font-bold">Completed Internship</h1>
+                    <p className="text-muted-foreground">Viewing details for intern: {application.applicantName}</p>
                 </div>
             </div>
             <Form {...form}>
@@ -106,24 +113,20 @@ export default function CompletedInternDetailsPage() {
                             <CardDescription>View and edit basic information for this completed internship.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div><Label>Intern Name</Label><Input value={application.userName} disabled /></div>
-                            
-                            <FormField control={form.control} name="userEmail" render={({ field }) => (
-                                <FormItem><FormLabel>Personal Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            
-                             <FormField control={form.control} name="userPhone" render={({ field }) => (
-                                <FormItem><FormLabel>Personal Phone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
+                            <div><Label>Intern Name</Label><Input value={application.applicantName} disabled /></div>
+                            <div><Label>Personal Email</Label><Input value={application.applicantEmail} disabled /></div>
+                            <div><Label>Personal Phone</Label><Input value={application.applicantPhone} disabled /></div>
 
                             <FormField control={form.control} name="workEmail" render={({ field }) => (
                                 <FormItem><FormLabel>Work Email</FormLabel><FormControl><Input placeholder="work.email@company.com" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
 
-                            <div><Label>Intern ID</Label><Input value={application.internId?.toString() || 'N/A'} disabled /></div>
-                            <div><Label>Reporting To</Label><Input value={application.reportingTo || 'N/A'} disabled /></div>
+                            <div><Label>Intern ID</Label><Input value={application.companyInternId || 'N/A'} disabled /></div>
+                             <FormField control={form.control} name="reportingTo" render={({ field }) => (
+                                <FormItem><FormLabel>Reporting To</FormLabel><FormControl><Input placeholder="e.g., Mr. Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
                             <div><Label>Start Date</Label><Input value={format(parseISO(application.applicationDate), 'PPP')} disabled /></div>
-                            <div><Label>End Date</Label><Input value={application.endDate ? format(parseISO(application.endDate), 'PPP') : 'N/A'} disabled /></div>
+                            <div><Label>End Date</Label><Input value={application.internshipEndDate ? format(parseISO(application.internshipEndDate), 'PPP') : 'N/A'} disabled /></div>
                              <FormField control={form.control} name="driveLink" render={({ field }) => (
                                 <FormItem className="md:col-span-2"><FormLabel>Google Drive Link</FormLabel><FormControl><Input placeholder="https://docs.google.com/..." {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
