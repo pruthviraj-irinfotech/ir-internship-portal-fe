@@ -63,15 +63,13 @@ export type CertificateListItem = {
 
 // For the detailed admin view/edit page
 export type DetailedCertificate = {
-    image?: string | null;
-    intern_name?: string;
-    role?: string;
     application_id: number;
-    internship_start_date: string;
-    status: CertificateStatus;
-    description: string;
-    certificate_issue_date: string;
     certificate_id_text: string;
+    internship_start_date: string;
+    certificate_issue_date: string;
+    status: CertificateStatus;
+    description: string | null;
+    image_url?: string | null;
     pdf_url?: string | null;
 };
 
@@ -218,6 +216,16 @@ export type Intern = {
     email: string;
     phone: string;
 }
+
+export type MyGameApplication = {
+    id: number;
+    applicationNumber: string;
+    internshipId: number;
+    userId: number;
+    applicationDate: string;
+    status: 'Ongoing' | 'Completed';
+    internship: Internship;
+};
 
 
 export let applications: Application[] = [];

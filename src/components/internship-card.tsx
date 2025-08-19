@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import Link from 'next/link';
 import React from 'react';
-import { Clock, IndianRupee, HelpCircle, MapPin, Tag, Activity } from 'lucide-react';
-import type { Internship, InternshipStatus, ApiInternshipStatus } from '@/lib/mock-data';
+import { Clock, IndianRupee, HelpCircle, MapPin, Tag, Activity, Eye } from 'lucide-react';
+import type { Internship, InternshipStatus, ApiInternshipStatus, MyGameApplication } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,11 +21,12 @@ import {
 import { format } from 'date-fns';
 
 type InternshipCardProps = {
-  internship: Internship;
+  internship?: Internship;
+  application?: MyGameApplication;
   isLoggedIn?: boolean;
 };
 
-const statusDisplayMap: Record<ApiInternshipStatus, { text: InternshipStatus, variant: 'default' | 'secondary' | 'destructive' }> = {
+const statusDisplayMap: Record<ApiInternshipStatus | 'Ongoing' | 'Completed', { text: string, variant: 'default' | 'secondary' | 'destructive' }> = {
     'In_Review': { text: 'In Review', variant: 'secondary'},
     'Shortlisted': { text: 'Shortlisted', variant: 'default' },
     'Interview_Scheduled': { text: 'Interview Scheduled', variant: 'default'},
@@ -36,8 +38,15 @@ const statusDisplayMap: Record<ApiInternshipStatus, { text: InternshipStatus, va
 };
 
 
-export function InternshipCard({ internship, isLoggedIn = false }: InternshipCardProps) {
+export function InternshipCard({ internship: directInternship, application, isLoggedIn = false }: InternshipCardProps) {
   
+  const internship = application ? application.internship : directInternship;
+  const applicationStatus = application ? application.status : directInternship?.applicationStatus;
+
+  if (!internship) {
+    return null;
+  }
+
   const renderActionButton = () => {
     if (!isLoggedIn) {
         return (
@@ -64,8 +73,22 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
             </Dialog>
         );
     }
+    
+    // "My Games" page logic
+    if (application) {
+        const detailPage = application.status.toLowerCase();
+        return (
+             <Button size="sm" asChild>
+                <Link href={`/${detailPage}/${application.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Details
+                </Link>
+            </Button>
+        );
+    }
 
-    if (!internship.applicationStatus) {
+    // Home page logic
+    if (!applicationStatus) {
         return (
             <Button size="sm" asChild>
                 <Link href={`/apply/${internship.id}`}>Apply Now</Link>
@@ -73,8 +96,8 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
         );
     }
     
-    // For all other statuses, show a "View Status" button
-    const statusInfo = statusDisplayMap[internship.applicationStatus];
+    // Home page, application status exists
+    const statusInfo = statusDisplayMap[applicationStatus];
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -152,12 +175,12 @@ export function InternshipCard({ internship, isLoggedIn = false }: InternshipCar
             </span>
           </div>
         )}
-        {internship.applicationStatus && (
+        {applicationStatus && (
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-muted-foreground" />
             <span>Status: </span>
-            <Badge variant={statusDisplayMap[internship.applicationStatus].variant}>
-                {statusDisplayMap[internship.applicationStatus].text}
+            <Badge variant={statusDisplayMap[applicationStatus].variant}>
+                {statusDisplayMap[applicationStatus].text}
             </Badge>
           </div>
         )}
