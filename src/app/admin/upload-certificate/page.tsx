@@ -47,7 +47,7 @@ export default function UploadCertificatePage() {
     const { toast } = useToast();
     const router = useRouter();
     const { token, userId } = useAuth();
-    const [eligibleApps, setEligibleApps] = useState<{ id: number; name: string }[]>([]);
+    const [eligibleApps, setEligibleApps] = useState<{ value: number; label: string }[]>([]);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -140,8 +140,8 @@ export default function UploadCertificatePage() {
                                 <SelectContent>
                                     {eligibleApps.length > 0 ? (
                                         eligibleApps.map(app => (
-                                            <SelectItem key={app.id} value={app.id.toString()}>
-                                                {app.name}
+                                            <SelectItem key={app.value} value={app.value.toString()}>
+                                                {app.label}
                                             </SelectItem>
                                         ))
                                     ) : (

@@ -265,7 +265,7 @@ export const getCertificateById = async (id: number, token: string): Promise<Det
     return response.json();
 };
 
-export const getEligibleApplications = async (token: string): Promise<{ id: number; name: string }[]> => {
+export const getEligibleApplications = async (token: string): Promise<{ value: number; label: string }[]> => {
     const response = await fetch(`${getApiBaseUrl()}/api/applications/eligible-for-certificate`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
