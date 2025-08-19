@@ -63,23 +63,16 @@ export type CertificateListItem = {
 
 // For the detailed admin view/edit page
 export type DetailedCertificate = {
-    applicationDisplay: string;
-    applicationId: number;
-    certificateId: string;
-    internshipStartDate: string;
-    certificateIssueDate: string;
-    certificateStatus: CertificateStatus;
+    image?: string | null;
+    intern_name?: string;
+    role?: string;
+    application_id: number;
+    internship_start_date: string;
+    status: CertificateStatus;
     description: string;
-    imageUrl?: string | null;
-    pdfUrl?: string | null;
-    // The following fields may not be available on this specific endpoint
-    intern_details?: {
-        name: string;
-        role: string;
-        duration: string;
-        company: string;
-    };
-    uploaded_by_id?: number;
+    certificate_issue_date: string;
+    certificate_id_text: string;
+    pdf_url?: string | null;
 };
 
 

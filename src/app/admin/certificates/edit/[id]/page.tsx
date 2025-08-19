@@ -31,7 +31,7 @@ const formSchema = z.object({
   certificateNumber: z.string().min(1, "Certificate ID is required."),
   startDate: z.date({ required_error: "Start date is required." }),
   issueDate: z.date({ required_error: "Certificate date is required." }),
-  description: z.string().min(50, "Description must be at least 50 characters."),
+  description: z.string().min(1, "Description cannot be empty."),
   pngFile: z.any()
     .optional()
     .refine((files) => !files || files.length === 0 || files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
@@ -66,18 +66,18 @@ export default function EditCertificatePage() {
                 api.getCertificateById(certificateId, token),
                 api.getAllApplicationsForDropdown(token)
             ]);
-
+            
             setAllApps(appsData);
 
             const fetchedData = {
-                applicationId: certData.applicationId.toString(),
-                certificateNumber: certData.certificateId,
-                startDate: parseISO(certData.internshipStartDate),
-                issueDate: parseISO(certData.certificateIssueDate),
-                description: certData.description,
-                status: certData.certificateStatus,
+                applicationId: certData.application_id.toString(),
+                certificateNumber: certData.certificate_id_text,
+                startDate: parseISO(certData.internship_start_date),
+                issueDate: parseISO(certData.certificate_issue_date),
+                description: certData.description || '',
+                status: certData.status,
             };
-
+            
             setInitialData(fetchedData as FormValues);
             form.reset(fetchedData);
 
@@ -149,7 +149,7 @@ export default function EditCertificatePage() {
     <Card>
       <CardHeader>
         <CardTitle>Edit Internship Certificate</CardTitle>
-        <CardDescription>Update the details for certificate ID: {initialData.certificateNumber}</CardDescription>
+        <CardDescription>Update the details for certificate ID: {initialData.certificateNumber || 'Not available'}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
