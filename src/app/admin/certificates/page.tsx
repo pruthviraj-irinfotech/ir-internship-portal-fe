@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const statusColors: Record<CertificateStatus, 'default' | 'secondary' | 'destructive'> = {
     'Active': 'default',
-    'On Hold': 'secondary',
+    'On_Hold': 'secondary',
     'Terminated': 'destructive',
 };
 
@@ -85,7 +85,7 @@ export default function CertificatesIssuedPage() {
 
     const getFullUrl = (relativeUrl: string | null | undefined) => {
         if (!relativeUrl) return 'https://placehold.co/800x600.png';
-        if (relativeUrl.startsWith('http')) return relativeUrl;
+        if (relativeUrl.startsWith('http') || relativeUrl.startsWith('data:')) return relativeUrl;
         return `${baseUrl}${relativeUrl}`;
     };
 
@@ -142,7 +142,7 @@ export default function CertificatesIssuedPage() {
                                             <TableCell>{format(parseISO(cert.date_approved), 'dd-MM-yy')}</TableCell>
                                             <TableCell>
                                                 <Badge variant={statusColors[cert.status] || 'Active'}>
-                                                    {cert.status || 'Active'}
+                                                    {cert.status.replace(/_/g, ' ')}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -185,35 +185,35 @@ export default function CertificatesIssuedPage() {
                         <>
                             <DialogHeader>
                                 <DialogTitle>Certificate Details</DialogTitle>
-                                <DialogDescription>Viewing details for Certificate ID: {selectedCertificate.certificate_number}</DialogDescription>
+                                <DialogDescription>Viewing details for Certificate ID: {selectedCertificate.certificateId}</DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
                                 <div className="relative w-full aspect-[4/3] rounded-md overflow-hidden border">
                                     <Image 
-                                        src={getFullUrl(selectedCertificate.image_url)}
-                                        alt={`Certificate for ${selectedCertificate.intern_details.name}`}
+                                        src={getFullUrl(selectedCertificate.imageUrl)}
+                                        alt={`Certificate for ${selectedCertificate.intern_details?.name || 'intern'}`}
                                         fill
                                         className="object-contain"
                                         data-ai-hint="certificate document"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                                    <div><Label className="text-sm text-muted-foreground">Intern Name</Label><p className="font-semibold">{selectedCertificate.intern_details.name}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Internship Role</Label><p>{selectedCertificate.intern_details.role}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Company</Label><p>{selectedCertificate.intern_details.company}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{selectedCertificate.intern_details.duration}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Start Date</Label><p>{format(parseISO(selectedCertificate.start_date), 'dd-MM-yy')}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Date Approved</Label><p>{format(parseISO(selectedCertificate.issue_date), 'dd-MM-yy')}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Status</Label><p><Badge variant={statusColors[selectedCertificate.status]}>{selectedCertificate.status}</Badge></p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Uploaded By</Label><p>Admin (ID: {selectedCertificate.uploaded_by_id})</p></div>
-                                    <div className="col-span-2"><Label className="text-sm text-muted-foreground">Description</Label><div className="text-sm" dangerouslySetInnerHTML={{ __html: selectedCertificate.description }} /></div>
+                                    <div><Label className="text-sm text-muted-foreground">Intern Name</Label><p className="font-semibold">{selectedCertificate.intern_details?.name || 'N/A'}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Internship Role</Label><p>{selectedCertificate.intern_details?.role || 'N/A'}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Company</Label><p>{selectedCertificate.intern_details?.company || 'N/A'}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{selectedCertificate.intern_details?.duration || 'N/A'}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Start Date</Label><p>{format(parseISO(selectedCertificate.internshipStartDate), 'dd-MM-yy')}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Date Approved</Label><p>{format(parseISO(selectedCertificate.certificateIssueDate), 'dd-MM-yy')}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Status</Label><p><Badge variant={statusColors[selectedCertificate.certificateStatus]}>{selectedCertificate.certificateStatus.replace(/_/g, ' ')}</Badge></p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Uploaded By</Label><p>Admin (ID: {selectedCertificate.uploaded_by_id || 'N/A'})</p></div>
+                                    <div className="col-span-2"><Label className="text-sm text-muted-foreground">Description</Label><div className="text-sm" dangerouslySetInnerHTML={{ __html: selectedCertificate.description || '' }} /></div>
                                 </div>
                                 <div className="flex gap-4 pt-4 border-t">
                                      <Button asChild className="w-full">
-                                        <a href={getFullUrl(selectedCertificate.image_url)} target="_blank" rel="noopener noreferrer"><ImageIcon className="mr-2"/> View PNG</a>
+                                        <a href={getFullUrl(selectedCertificate.imageUrl)} target="_blank" rel="noopener noreferrer"><ImageIcon className="mr-2"/> View PNG</a>
                                      </Button>
                                      <Button asChild className="w-full">
-                                        <a href={getFullUrl(selectedCertificate.pdf_url)} target="_blank" rel="noopener noreferrer"><FileDown className="mr-2"/> Download PDF</a>
+                                        <a href={getFullUrl(selectedCertificate.pdfUrl)} target="_blank" rel="noopener noreferrer"><FileDown className="mr-2"/> Download PDF</a>
                                      </Button>
                                 </div>
                             </div>
