@@ -19,6 +19,7 @@ const getAuthHeaders = (token: string, contentType: 'json' | 'multipart' = 'json
     if (contentType === 'json') {
         headers['Content-Type'] = 'application/json';
     }
+    // For multipart, we do NOT set Content-Type, the browser does it.
     return headers;
 };
 

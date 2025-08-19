@@ -16,7 +16,7 @@ import { format, parseISO } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import RichTextEditor from '@/components/rich-text-editor';
 import * as api from '@/lib/api';
 import { useAuth } from '@/context/auth-context';
@@ -40,7 +40,7 @@ const formSchema = z.object({
     .optional()
     .refine((files) => !files || files.length === 0 || files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
     .refine((files) => !files || files.length === 0 || ACCEPTED_PDF_TYPES.includes(files?.[0]?.type), "Only .pdf format is supported."),
-  status: z.enum(['Active', 'On Hold', 'Terminated'], { required_error: "Please select a status." }),
+  status: z.enum(['Active', 'On_Hold', 'Terminated'], { required_error: "Please select a status." }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -98,14 +98,15 @@ export default function EditCertificatePage() {
         if (!token || !certificate) return;
 
         const dataToSubmit: any = {};
-        if (parseInt(values.applicationId, 10) !== certificate.application_id) dataToSubmit.application_id = parseInt(values.applicationId, 10);
-        if (values.certificateNumber !== certificate.certificate_number) dataToSubmit.certificate_number = values.certificateNumber;
-        if (format(values.startDate, 'yyyy-MM-dd') !== format(parseISO(certificate.start_date), 'yyyy-MM-dd')) dataToSubmit.start_date = format(values.startDate, 'yyyy-MM-dd');
-        if (format(values.issueDate, 'yyyy-MM-dd') !== format(parseISO(certificate.issue_date), 'yyyy-MM-dd')) dataToSubmit.issue_date = format(values.issueDate, 'yyyy-MM-dd');
+        if (parseInt(values.applicationId, 10) !== certificate.application_id) dataToSubmit.applicationId = parseInt(values.applicationId, 10);
+        if (values.certificateNumber !== certificate.certificate_number) dataToSubmit.certificateNumber = values.certificateNumber;
+        if (format(values.startDate, 'yyyy-MM-dd') !== format(parseISO(certificate.start_date), 'yyyy-MM-dd')) dataToSubmit.startDate = format(values.startDate, 'yyyy-MM-dd');
+        if (format(values.issueDate, 'yyyy-MM-dd') !== format(parseISO(certificate.issue_date), 'yyyy-MM-dd')) dataToSubmit.issueDate = format(values.issueDate, 'yyyy-MM-dd');
         if (values.description !== certificate.description) dataToSubmit.description = values.description;
         if (values.status !== certificate.status) dataToSubmit.status = values.status;
         
         const formData = new FormData();
+        
         if (Object.keys(dataToSubmit).length > 0) {
             formData.append('data', JSON.stringify(dataToSubmit));
         }
@@ -117,7 +118,7 @@ export default function EditCertificatePage() {
             formData.append('pdfFile', values.pdfFile[0]);
         }
 
-        if (formData.entries().next().done) {
+        if (!formData.has('data') && !formData.has('pngFile') && !formData.has('pdfFile')) {
             toast({ title: "No Changes", description: "You haven't made any changes to save." });
             return;
         }
@@ -287,7 +288,7 @@ export default function EditCertificatePage() {
                                 </FormControl>
                                 <SelectContent>
                                     <SelectItem value="Active">Active</SelectItem>
-                                    <SelectItem value="On Hold">On Hold</SelectItem>
+                                    <SelectItem value="On_Hold">On Hold</SelectItem>
                                     <SelectItem value="Terminated">Terminated</SelectItem>
                                 </SelectContent>
                             </Select>

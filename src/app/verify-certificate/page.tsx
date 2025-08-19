@@ -45,8 +45,8 @@ async function verifyCertificateApi(certificateNumber: string): Promise<Certific
 
     const data = await response.json();
     
-    const imageUrl = data.imageUrl 
-        ? (data.imageUrl.startsWith('http') ? data.imageUrl : `${baseUrl}${data.imageUrl}`)
+    const imageUrl = data.image_url
+        ? (data.image_url.startsWith('http') ? data.image_url : `${baseUrl}${data.image_url}`)
         : 'https://placehold.co/800x600.png';
 
     // Adapt the API response to the existing Certificate type
@@ -54,14 +54,14 @@ async function verifyCertificateApi(certificateNumber: string): Promise<Certific
         id: 0,
         applicationId: 0,
         certificateNumber: certificateNumber,
-        internName: data.internName,
+        internName: data.intern_name,
         internshipRole: data.role,
         company: 'IR INFOTECH',
-        duration: data.internshipDuration,
-        approvedDate: data.certificateDate,
-        description: data.description,
+        duration: data.internship_duration,
+        approvedDate: data.certificate_issue_date,
+        description: data.description_of_the_internship,
         imageUrl: imageUrl,
-        status: data.certificateStatus,
+        status: data.status_of_the_certificate,
     };
 
   } catch (error) {

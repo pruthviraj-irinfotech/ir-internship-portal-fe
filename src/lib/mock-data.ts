@@ -31,16 +31,16 @@ export let internships: Internship[] = [];
 
 export type CertificateStatus = 'Active' | 'Terminated' | 'On Hold';
 
-// For legacy and API verification page
+// For the public verification page
 export type Certificate = {
   id: number;
   applicationId: number;
   certificateNumber: string;
   internName: string;
-  internshipRole: string; 
+  internshipRole: string;
   company: string;
-  duration: string; 
-  approvedDate: string; 
+  duration: string;
+  approvedDate: string;
   description: string;
   imageUrl: string;
   pdfUrl?: string;
@@ -67,7 +67,6 @@ export type DetailedCertificate = {
     certificate_number: string;
     application_id: number;
     start_date: string;
-
     issue_date: string;
     description: string;
     image_url: string;

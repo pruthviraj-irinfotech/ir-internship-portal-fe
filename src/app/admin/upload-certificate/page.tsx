@@ -90,12 +90,12 @@ export default function UploadCertificatePage() {
         if (!token) return;
 
         const dataToSubmit = {
-            application_id: parseInt(values.applicationId, 10),
-            certificate_number: values.certificateNumber,
-            start_date: format(values.startDate, 'yyyy-MM-dd'),
-            issue_date: format(values.issueDate, 'yyyy-MM-dd'),
+            applicationId: parseInt(values.applicationId, 10),
+            certificateNumber: values.certificateNumber,
+            startDate: format(values.startDate, 'yyyy-MM-dd'),
+            issueDate: format(values.issueDate, 'yyyy-MM-dd'),
             description: values.description,
-            status: 'Active',
+            // Status is defaulted to Active by backend
         };
 
         const formData = new FormData();
