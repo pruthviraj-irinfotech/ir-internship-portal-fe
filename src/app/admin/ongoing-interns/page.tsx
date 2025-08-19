@@ -100,7 +100,7 @@ export default function AdminOngoingInternsPage() {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="outline" size="icon" asChild title="View & Manage Application">
-                                                        <Link href={`/admin/applications?view=${intern.id}`}>
+                                                        <Link href={`/admin/ongoing-interns/${intern.id}`}>
                                                             <Eye className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
