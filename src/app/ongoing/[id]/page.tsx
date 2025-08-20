@@ -1,9 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { applications, internships, Application, Internship, Document } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,10 +10,12 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, File, Loader2, Trash2, Upload, FileDown } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import * as api from '@/lib/api';
+import type { Document, ApplicationDetails } from '@/lib/mock-data';
 
 function formatBytes(bytes: number, decimals = 2) {
-    if (bytes === 0) return '0 Bytes';
+    if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -25,75 +26,85 @@ function formatBytes(bytes: number, decimals = 2) {
 export default function UserOngoingInternshipDetailsPage() {
     const params = useParams();
     const router = useRouter();
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, token } = useAuth();
     const { toast } = useToast();
     const appId = parseInt(params.id as string, 10);
 
-    const [application, setApplication] = useState<Application | null>(null);
-    const [internship, setInternship] = useState<Internship | null>(null);
+    const [details, setDetails] = useState<ApplicationDetails | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [newFile, setNewFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+
+    const getFullUrl = (relativeUrl?: string) => {
+        if (!relativeUrl) return '#';
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        return relativeUrl.startsWith('http') ? relativeUrl : `${baseUrl}${relativeUrl}`;
+    };
+
+    const fetchDetails = useCallback(async () => {
+        if (!token || isNaN(appId)) return;
+        setIsLoading(true);
+        try {
+            const data = await api.getOngoingInternshipDetails(appId, token);
+            setDetails(data);
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Ongoing internship application not found.' });
+            router.replace('/my-games');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [appId, token, router, toast]);
 
     useEffect(() => {
         if (!isLoggedIn) {
           router.push(`/login?redirect=/ongoing/${appId}`);
-        }
-    }, [isLoggedIn, router, appId]);
-
-    useEffect(() => {
-        const app = applications.find(a => a.id === appId);
-        if (app && app.status === 'Ongoing') {
-            setApplication(app);
-            const intern = internships.find(i => i.id === app.internshipId);
-            setInternship(intern || null);
         } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Ongoing internship application not found.' });
-            router.replace('/my-games');
+            fetchDetails();
         }
-    }, [appId, router, toast]);
+    }, [isLoggedIn, router, appId, fetchDetails]);
 
-    const handleDocDelete = (docId: number) => {
-        if (!application) return;
-        const updatedDocs = application.userDocuments?.filter(d => d.id !== docId);
-        const updatedApplication = {
-            ...application,
-            userDocuments: updatedDocs,
-        };
-        setApplication(updatedApplication);
-        const appIndex = applications.findIndex(a => a.id === appId);
-        if (appIndex !== -1) {
-            applications[appIndex] = updatedApplication;
+    const handleDocDelete = async (docId: number) => {
+        if (!token) return;
+        try {
+            await api.deleteDocument(docId, token);
+            setDetails(prev => {
+                if (!prev) return null;
+                return {
+                    ...prev,
+                    userDocuments: prev.userDocuments?.filter(d => d.id !== docId),
+                };
+            });
+            toast({ title: 'Document Deleted', description: 'The document has been removed.' });
+        } catch (error: any) {
+            toast({ title: 'Deletion Failed', description: error.message, variant: 'destructive' });
         }
-        toast({ title: 'Document Deleted', description: 'The document has been removed.' });
     };
     
-    const handleFileUpload = (e: React.FormEvent) => {
+    const handleFileUpload = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newFile || !application) {
+        if (!newFile || !token) {
             toast({ variant: 'destructive', title: 'No file selected' });
             return;
         }
-        const newDoc: Document = {
-            id: Date.now(),
-            name: newFile.name,
-            url: URL.createObjectURL(newFile), // In real app, this would be the URL from file storage
-            uploadedAt: new Date().toISOString(),
-            size: newFile.size,
-        };
-        const updatedApplication = {
-            ...application,
-            userDocuments: [...(application.userDocuments || []), newDoc],
-        };
-        setApplication(updatedApplication);
-        const appIndex = applications.findIndex(a => a.id === appId);
-        if (appIndex !== -1) {
-            applications[appIndex] = updatedApplication;
+        setIsUploading(true);
+        try {
+            const uploadedDoc = await api.uploadDocument(appId, newFile, token);
+            setDetails(prev => prev ? ({
+                ...prev,
+                userDocuments: [...(prev.userDocuments || []), uploadedDoc]
+            }) : null);
+            
+            setNewFile(null);
+            (e.target as HTMLFormElement).reset();
+            toast({ title: 'File Uploaded', description: `${newFile.name} has been added.` });
+        } catch (error: any) {
+             toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
+        } finally {
+            setIsUploading(false);
         }
-        setNewFile(null);
-        (e.target as HTMLFormElement).reset();
-        toast({ title: 'File Uploaded', description: `${newFile.name} has been added.` });
     };
 
-    if (!isLoggedIn || !application || !internship) {
+    if (isLoading || !details) {
         return (
             <div className="flex-1 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -108,7 +119,7 @@ export default function UserOngoingInternshipDetailsPage() {
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold">{internship.title}</h1>
+                    <h1 className="text-2xl font-bold">{details.internship.title}</h1>
                     <p className="text-muted-foreground">Ongoing Internship Details</p>
                 </div>
             </div>
@@ -118,20 +129,20 @@ export default function UserOngoingInternshipDetailsPage() {
                         <CardHeader><CardTitle>Documents for You</CardTitle><CardDescription>Documents provided by the admin.</CardDescription></CardHeader>
                         <CardContent>
                            <ul className="space-y-2">
-                                {(application.adminDocuments || []).length > 0 ? (
-                                    application.adminDocuments!.map(doc => (
+                                {(details.adminDocuments || []).length > 0 ? (
+                                    details.adminDocuments!.map(doc => (
                                         <li key={doc.id} className="flex items-center justify-between p-2 border rounded-md">
                                             <div className="flex items-center gap-3 overflow-hidden">
                                                 <File className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                                                 <div>
                                                     <p className="text-sm font-medium truncate" title={doc.name}>{doc.name}</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {format(new Date(doc.uploadedAt), 'dd-MM-yy')} - {formatBytes(doc.size)}
+                                                        {format(parseISO(doc.uploadedAt), 'dd-MM-yy')} - {formatBytes(doc.sizeBytes)}
                                                     </p>
                                                 </div>
                                             </div>
                                             <Button variant="ghost" size="icon" asChild>
-                                                <a href={doc.url} download={doc.name} title="Download Document">
+                                                <a href={getFullUrl(doc.url)} download={doc.name} title="Download Document">
                                                     <FileDown className="h-4 w-4" />
                                                 </a>
                                             </Button>
@@ -148,21 +159,21 @@ export default function UserOngoingInternshipDetailsPage() {
                         <CardHeader><CardTitle>Your Submitted Documents</CardTitle><CardDescription>Documents you have uploaded.</CardDescription></CardHeader>
                         <CardContent>
                            <ul className="space-y-2">
-                                {(application.userDocuments || []).length > 0 ? (
-                                    application.userDocuments!.map(doc => (
+                                {(details.userDocuments || []).length > 0 ? (
+                                    details.userDocuments!.map(doc => (
                                          <li key={doc.id} className="flex items-center justify-between p-2 border rounded-md">
                                             <div className="flex items-center gap-3 overflow-hidden">
                                                 <File className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                                                 <div>
                                                     <p className="text-sm font-medium truncate" title={doc.name}>{doc.name}</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {format(new Date(doc.uploadedAt), 'dd-MM-yy')} - {formatBytes(doc.size)}
+                                                        {format(parseISO(doc.uploadedAt), 'dd-MM-yy')} - {formatBytes(doc.sizeBytes)}
                                                     </p>
                                                 </div>
                                             </div>
                                              <div className="flex items-center">
                                                 <Button variant="ghost" size="icon" asChild>
-                                                    <a href={doc.url} download={doc.name} title="Download Document">
+                                                    <a href={getFullUrl(doc.url)} download={doc.name} title="Download Document">
                                                         <FileDown className="h-4 w-4" />
                                                     </a>
                                                 </Button>
@@ -185,20 +196,21 @@ export default function UserOngoingInternshipDetailsPage() {
                             <CardTitle>Internship Information</CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm space-y-4">
-                            <div><Label>Your Name</Label><p>{application.userName}</p></div>
-                            <div><Label>Internship Role</Label><p>{internship.title}</p></div>
-                            <div><Label>Start Date</Label><p>{format(new Date(application.applicationDate), 'PPP')}</p></div>
-                             <div><Label>End Date</Label><p>{application.endDate ? format(new Date(application.endDate), 'PPP') : 'Not set'}</p></div>
-                             <div><Label>Reporting To</Label><p>{application.reportingTo || 'Not assigned'}</p></div>
+                            <div><Label>Your Name</Label><p>{details.userName}</p></div>
+                            <div><Label>Internship Role</Label><p>{details.internship.title}</p></div>
+                            <div><Label>Start Date</Label><p>{format(parseISO(details.applicationDate), 'PPP')}</p></div>
+                             <div><Label>End Date</Label><p>{details.endDate ? format(parseISO(details.endDate), 'PPP') : 'Not set'}</p></div>
+                             <div><Label>Reporting To</Label><p>{details.reportingTo || 'Not assigned'}</p></div>
                         </CardContent>
                     </Card>
                      <Card>
                         <CardHeader><CardTitle>Upload New Document</CardTitle></CardHeader>
                         <CardContent>
                             <form onSubmit={handleFileUpload} className="space-y-4">
-                                <Input type="file" onChange={(e) => setNewFile(e.target.files ? e.target.files[0] : null)} />
-                                <Button className="w-full" type="submit" disabled={!newFile}>
-                                    <Upload className="mr-2 h-4 w-4" /> Upload
+                                <Input type="file" onChange={(e) => setNewFile(e.target.files ? e.target.files[0] : null)} disabled={isUploading} />
+                                <Button className="w-full" type="submit" disabled={!newFile || isUploading}>
+                                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                    {isUploading ? 'Uploading...' : 'Upload'}
                                 </Button>
                             </form>
                         </CardContent>

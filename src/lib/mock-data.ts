@@ -215,6 +215,23 @@ export type DetailedApplication = {
     }
 };
 
+export type ApplicationDetails = {
+  id: number;
+  internship: {
+    title: string;
+  };
+  applicationDate: string;
+  endDate?: string;
+  userName: string;
+  reportingTo?: string;
+  adminDocuments?: Document[];
+  userDocuments?: Document[];
+  userEmail?: string;
+  userPhone?: string;
+  workEmail?: string;
+  driveLink?: string;
+};
+
 export type Intern = {
     id: number;
     internName: string;

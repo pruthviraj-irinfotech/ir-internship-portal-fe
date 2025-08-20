@@ -2,7 +2,7 @@
 
 'use client';
 
-import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern, Document as DocType, MyGameApplication } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern, Document as DocType, MyGameApplication, ApplicationDetails } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -179,6 +179,22 @@ export const getMyGames = async (token: string, filter?: 'Ongoing' | 'Completed'
         headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!response.ok) throw new Error('Failed to fetch your games');
+    return response.json();
+};
+
+export const getOngoingInternshipDetails = async (id: number, token: string): Promise<ApplicationDetails> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/ongoing/${id}`, {
+        headers: getAuthHeaders(token),
+    });
+    if (!response.ok) throw new Error('Failed to fetch ongoing internship details.');
+    return response.json();
+};
+
+export const getCompletedInternshipDetails = async (id: number, token: string): Promise<ApplicationDetails> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/completed/${id}`, {
+        headers: getAuthHeaders(token),
+    });
+    if (!response.ok) throw new Error('Failed to fetch completed internship details.');
     return response.json();
 };
 
