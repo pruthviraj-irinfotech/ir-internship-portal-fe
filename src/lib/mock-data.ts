@@ -63,14 +63,20 @@ export type CertificateListItem = {
 
 // For the detailed admin view/edit page
 export type DetailedCertificate = {
-    application_id: number;
-    certificate_id_text: string;
-    internship_start_date: string;
-    certificate_issue_date: string;
-    status: CertificateStatus;
+    certificateId: string;
+    certificateStatus: CertificateStatus;
+    certificateIssueDate?: string;
     description: string | null;
-    image_url?: string | null;
-    pdf_url?: string | null;
+    imageUrl?: string | null;
+    internshipStartDate?: string;
+    pdfUrl?: string | null;
+    uploaded_by_id?: number;
+    intern_details?: {
+      name: string;
+      role: string;
+      company: string;
+      duration: string;
+    };
 };
 
 

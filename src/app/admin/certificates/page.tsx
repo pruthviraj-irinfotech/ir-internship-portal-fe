@@ -202,8 +202,8 @@ export default function CertificatesIssuedPage() {
                                     <div><Label className="text-sm text-muted-foreground">Internship Role</Label><p>{selectedCertificate.intern_details?.role || 'N/A'}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Company</Label><p>{selectedCertificate.intern_details?.company || 'N/A'}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{selectedCertificate.intern_details?.duration || 'N/A'}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Start Date</Label><p>{format(parseISO(selectedCertificate.internshipStartDate), 'dd-MM-yy')}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Date Approved</Label><p>{format(parseISO(selectedCertificate.certificateIssueDate), 'dd-MM-yy')}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Start Date</Label><p>{selectedCertificate.internshipStartDate ? format(parseISO(selectedCertificate.internshipStartDate), 'dd-MM-yy') : 'N/A'}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Date Approved</Label><p>{selectedCertificate.certificateIssueDate ? format(parseISO(selectedCertificate.certificateIssueDate), 'dd-MM-yy') : 'N/A'}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Status</Label><p><Badge variant={statusColors[selectedCertificate.certificateStatus]}>{selectedCertificate.certificateStatus.replace(/_/g, ' ')}</Badge></p></div>
                                     <div><Label className="text-sm text-muted-foreground">Uploaded By</Label><p>Admin (ID: {selectedCertificate.uploaded_by_id || 'N/A'})</p></div>
                                     <div className="col-span-2"><Label className="text-sm text-muted-foreground">Description</Label><div className="text-sm" dangerouslySetInnerHTML={{ __html: selectedCertificate.description || '' }} /></div>
