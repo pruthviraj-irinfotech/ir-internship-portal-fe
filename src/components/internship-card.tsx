@@ -41,93 +41,6 @@ const statusDisplayMap: Record<ApiInternshipStatus | 'Ongoing' | 'Completed', { 
     'Withdrawn': { text: 'Withdrawn', variant: 'destructive' },
 };
 
-const ViewStatusDialog = ({ application, internship }: { application: MyApplication, internship: Internship }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [details, setDetails] = useState<UserApplicationDetails | null>(null);
-    const { token } = useAuth();
-    const { toast } = useToast();
-
-    const fetchDetails = useCallback(async () => {
-        if (!token) return;
-        setIsLoading(true);
-        setDetails(null);
-        try {
-            const data = await api.getApplicationDetailsForUser(application.id, token);
-            setDetails(data);
-        } catch (error: any) {
-            toast({ title: 'Error', description: error.message, variant: 'destructive' });
-            setIsOpen(false);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [token, application.id, toast]);
-
-    const handleOpenChange = (open: boolean) => {
-        setIsOpen(open);
-        if (open && !details) {
-            fetchDetails();
-        }
-    };
-    
-    const statusInfo = statusDisplayMap[application.status];
-
-    return (
-        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            <DialogTrigger asChild>
-                <Button variant="secondary" size="sm">View Status</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Application Status</DialogTitle>
-                    <DialogDescription>
-                        Status for your application to the "{internship.title}" role.
-                    </DialogDescription>
-                </DialogHeader>
-                {isLoading ? (
-                    <div className="flex items-center justify-center p-8">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                    </div>
-                ) : !details ? (
-                    <p className="text-center p-8">Could not load details.</p>
-                ) : (
-                    <div className="grid gap-4 py-4 text-sm max-h-[60vh] overflow-y-auto pr-4">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                             <Label>Status</Label>
-                             <div className="text-right"><Badge variant={statusInfo.variant}>{statusInfo.text}</Badge></div>
-                             <Label>Applied On</Label>
-                             <p className="text-right">{format(parseISO(details.applicationDate), 'PPP')}</p>
-                        </div>
-
-                         {details.status === 'Interview_Scheduled' && details.interviewDate && (
-                            <div className="border-t pt-4 mt-2 space-y-2">
-                                <h4 className="font-semibold text-primary">Interview Scheduled</h4>
-                                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                                    <Label>Date & Time</Label>
-                                    <p className="text-right">{format(parseISO(details.interviewDate), 'PPP, p')}</p>
-                                    <Label className="col-span-2">Instructions</Label>
-                                    <div className="col-span-2 text-muted-foreground text-xs" dangerouslySetInnerHTML={{ __html: details.interviewInstructions || 'No instructions provided.' }} />
-                                </div>
-                            </div>
-                        )}
-
-                        {details.adminComments && (
-                            <div className="border-t pt-4 mt-2 space-y-2">
-                                <h4 className="font-semibold">Admin Comments</h4>
-                                <div className="text-muted-foreground text-xs" dangerouslySetInnerHTML={{ __html: details.adminComments }} />
-                            </div>
-                        )}
-                        
-                        <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
-                            Note: Applications are reviewed for up to one month. If you have any queries, mail it to <b className="text-primary">hr@irinfotech.com</b>.
-                        </p>
-                    </div>
-                )}
-            </DialogContent>
-        </Dialog>
-    );
-};
-
 
 export function InternshipCard({ internship: directInternship, application, isLoggedIn = false }: InternshipCardProps) {
   
@@ -139,6 +52,8 @@ export function InternshipCard({ internship: directInternship, application, isLo
   
   const applicationStatus = application?.status;
   const postedDate = internship.postedDate;
+  
+  const isMyGamesPage = applicationStatus === 'Ongoing' || applicationStatus === 'Completed';
 
   const renderActionButton = () => {
     if (!isLoggedIn) {
@@ -167,12 +82,11 @@ export function InternshipCard({ internship: directInternship, application, isLo
         );
     }
     
-    // "My Games" page logic
-    if (application && (application.status === 'Ongoing' || application.status === 'Completed')) {
-        const detailPage = application.status.toLowerCase();
+    if (isMyGamesPage) {
+        const detailPage = applicationStatus.toLowerCase();
         return (
              <Button size="sm" asChild>
-                <Link href={`/${detailPage}/${application.id}`}>
+                <Link href={`/${detailPage}/${application!.id}`}>
                   <Eye className="mr-2 h-4 w-4" />
                   View Details
                 </Link>
@@ -180,7 +94,6 @@ export function InternshipCard({ internship: directInternship, application, isLo
         );
     }
 
-    // Home page or /applied page
     if (!applicationStatus) {
         return (
             <Button size="sm" asChild>
@@ -189,7 +102,14 @@ export function InternshipCard({ internship: directInternship, application, isLo
         );
     }
 
-    return <ViewStatusDialog application={application as MyApplication} internship={internship} />;
+    // This is for the /applied page
+    return (
+        <Button size="sm" asChild>
+            <Link href={`/applied/${application!.id}`}>
+                View Status
+            </Link>
+        </Button>
+    );
   }
 
 
@@ -239,12 +159,12 @@ export function InternshipCard({ internship: directInternship, application, isLo
             </span>
           </div>
         )}
-        {applicationStatus && (applicationStatus as ApiInternshipStatus) && (
+        {applicationStatus && (
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-muted-foreground" />
             <span>Status: </span>
-            <Badge variant={statusDisplayMap[applicationStatus as ApiInternshipStatus].variant}>
-                {statusDisplayMap[applicationStatus as ApiInternshipStatus].text}
+            <Badge variant={statusDisplayMap[applicationStatus as keyof typeof statusDisplayMap].variant}>
+                {statusDisplayMap[applicationStatus as keyof typeof statusDisplayMap].text}
             </Badge>
           </div>
         )}
