@@ -9,6 +9,9 @@ import { AuthProvider } from '@/context/auth-context';
 export const metadata: Metadata = {
   title: 'IR Intern Portal',
   description: 'Verify certificates and find your next internship.',
+  icons: {
+    icon: '/uploads/avatars/irinfotech-logo.png',
+  }
 };
 
 export default function RootLayout({

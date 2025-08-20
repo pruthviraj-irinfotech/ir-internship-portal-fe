@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -18,6 +19,8 @@ export function Header() {
   const pathname = usePathname();
   const { isLoggedIn, isAdmin, logout } = useAuth();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const logoUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/avatars/irinfotech-logo.png`;
+
 
   if (pathname.startsWith('/admin')) {
     return null;
@@ -105,7 +108,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-auto flex items-center gap-2">
-          <Image src="https://placehold.co/40x40.png" alt="Company Logo" width={40} height={40} data-ai-hint="logo" />
+          <Image src={logoUrl} alt="Company Logo" width={40} height={40} data-ai-hint="logo" />
           <span className="font-headline text-lg hidden sm:inline-block">IR Intern Portal</span>
         </Link>
         
@@ -125,7 +128,7 @@ export function Header() {
                 </SheetTrigger>
                 <SheetContent side="left">
                     <Link href="/" className="flex items-center gap-2 mb-6" onClick={() => setIsSheetOpen(false)}>
-                        <Image src="https://placehold.co/40x40.png" alt="Company Logo" width={40} height={40} data-ai-hint="logo" />
+                        <Image src={logoUrl} alt="Company Logo" width={40} height={40} data-ai-hint="logo" />
                         <span className="font-headline text-lg">IR Intern Portal</span>
                     </Link>
                     <nav className="flex flex-col gap-2">
