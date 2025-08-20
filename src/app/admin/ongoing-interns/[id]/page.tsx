@@ -29,6 +29,9 @@ const formSchema = z.object({
   internshipEndDate: z.date().optional(),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
+
 function formatBytes(bytes: number, decimals = 2) {
     if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -50,7 +53,7 @@ export default function OngoingInternDetailsPage() {
     const [newFile, setNewFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
     });
 
@@ -78,10 +81,10 @@ export default function OngoingInternDetailsPage() {
         fetchApplicationDetails();
     }, [fetchApplicationDetails]);
     
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: FormValues) {
         if (!application || !token) return;
         
-        const payload: Partial<z.infer<typeof formSchema>> = {};
+        const payload: Partial<FormValues> = {};
         if (values.companyInternId !== (application.companyInternId || '')) payload.companyInternId = values.companyInternId;
         if (values.workEmail !== (application.workEmail || '')) payload.workEmail = values.workEmail;
         if (values.reportingTo !== (application.reportingTo || '')) payload.reportingTo = values.reportingTo;
@@ -317,3 +320,5 @@ export default function OngoingInternDetailsPage() {
         </div>
     );
 }
+
+    

@@ -173,38 +173,36 @@ export type Application = {
 
 export type DetailedApplication = {
     id: number;
-    title: string;
-    applicantName: string;
-    applicantPhone: string;
-    applicantEmail: string;
-    resumeUrl: string;
-    applicationId: string; // This is the applicationNumber
-    applicationDate: string;
-    whyApply: string;
-    highestQualification: string;
-    currentStatus: 'student' | 'graduate' | 'professional';
-    organization: string;
-    city: string;
-    state: string;
-    country: string;
-    alternativeEmail: string | null;
-    alternativePhone: string | null;
-    currentApplicationStatus: ApiInternshipStatus;
-    interviewDetails: {
+    title?: string;
+    applicantName?: string;
+    applicantPhone?: string;
+    applicantEmail?: string;
+    resumeUrl?: string;
+    applicationId?: string; // This is the applicationNumber
+    applicationDate?: string;
+    whyApply?: string;
+    highestQualification?: string;
+    currentStatus?: 'student' | 'graduate' | 'professional';
+    organization?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    alternativeEmail?: string | null;
+    alternativePhone?: string | null;
+    currentApplicationStatus?: ApiInternshipStatus;
+    interviewDetails?: {
         date: string | null;
         instructions: string | null;
     };
-    adminComments: string | null;
-    // New fields for completed/terminated pages
+    comments?: string | null;
+    // Fields for ongoing/completed admin pages
+    pageTitle?: string;
+    managingInternName?: string;
+    companyInternId?: string;
     workEmail?: string | null;
-    companyInternId?: string | null;
     reportingTo?: string | null;
     internshipEndDate?: string | null;
     driveLink?: string | null;
-
-    // fields for ongoing intern details page
-    pageTitle?: string;
-    managingInternName?: string;
     documentsForIntern?: Document[];
     documentsFromIntern?: Document[];
     internInfo?: {
@@ -289,3 +287,5 @@ export type MyApplication = {
 
 
 export let applications: Application[] = [];
+
+    
