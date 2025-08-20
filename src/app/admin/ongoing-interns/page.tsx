@@ -130,7 +130,7 @@ export default function AdminOngoingInternsPage() {
                         <AlertDialogHeader>
                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the application for {internToDelete.internName}.
+                                This action cannot be undone. This will permanently delete the application for ${internToDelete.internName}.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

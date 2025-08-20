@@ -114,6 +114,8 @@ export type User = {
     id: number;
     avatarUrl: string | null;
     name: string;
+    firstName?: string;
+    lastName?: string;
     email: string;
     phone: string;
     role: 'user' | 'admin';
