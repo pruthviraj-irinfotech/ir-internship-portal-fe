@@ -129,10 +129,12 @@ export default function ApplicationStatusPage() {
                                     <Label>Date & Time</Label>
                                     <p className="flex items-center gap-2"><Clock className="h-4 w-4 text-muted-foreground" /> {format(parseISO(details.interviewDate), 'PPP, p')}</p>
                                 </div>
+                                {details.interviewInstructions && (
                                 <div className="md:col-span-2">
                                     <Label>Instructions</Label>
-                                    <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: details.interviewInstructions || ''}} />
+                                    <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: details.interviewInstructions }} />
                                 </div>
+                                )}
                             </div>
                         </div>
                     )}
