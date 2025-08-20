@@ -47,7 +47,7 @@ export default function UploadCertificatePage() {
     const { toast } = useToast();
     const router = useRouter();
     const { token } = useAuth();
-    const [eligibleApps, setEligibleApps] = useState<{ value: number; label: string; userId: number }[]>([]);
+    const [eligibleApps, setEligibleApps] = useState<{ value: number; label: string }[]>([]);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -78,13 +78,19 @@ export default function UploadCertificatePage() {
         return `INT${currentYear}${String(userId).padStart(4, '0')}`;
     }, []);
     
-    const handleApplicationChange = (applicationId: string) => {
-        const selectedApp = eligibleApps.find(app => app.value.toString() === applicationId);
+    const handleApplicationChange = (appValue: string) => {
+        const selectedApp = eligibleApps.find(app => app.value.toString() === appValue);
+        
         if (selectedApp) {
-            const newCertId = generateCertId(selectedApp.userId);
+            const userId = selectedApp.value;
+            const newCertId = generateCertId(userId);
             form.setValue('certificateNumber', newCertId);
+            
+            // The API requires the applicationId, not the userId, for the 'applicationId' field on submit.
+            // Since the API for dropdown gives us the userId as 'value', we must pass this as the application ID for now.
+            // This assumes the backend is expecting the Application ID in the `applicationId` field.
+            form.setValue('applicationId', appValue);
         }
-        form.setValue('applicationId', applicationId);
     };
 
     async function onSubmit(values: FormValues) {
