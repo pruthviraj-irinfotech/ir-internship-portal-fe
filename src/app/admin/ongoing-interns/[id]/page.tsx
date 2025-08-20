@@ -64,7 +64,7 @@ export default function OngoingInternDetailsPage() {
             const data = await api.getApplicationDetails(appId, token);
             setApplication(data);
             form.reset({
-                companyInternId: data.companyInternId || '',
+                companyInternId: data.internId || '',
                 workEmail: data.workEmail || '',
                 reportingTo: data.reportingTo || '',
                 internshipEndDate: data.internshipEndDate ? parseISO(data.internshipEndDate) : undefined,
@@ -85,7 +85,7 @@ export default function OngoingInternDetailsPage() {
         if (!application || !token) return;
         
         const payload: Partial<FormValues> = {};
-        if (values.companyInternId !== (application.companyInternId || '')) payload.companyInternId = values.companyInternId;
+        if (values.companyInternId !== (application.internId || '')) payload.companyInternId = values.companyInternId;
         if (values.workEmail !== (application.workEmail || '')) payload.workEmail = values.workEmail;
         if (values.reportingTo !== (application.reportingTo || '')) payload.reportingTo = values.reportingTo;
         if (values.internshipEndDate && (!application.internshipEndDate || format(values.internshipEndDate, 'yyyy-MM-dd') !== format(parseISO(application.internshipEndDate), 'yyyy-MM-dd'))) {

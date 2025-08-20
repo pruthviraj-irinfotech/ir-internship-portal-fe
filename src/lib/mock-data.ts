@@ -198,7 +198,7 @@ export type DetailedApplication = {
     // Fields for ongoing/completed admin pages
     pageTitle?: string;
     managingInternName?: string;
-    companyInternId?: string;
+    internId?: string; // Changed from companyInternId
     workEmail?: string | null;
     reportingTo?: string | null;
     internshipEndDate?: string | null;
