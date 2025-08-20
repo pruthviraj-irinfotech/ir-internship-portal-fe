@@ -64,6 +64,7 @@ export type CertificateListItem = {
 // For the detailed admin view/edit page
 export type DetailedCertificate = {
     certificateId: string;
+    applicationNumber: string;
     imageUrl: string | null;
     pdfUrl: string | null;
     description: string | null;

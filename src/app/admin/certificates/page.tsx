@@ -216,6 +216,7 @@ export default function CertificatesIssuedPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div><Label className="text-sm text-muted-foreground">Intern Name</Label><p className="font-semibold">{selectedCertificate.intern_details?.name || 'N/A'}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Application Number</Label><p>{selectedCertificate.applicationNumber || 'N/A'}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Internship Role</Label><p>{selectedCertificate.intern_details?.role || 'N/A'}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{calculateDuration(selectedCertificate.internshipStartDate, selectedCertificate.certificateIssueDate)}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Start Date</Label><p>{selectedCertificate.internshipStartDate ? format(parseISO(selectedCertificate.internshipStartDate), 'dd-MM-yy') : 'N/A'}</p></div>
