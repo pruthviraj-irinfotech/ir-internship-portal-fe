@@ -5,13 +5,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import * as api from '@/lib/api';
 import { useAuth } from '@/context/auth-context';
-import type { UserApplicationDetails } from '@/lib/mock-data';
+import type { UserApplicationDetails, Document as DocType } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, Calendar, Clock, MessageSquare, FileText } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, Clock, MessageSquare, FileText, Download } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -61,6 +61,12 @@ export default function ApplicationStatusPage() {
             fetchDetails();
         }
     }, [isLoggedIn, fetchDetails]);
+    
+    const getFullUrl = (relativeUrl?: string) => {
+        if (!relativeUrl) return '#';
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        return relativeUrl.startsWith('http') ? relativeUrl : `${baseUrl}${relativeUrl}`;
+    };
 
     if (isLoading) {
         return (
@@ -146,9 +152,28 @@ export default function ApplicationStatusPage() {
                         </div>
                     )}
 
-                    <div className="border-t pt-6 space-y-2">
+                    <div className="border-t pt-6 space-y-4">
                         <h3 className="font-semibold text-lg flex items-center gap-2"><FileText className="h-5 w-5" /> Your Submission</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-3">{details.whyApply}</p>
+                        <div>
+                            <Label>Why you applied</Label>
+                            <p className="text-sm text-muted-foreground line-clamp-3">{details.whyApply}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-4">
+                            {details.resumeUrl && (
+                                <Button asChild variant="secondary" size="sm">
+                                    <a href={getFullUrl(details.resumeUrl)} target="_blank" rel="noopener noreferrer">
+                                        <Download className="mr-2 h-4 w-4" /> View Resume
+                                    </a>
+                                </Button>
+                            )}
+                             {details.documents && details.documents.map((doc: DocType) => (
+                                <Button key={doc.id} asChild variant="secondary" size="sm">
+                                    <a href={getFullUrl(doc.url)} target="_blank" rel="noopener noreferrer">
+                                        <Download className="mr-2 h-4 w-4" /> {doc.name}
+                                    </a>
+                                </Button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="text-xs text-muted-foreground pt-6 border-t">
