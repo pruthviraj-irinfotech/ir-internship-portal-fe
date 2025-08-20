@@ -46,8 +46,8 @@ type FormValues = z.infer<typeof formSchema>;
 export default function UploadCertificatePage() {
     const { toast } = useToast();
     const router = useRouter();
-    const { token, userId } = useAuth();
-    const [eligibleApps, setEligibleApps] = useState<{ value: number; label: string }[]>([]);
+    const { token } = useAuth();
+    const [eligibleApps, setEligibleApps] = useState<{ value: number; label: string; userId: number }[]>([]);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -72,18 +72,20 @@ export default function UploadCertificatePage() {
         fetchEligibleApps();
     }, [fetchEligibleApps]);
     
-    const generateCertId = useCallback(() => {
+    const generateCertId = useCallback((userId: number): string => {
         if (!userId) return '';
         const currentYear = new Date().getFullYear().toString().slice(-2);
         return `INT${currentYear}${String(userId).padStart(4, '0')}`;
-    }, [userId]);
-
-    useEffect(() => {
-        if (userId) {
-            form.setValue('certificateNumber', generateCertId());
+    }, []);
+    
+    const handleApplicationChange = (applicationId: string) => {
+        const selectedApp = eligibleApps.find(app => app.value.toString() === applicationId);
+        if (selectedApp) {
+            const newCertId = generateCertId(selectedApp.userId);
+            form.setValue('certificateNumber', newCertId);
         }
-    }, [userId, form, generateCertId]);
-
+        form.setValue('applicationId', applicationId);
+    };
 
     async function onSubmit(values: FormValues) {
         if (!token) return;
@@ -130,7 +132,7 @@ export default function UploadCertificatePage() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Completed Application</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={handleApplicationChange} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Select an application" />
