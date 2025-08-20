@@ -45,6 +45,15 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface PageInitialData {
+    applicationId: string;
+    certificateNumber: string;
+    startDate: Date;
+    issueDate: Date;
+    description: string;
+    status: CertificateStatus;
+}
+
 export default function EditCertificatePage() {
     const { toast } = useToast();
     const router = useRouter();
@@ -52,7 +61,7 @@ export default function EditCertificatePage() {
     const { token } = useAuth();
     const certificateId = parseInt(params.id as string, 10);
     
-    const [initialData, setInitialData] = useState<FormValues | null>(null);
+    const [initialData, setInitialData] = useState<PageInitialData | null>(null);
     const [allApps, setAllApps] = useState<{ value: number, label: string }[]>([]);
     
     const form = useForm<FormValues>({
@@ -69,8 +78,8 @@ export default function EditCertificatePage() {
             
             setAllApps(appsData);
 
-            const fetchedData = {
-                applicationId: certData.application_id.toString(),
+            const fetchedData: PageInitialData = {
+                applicationId: String(certData.application_id),
                 certificateNumber: certData.certificate_id_text,
                 startDate: parseISO(certData.internship_start_date),
                 issueDate: parseISO(certData.certificate_issue_date),
@@ -78,7 +87,7 @@ export default function EditCertificatePage() {
                 status: certData.status,
             };
             
-            setInitialData(fetchedData as FormValues);
+            setInitialData(fetchedData);
             form.reset(fetchedData);
 
         } catch (error: any) {
@@ -99,8 +108,8 @@ export default function EditCertificatePage() {
         
         if (values.applicationId !== initialData.applicationId) dataToSubmit.applicationId = parseInt(values.applicationId, 10);
         if (values.certificateNumber !== initialData.certificateNumber) dataToSubmit.certificateNumber = values.certificateNumber;
-        if (format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = format(values.startDate, 'yyyy-MM-dd');
-        if (format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = format(values.issueDate, 'yyyy-MM-dd');
+        if (format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = values.startDate.toISOString();
+        if (format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = values.issueDate.toISOString();
         if (values.description !== initialData.description) dataToSubmit.description = values.description;
         if (values.status !== initialData.status) dataToSubmit.status = values.status;
         
