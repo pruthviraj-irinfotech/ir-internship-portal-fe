@@ -78,19 +78,21 @@ export default function EditCertificatePage() {
             ]);
             
             setAllApps(appsData);
-            
-            if (!certData.internship_start_date || !certData.certificate_issue_date) {
-                throw new Error("Certificate data is missing required dates.");
-            }
 
-            const fetchedData: InitialData = {
+            const fetchedData: any = {
                 applicationId: String(certData.application_id),
                 certificateNumber: certData.certificate_id_text ?? '',
-                startDate: parseISO(certData.internship_start_date),
-                issueDate: parseISO(certData.certificate_issue_date),
                 description: certData.description ?? '',
                 status: certData.status ?? 'Active',
             };
+
+            // Only parse dates if they exist
+            if (certData.internship_start_date) {
+                fetchedData.startDate = parseISO(certData.internship_start_date);
+            }
+             if (certData.certificate_issue_date) {
+                fetchedData.issueDate = parseISO(certData.certificate_issue_date);
+            }
             
             setInitialData(fetchedData);
             form.reset(fetchedData);
@@ -115,8 +117,8 @@ export default function EditCertificatePage() {
         
         if (values.applicationId !== initialData.applicationId) dataToSubmit.applicationId = parseInt(values.applicationId, 10);
         if (values.certificateNumber !== initialData.certificateNumber) dataToSubmit.certificateNumber = values.certificateNumber;
-        if (format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = values.startDate.toISOString();
-        if (format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = values.issueDate.toISOString();
+        if (values.startDate && format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = values.startDate.toISOString();
+        if (values.issueDate && format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = values.issueDate.toISOString();
         if (values.description !== initialData.description) dataToSubmit.description = values.description;
         if (values.status !== initialData.status) dataToSubmit.status = values.status;
         
@@ -384,5 +386,3 @@ export default function EditCertificatePage() {
     </Card>
   );
 }
-
-    
