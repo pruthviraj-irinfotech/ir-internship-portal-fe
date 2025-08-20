@@ -109,8 +109,8 @@ export default function EditCertificatePage() {
         
         if (values.applicationId !== initialData.applicationId) dataToSubmit.applicationId = parseInt(values.applicationId, 10);
         if (values.certificateNumber !== initialData.certificateNumber) dataToSubmit.certificateNumber = values.certificateNumber;
-        if (format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = values.startDate;
-        if (format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = values.issueDate;
+        if (format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = values.startDate.toISOString();
+        if (format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = values.issueDate.toISOString();
         if (values.description !== initialData.description) dataToSubmit.description = values.description;
         if (values.status !== initialData.status) dataToSubmit.status = values.status;
         
