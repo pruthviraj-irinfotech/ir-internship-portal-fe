@@ -61,7 +61,7 @@ export default function OngoingInternDetailsPage() {
         if (!token || isNaN(appId)) return;
         setIsLoading(true);
         try {
-            const data = await api.getApplicationDetails(appId, token);
+            const data = await api.getAdminOngoingInternshipDetails(appId, token);
             setApplication(data);
             form.reset({
                 companyInternId: data.internId || '',
@@ -320,5 +320,3 @@ export default function OngoingInternDetailsPage() {
         </div>
     );
 }
-
-    

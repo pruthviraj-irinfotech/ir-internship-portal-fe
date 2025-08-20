@@ -119,6 +119,18 @@ export const getApplicationDetails = async (id: number, token: string): Promise<
     return data;
 };
 
+export const getAdminOngoingInternshipDetails = async (id: number, token: string): Promise<DetailedApplication> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/admin/ongoing/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch ongoing internship details');
+    }
+    return response.json();
+};
+
+
 export const getApplicationDetailsForUser = async (id: number, token: string): Promise<UserApplicationDetails> => {
     const response = await fetch(`${getApiBaseUrl()}/api/applications/${id}`, {
         headers: getAuthHeaders(token),
