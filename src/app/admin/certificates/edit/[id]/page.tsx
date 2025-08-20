@@ -79,20 +79,26 @@ export default function EditCertificatePage() {
             
             setAllApps(appsData);
             
+            if (!certData.internship_start_date || !certData.certificate_issue_date) {
+                throw new Error("Certificate data is missing required dates.");
+            }
+
             const fetchedData: InitialData = {
                 applicationId: String(certData.application_id),
-                certificateNumber: certData.certificate_id_text,
+                certificateNumber: certData.certificate_id_text ?? '',
                 startDate: parseISO(certData.internship_start_date),
                 issueDate: parseISO(certData.certificate_issue_date),
-                description: certData.description || '',
-                status: certData.status,
+                description: certData.description ?? '',
+                status: certData.status ?? 'Active',
             };
             
             setInitialData(fetchedData);
             form.reset(fetchedData);
 
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Error', description: `Failed to load data: ${error.message}`});
+            console.error("Error fetching page data:", error);
+            const errorMessage = error.message || "An unexpected error occurred.";
+            toast({ variant: 'destructive', title: 'Error', description: `Failed to load data: ${errorMessage}`});
             router.push('/admin/certificates');
         }
     }, [token, certificateId, form, router, toast]);
@@ -378,3 +384,5 @@ export default function EditCertificatePage() {
     </Card>
   );
 }
+
+    
