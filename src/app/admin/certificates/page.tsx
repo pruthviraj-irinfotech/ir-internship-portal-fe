@@ -89,7 +89,7 @@ export default function CertificatesIssuedPage() {
         return `${baseUrl}${relativeUrl}`;
     };
 
-    const calculateDuration = (startDateStr?: string, endDateStr?: string): string => {
+    const calculateDuration = (startDateStr?: string | null, endDateStr?: string | null): string => {
         if (!startDateStr || !endDateStr) {
             return 'N/A';
         }
