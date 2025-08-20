@@ -67,24 +67,23 @@ export default function UploadCertificatePage() {
             toast({ variant: 'destructive', title: 'Error', description: `Failed to load applications: ${error.message}`});
         }
     }, [token, toast]);
-
+    
     useEffect(() => {
         fetchEligibleApps();
     }, [fetchEligibleApps]);
+    
+    const generateCertId = useCallback(() => {
+        if (!userId) return '';
+        const currentYear = new Date().getFullYear().toString().slice(-2);
+        return `INT${currentYear}${String(userId).padStart(4, '0')}`;
+    }, [userId]);
 
-    const currentYear = new Date().getFullYear().toString().slice(-2);
-
-    const generateCertId = (appId: number) => {
-        if (!appId || !userId) return '';
-        return `INT${currentYear}-${String(userId).padStart(3, '0')}-${String(appId).padStart(4, '0')}`;
-    }
-
-    form.watch((values, { name }) => {
-        if (name === 'applicationId') {
-            const appIdNum = parseInt(values.applicationId || '0', 10);
-            form.setValue('certificateNumber', generateCertId(appIdNum));
+    useEffect(() => {
+        if (userId) {
+            form.setValue('certificateNumber', generateCertId());
         }
-    });
+    }, [userId, form, generateCertId]);
+
 
     async function onSubmit(values: FormValues) {
         if (!token) return;
