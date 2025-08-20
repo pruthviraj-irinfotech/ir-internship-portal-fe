@@ -79,16 +79,10 @@ export default function UploadCertificatePage() {
     }, []);
     
     const handleApplicationChange = (appValue: string) => {
-        const selectedApp = eligibleApps.find(app => app.value.toString() === appValue);
-        
-        if (selectedApp) {
-            const userId = selectedApp.value;
+        const userId = parseInt(appValue, 10);
+        if (!isNaN(userId)) {
             const newCertId = generateCertId(userId);
             form.setValue('certificateNumber', newCertId);
-            
-            // The API requires the applicationId, not the userId, for the 'applicationId' field on submit.
-            // Since the API for dropdown gives us the userId as 'value', we must pass this as the application ID for now.
-            // This assumes the backend is expecting the Application ID in the `applicationId` field.
             form.setValue('applicationId', appValue);
         }
     };
@@ -99,8 +93,8 @@ export default function UploadCertificatePage() {
         const dataToSubmit = {
             applicationId: parseInt(values.applicationId, 10),
             certificateNumber: values.certificateNumber,
-            startDate: format(values.startDate, 'yyyy-MM-dd'),
-            issueDate: format(values.issueDate, 'yyyy-MM-dd'),
+            startDate: values.startDate.toISOString(),
+            issueDate: values.issueDate.toISOString(),
             description: values.description,
             // Status is defaulted to Active by backend
         };
@@ -138,7 +132,10 @@ export default function UploadCertificatePage() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Completed Application</FormLabel>
-                            <Select onValueChange={handleApplicationChange} defaultValue={field.value}>
+                            <Select onValueChange={(value) => {
+                                field.onChange(value);
+                                handleApplicationChange(value);
+                            }} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Select an application" />
