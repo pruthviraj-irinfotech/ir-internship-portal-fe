@@ -193,7 +193,7 @@ export default function CertificatesIssuedPage() {
             </Card>
 
             <Dialog open={!!selectedCertificate || isDialogLoading} onOpenChange={() => setSelectedCertificate(null)}>
-                <DialogContent className="sm:max-w-2xl">
+                <DialogContent className="sm:max-w-4xl">
                     {isDialogLoading ? (
                         <div className="flex items-center justify-center p-12"><Loader2 className="h-8 w-8 animate-spin" /></div>
                     ) : !selectedCertificate ? (
@@ -202,36 +202,54 @@ export default function CertificatesIssuedPage() {
                         <>
                             <DialogHeader>
                                 <DialogTitle>Certificate Details</DialogTitle>
-                                <DialogDescription>Viewing details for Certificate ID: {selectedCertificate.certificateId || 'N/A'}</DialogDescription>
+                                <DialogDescription>Viewing details for Certificate ID: {selectedCertificate.certificateId}</DialogDescription>
                             </DialogHeader>
-                            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                                <div className="relative w-full aspect-[4/3] rounded-md overflow-hidden border">
-                                    <Image 
-                                        src={getFullUrl(selectedCertificate.imageUrl)}
-                                        alt={`Certificate for ${selectedCertificate.intern_details?.name || 'intern'}`}
-                                        fill
-                                        className="object-contain"
-                                        data-ai-hint="certificate document"
-                                    />
+
+                            <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
+                                {/* TOP SECTION: Two-column grid for details and image */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Left Column: Key-Value Details */}
+                                    <div className="grid grid-cols-2 gap-x-6 gap-y-4 content-start">
+                                        <div><Label className="text-sm text-muted-foreground">Intern Name</Label><p className="font-semibold">{selectedCertificate.intern_details?.name || 'N/A'}</p></div>
+                                        <div><Label className="text-sm text-muted-foreground">Application Number</Label><p>{selectedCertificate.applicationNumber || 'N/A'}</p></div>
+                                        <div><Label className="text-sm text-muted-foreground">Internship Role</Label><p>{selectedCertificate.intern_details?.role || 'N/A'}</p></div>
+                                        <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{calculateDuration(selectedCertificate.internshipStartDate, selectedCertificate.certificateIssueDate)}</p></div>
+                                        <div><Label className="text-sm text-muted-foreground">Start Date</Label><p>{selectedCertificate.internshipStartDate ? format(parseISO(selectedCertificate.internshipStartDate), 'dd-MM-yy') : 'N/A'}</p></div>
+                                        <div><Label className="text-sm text-muted-foreground">Date Approved</Label><p>{selectedCertificate.certificateIssueDate ? format(parseISO(selectedCertificate.certificateIssueDate), 'dd-MM-yy') : 'N/A'}</p></div>
+                                        <div><Label className="text-sm text-muted-foreground">Status</Label><p><Badge variant={statusColors[selectedCertificate.certificateStatus]}>{selectedCertificate.certificateStatus.replace(/_/g, ' ')}</Badge></p></div>
+                                        <div><Label className="text-sm text-muted-foreground">Uploaded By</Label><p>Admin (ID: {selectedCertificate.uploaded_by_id || 'N/A'})</p></div>
+                                    </div>
+
+                                    {/* Right Column: Certificate Image */}
+                                    <div className="relative w-full aspect-[4/3] rounded-md overflow-hidden border self-start">
+                                        <Image 
+                                            src={getFullUrl(selectedCertificate.imageUrl)}
+                                            alt={`Certificate for ${selectedCertificate.intern_details?.name || 'intern'}`}
+                                            fill
+                                            className="object-contain"
+                                            data-ai-hint="certificate document"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                                    <div><Label className="text-sm text-muted-foreground">Intern Name</Label><p className="font-semibold">{selectedCertificate.intern_details?.name || 'N/A'}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Application Number</Label><p>{selectedCertificate.applicationNumber || 'N/A'}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Internship Role</Label><p>{selectedCertificate.intern_details?.role || 'N/A'}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{calculateDuration(selectedCertificate.internshipStartDate, selectedCertificate.certificateIssueDate)}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Start Date</Label><p>{selectedCertificate.internshipStartDate ? format(parseISO(selectedCertificate.internshipStartDate), 'dd-MM-yy') : 'N/A'}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Date Approved</Label><p>{selectedCertificate.certificateIssueDate ? format(parseISO(selectedCertificate.certificateIssueDate), 'dd-MM-yy') : 'N/A'}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Status</Label><p><Badge variant={statusColors[selectedCertificate.certificateStatus]}>{selectedCertificate.certificateStatus.replace(/_/g, ' ')}</Badge></p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Uploaded By</Label><p>Admin (ID: {selectedCertificate.uploaded_by_id || 'N/A'})</p></div>
-                                    <div className="col-span-2"><Label className="text-sm text-muted-foreground">Description</Label><div className="text-sm" dangerouslySetInnerHTML={{ __html: selectedCertificate.description || '' }} /></div>
+
+                                {/* MIDDLE SECTION: Description */}
+                                <div>
+                                    <Label className="text-sm text-muted-foreground">Description</Label>
+                                    <div className="text-sm mt-1" dangerouslySetInnerHTML={{ __html: selectedCertificate.description || 'No description provided.' }} />
                                 </div>
-                                <div className="flex gap-4 pt-4 border-t">
-                                     <Button asChild className="w-full">
-                                        <a href={getFullUrl(selectedCertificate.imageUrl)} target="_blank" rel="noopener noreferrer"><ImageIcon className="mr-2"/> View PNG</a>
-                                     </Button>
-                                     <Button asChild className="w-full">
-                                        <a href={getFullUrl(selectedCertificate.pdfUrl)} target="_blank" rel="noopener noreferrer"><FileDown className="mr-2"/> Download PDF</a>
-                                     </Button>
+
+                                {/* REVISED BOTTOM SECTION: Simple Download Buttons */}
+                                <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
+                                    <Button asChild className="w-full">
+                                        <a href={getFullUrl(selectedCertificate.imageUrl)} download={`certificate-${selectedCertificate.certificateId}.png`}>
+                                            <ImageIcon className="mr-2 h-4 w-4"/> Download PNG
+                                        </a>
+                                    </Button>
+                                    <Button asChild className="w-full">
+                                        <a href={getFullUrl(selectedCertificate.pdfUrl)} download={`certificate-${selectedCertificate.certificateId}.pdf`}>
+                                            <FileDown className="mr-2 h-4 w-4"/> Download PDF
+                                        </a>
+                                    </Button>
                                 </div>
                             </div>
                         </>
