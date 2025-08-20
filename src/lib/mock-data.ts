@@ -63,16 +63,12 @@ export type CertificateListItem = {
 
 // For the detailed admin view/edit page
 export type DetailedCertificate = {
-    application_id: number;
-    certificate_id_text: string;
-    internship_start_date: string;
-    certificate_issue_date: string;
-    description: string | null;
-    status: CertificateStatus;
     certificateId: string;
+    applicationId: number;
     applicationNumber: string;
     imageUrl: string | null;
     pdfUrl: string | null;
+    description: string | null;
     certificateStatus: CertificateStatus;
     uploaded_by_id: number | null;
     internshipStartDate: string | null;
@@ -239,3 +235,5 @@ export type MyGameApplication = {
 
 
 export let applications: Application[] = [];
+
+    
