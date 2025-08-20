@@ -37,7 +37,7 @@ export default function UserCompletedInternshipDetailsPage() {
             setInternship(intern || null);
         } else {
             toast({ variant: 'destructive', title: 'Error', description: 'Completed internship application not found.' });
-            router.replace('/completed');
+            router.replace('/my-games');
         }
     }, [appId, router, toast]);
 

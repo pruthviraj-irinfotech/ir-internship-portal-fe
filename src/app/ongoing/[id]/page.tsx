@@ -47,7 +47,7 @@ export default function UserOngoingInternshipDetailsPage() {
             setInternship(intern || null);
         } else {
             toast({ variant: 'destructive', title: 'Error', description: 'Ongoing internship application not found.' });
-            router.replace('/ongoing');
+            router.replace('/my-games');
         }
     }, [appId, router, toast]);
 
