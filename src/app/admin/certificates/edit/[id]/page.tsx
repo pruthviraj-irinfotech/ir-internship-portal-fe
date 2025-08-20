@@ -45,14 +45,15 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface PageInitialData {
+// Use a simplified type for the initial data to avoid complexity before form reset
+type InitialData = {
     applicationId: string;
     certificateNumber: string;
     startDate: Date;
     issueDate: Date;
     description: string;
     status: CertificateStatus;
-}
+};
 
 export default function EditCertificatePage() {
     const { toast } = useToast();
@@ -61,7 +62,7 @@ export default function EditCertificatePage() {
     const { token } = useAuth();
     const certificateId = parseInt(params.id as string, 10);
     
-    const [initialData, setInitialData] = useState<PageInitialData | null>(null);
+    const [initialData, setInitialData] = useState<InitialData | null>(null);
     const [allApps, setAllApps] = useState<{ value: number, label: string }[]>([]);
     
     const form = useForm<FormValues>({
@@ -77,8 +78,8 @@ export default function EditCertificatePage() {
             ]);
             
             setAllApps(appsData);
-
-            const fetchedData: PageInitialData = {
+            
+            const fetchedData: InitialData = {
                 applicationId: String(certData.application_id),
                 certificateNumber: certData.certificate_id_text,
                 startDate: parseISO(certData.internship_start_date),
@@ -108,8 +109,8 @@ export default function EditCertificatePage() {
         
         if (values.applicationId !== initialData.applicationId) dataToSubmit.applicationId = parseInt(values.applicationId, 10);
         if (values.certificateNumber !== initialData.certificateNumber) dataToSubmit.certificateNumber = values.certificateNumber;
-        if (format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = values.startDate.toISOString();
-        if (format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = values.issueDate.toISOString();
+        if (format(values.startDate, 'yyyy-MM-dd') !== format(initialData.startDate, 'yyyy-MM-dd')) dataToSubmit.startDate = values.startDate;
+        if (format(values.issueDate, 'yyyy-MM-dd') !== format(initialData.issueDate, 'yyyy-MM-dd')) dataToSubmit.issueDate = values.issueDate;
         if (values.description !== initialData.description) dataToSubmit.description = values.description;
         if (values.status !== initialData.status) dataToSubmit.status = values.status;
         
@@ -170,7 +171,7 @@ export default function EditCertificatePage() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Application</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
                                     <SelectValue placeholder="Select an application" />
@@ -291,7 +292,7 @@ export default function EditCertificatePage() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Certificate Status</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                     <SelectTrigger className="md:w-1/2">
                                         <SelectValue placeholder="Select a status" />
