@@ -2,7 +2,7 @@
 
 'use client';
 
-import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern, Document as DocType, MyGameApplication, ApplicationDetails } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern, Document as DocType, MyGameApplication, ApplicationDetails, MyApplication } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -179,6 +179,18 @@ export const getMyGames = async (token: string, filter?: 'Ongoing' | 'Completed'
         headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!response.ok) throw new Error('Failed to fetch your games');
+    return response.json();
+};
+
+export const getMyApplications = async (token: string, status?: ApiInternshipStatus | 'all'): Promise<MyApplication[]> => {
+    const url = new URL(`${getApiBaseUrl()}/api/applications/my-applications`);
+    if (status && status !== 'all') {
+        url.searchParams.append('status', status);
+    }
+    const response = await fetch(url.toString(), {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch your applications');
     return response.json();
 };
 

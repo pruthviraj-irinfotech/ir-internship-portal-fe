@@ -5,7 +5,7 @@
 import Link from 'next/link';
 import React from 'react';
 import { Clock, IndianRupee, HelpCircle, MapPin, Tag, Activity, Eye } from 'lucide-react';
-import type { Internship, InternshipStatus, ApiInternshipStatus, MyGameApplication } from '@/lib/mock-data';
+import type { Internship, ApiInternshipStatus, MyGameApplication, MyApplication } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ import { format } from 'date-fns';
 
 type InternshipCardProps = {
   internship?: Internship;
-  application?: MyGameApplication;
+  application?: MyGameApplication | MyApplication;
   isLoggedIn?: boolean;
 };
 
@@ -42,6 +42,7 @@ export function InternshipCard({ internship: directInternship, application, isLo
   
   const internship = application ? application.internship : directInternship;
   const applicationStatus = application ? application.status : directInternship?.applicationStatus;
+  const applicationDate = application ? application.applicationDate : directInternship?.applicationDate;
 
   if (!internship) {
     return null;
@@ -75,7 +76,7 @@ export function InternshipCard({ internship: directInternship, application, isLo
     }
     
     // "My Games" page logic
-    if (application) {
+    if (application && (application.status === 'Ongoing' || application.status === 'Completed')) {
         const detailPage = application.status.toLowerCase();
         return (
              <Button size="sm" asChild>
@@ -87,7 +88,7 @@ export function InternshipCard({ internship: directInternship, application, isLo
         );
     }
 
-    // Home page logic
+    // Home page or /applied page
     if (!applicationStatus) {
         return (
             <Button size="sm" asChild>
@@ -96,7 +97,6 @@ export function InternshipCard({ internship: directInternship, application, isLo
         );
     }
     
-    // Home page, application status exists
     const statusInfo = statusDisplayMap[applicationStatus];
     return (
         <Dialog>
@@ -115,9 +115,9 @@ export function InternshipCard({ internship: directInternship, application, isLo
                         <p className="text-muted-foreground">Status</p>
                         <Badge variant={statusInfo.variant}>{statusInfo.text}</Badge>
                     </div>
-                    {internship.applicationDate && <div className="flex justify-between items-center">
+                    {applicationDate && <div className="flex justify-between items-center">
                         <p className="text-muted-foreground">Applied Date</p>
-                        <p>{format(new Date(internship.applicationDate), 'dd-MM-yy')}</p>
+                        <p>{format(new Date(applicationDate), 'dd-MM-yy')}</p>
                     </div>}
                     <p className="text-xs text-muted-foreground pt-4 border-t mt-2">
                         Note: Applications are reviewed for up to one month. If you are not selected within this timeframe, the application will be automatically removed from your dashboard.
@@ -179,8 +179,8 @@ export function InternshipCard({ internship: directInternship, application, isLo
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-muted-foreground" />
             <span>Status: </span>
-            <Badge variant={statusDisplayMap[applicationStatus].variant}>
-                {statusDisplayMap[applicationStatus].text}
+            <Badge variant={statusDisplayMap[applicationStatus as ApiInternshipStatus].variant}>
+                {statusDisplayMap[applicationStatus as ApiInternshipStatus].text}
             </Badge>
           </div>
         )}

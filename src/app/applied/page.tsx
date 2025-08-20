@@ -1,25 +1,44 @@
+
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { InternshipCard } from '@/components/internship-card';
-import { internships, InternshipStatus } from '@/lib/mock-data';
+import { InternshipStatus, ApiInternshipStatus, MyApplication } from '@/lib/mock-data';
 import { useAuth } from '@/context/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import * as api from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
-const applicationStatuses: InternshipStatus[] = [
-    'In Review',
+const applicationApiStatuses: ApiInternshipStatus[] = [
+    'In_Review',
     'Shortlisted',
-    'Interview Scheduled',
+    'Interview_Scheduled',
     'Terminated',
     'Rejected',
     'Withdrawn',
 ];
 
+const statusApiToDisplayMap: Record<ApiInternshipStatus, InternshipStatus> = {
+    'In_Review': 'In Review',
+    'Shortlisted': 'Shortlisted',
+    'Interview_Scheduled': 'Interview Scheduled',
+    'Ongoing': 'Ongoing',
+    'Completed': 'Completed',
+    'Rejected': 'Rejected',
+    'Withdrawn': 'Withdrawn',
+    'Terminated': 'Terminated',
+};
+
 export default function AppliedInternshipsPage() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, token } = useAuth();
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<'all' | InternshipStatus>('all');
+  const { toast } = useToast();
+  const [statusFilter, setStatusFilter] = useState<'all' | ApiInternshipStatus>('all');
+  const [applications, setApplications] = useState<MyApplication[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -27,14 +46,26 @@ export default function AppliedInternshipsPage() {
     }
   }, [isLoggedIn, router]);
 
-  const appliedInternships = useMemo(() => {
-    return internships.filter(internship => 
-        internship.applied &&
-        internship.status &&
-        applicationStatuses.includes(internship.status) &&
-        (statusFilter === 'all' || internship.status === statusFilter)
-    );
-  }, [statusFilter]);
+  const fetchApplications = useCallback(async () => {
+      if (!isLoggedIn || !token) return;
+      setIsLoading(true);
+      try {
+          const data = await api.getMyApplications(token, statusFilter);
+          setApplications(data);
+      } catch (error: any) {
+          toast({
+              title: 'Error Fetching Applications',
+              description: error.message,
+              variant: 'destructive',
+          });
+      } finally {
+          setIsLoading(false);
+      }
+  }, [isLoggedIn, token, statusFilter, toast]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
   
   if (!isLoggedIn) {
     return null; // or a loading spinner
@@ -48,15 +79,15 @@ export default function AppliedInternshipsPage() {
             <p className="text-muted-foreground mt-4 text-sm md:text-base">Track the status of all your applications.</p>
         </div>
         <div className="mt-8 max-w-xs mx-auto">
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | InternshipStatus)}>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'all' | ApiInternshipStatus)}>
                 <SelectTrigger className="w-full">
                     <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
-                    {applicationStatuses.map(status => (
+                    {applicationApiStatuses.map(status => (
                         <SelectItem key={status} value={status}>
-                            {status}
+                            {statusApiToDisplayMap[status]}
                         </SelectItem>
                     ))}
                 </SelectContent>
@@ -65,10 +96,20 @@ export default function AppliedInternshipsPage() {
       </header>
 
       <section>
-        {appliedInternships.length > 0 ? (
+        {isLoading ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <Card key={i} className="flex flex-col">
+                        <CardHeader><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2 mt-2" /></CardHeader>
+                        <CardContent className="flex-grow space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /></CardContent>
+                        <CardFooter className="flex justify-between items-center"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-10 w-1/3" /></CardFooter>
+                    </Card>
+                ))}
+            </div>
+        ) : applications.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {appliedInternships.map((internship) => (
-              <InternshipCard key={internship.id} internship={internship} isLoggedIn={isLoggedIn} />
+            {applications.map((app) => (
+              <InternshipCard key={app.id} application={app} isLoggedIn={isLoggedIn} />
             ))}
           </div>
         ) : (

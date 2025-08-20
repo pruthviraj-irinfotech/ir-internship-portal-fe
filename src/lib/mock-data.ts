@@ -250,7 +250,15 @@ export type MyGameApplication = {
     internship: Internship;
 };
 
+export type MyApplication = {
+    id: number;
+    applicationNumber: string;
+    internshipId: number;
+    userId: number;
+    applicationDate: string;
+    status: ApiInternshipStatus;
+    internship: Internship;
+}
+
 
 export let applications: Application[] = [];
-
-    
