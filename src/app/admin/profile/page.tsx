@@ -200,7 +200,14 @@ export default function AdminProfilePage() {
 
   if (!profile) {
      return (
-        <div className="flex-1 flex items-center justify-center">Failed to load profile. Please try again.</div>
+        <div className="flex-1 flex items-center justify-center p-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Error</CardTitle>
+                    <CardDescription>Could not load profile data. Please try refreshing the page.</CardDescription>
+                </CardHeader>
+            </Card>
+        </div>
      );
   }
 
@@ -221,7 +228,7 @@ export default function AdminProfilePage() {
                   <FormItem>
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-24 w-24">
-                          <AvatarImage src={avatarPreview} alt={profile.name} data-ai-hint="user avatar" />
+                          <AvatarImage src={avatarPreview || 'https://placehold.co/100x100.png'} alt={profile.name} data-ai-hint="user avatar" />
                           <AvatarFallback>{profile.name?.[0] || 'A'}</AvatarFallback>
                         </Avatar>
                         <div>
