@@ -15,7 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Search, FileDown, Image as ImageIcon, PlusCircle, Eye, FilePenLine, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInMonths } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
@@ -87,6 +87,23 @@ export default function CertificatesIssuedPage() {
         if (!relativeUrl) return 'https://placehold.co/800x600.png';
         if (relativeUrl.startsWith('http') || relativeUrl.startsWith('data:')) return relativeUrl;
         return `${baseUrl}${relativeUrl}`;
+    };
+
+    const calculateDuration = (startDateStr?: string, endDateStr?: string): string => {
+        if (!startDateStr || !endDateStr) {
+            return 'N/A';
+        }
+        try {
+            const startDate = parseISO(startDateStr);
+            const endDate = parseISO(endDateStr);
+            const months = differenceInMonths(endDate, startDate);
+            if (isNaN(months) || months < 0) return 'N/A';
+            if (months === 0) return 'Less than a month';
+            return `${months} Month${months > 1 ? 's' : ''}`;
+        } catch (error) {
+            console.error("Error calculating duration", error);
+            return 'N/A';
+        }
     };
 
     return (
@@ -200,8 +217,7 @@ export default function CertificatesIssuedPage() {
                                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div><Label className="text-sm text-muted-foreground">Intern Name</Label><p className="font-semibold">{selectedCertificate.intern_details?.name || 'N/A'}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Internship Role</Label><p>{selectedCertificate.intern_details?.role || 'N/A'}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Company</Label><p>{selectedCertificate.intern_details?.company || 'N/A'}</p></div>
-                                    <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{selectedCertificate.intern_details?.duration || 'N/A'}</p></div>
+                                    <div><Label className="text-sm text-muted-foreground">Duration</Label><p>{calculateDuration(selectedCertificate.internshipStartDate, selectedCertificate.certificateIssueDate)}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Start Date</Label><p>{selectedCertificate.internshipStartDate ? format(parseISO(selectedCertificate.internshipStartDate), 'dd-MM-yy') : 'N/A'}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Date Approved</Label><p>{selectedCertificate.certificateIssueDate ? format(parseISO(selectedCertificate.certificateIssueDate), 'dd-MM-yy') : 'N/A'}</p></div>
                                     <div><Label className="text-sm text-muted-foreground">Status</Label><p><Badge variant={statusColors[selectedCertificate.certificateStatus]}>{selectedCertificate.certificateStatus.replace(/_/g, ' ')}</Badge></p></div>
