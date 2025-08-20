@@ -106,7 +106,7 @@ export default function OngoingInternDetailsPage() {
         }
     }
     
-    const handleFileUpload = async (e: React.FormEvent) => {
+    const handleFileUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!newFile || !application || !token) {
             toast({ variant: 'destructive', title: 'No file selected or invalid state' });
@@ -121,7 +121,7 @@ export default function OngoingInternDetailsPage() {
             }) : null);
             
             setNewFile(null);
-            (e.target as HTMLFormElement).reset();
+            e.currentTarget.reset();
             toast({ title: 'File Uploaded', description: `${newFile.name} has been added.` });
         } catch (error: any) {
             toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
