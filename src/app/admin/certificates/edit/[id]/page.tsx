@@ -79,25 +79,15 @@ export default function EditCertificatePage() {
             
             setAllApps(appsData);
 
-            const fetchedData: any = {
+            const fetchedData = {
                 applicationId: String(certData.applicationId),
                 certificateNumber: certData.certificateId ?? '',
                 description: certData.description ?? '',
                 status: certData.certificateStatus ?? 'Active',
+                startDate: parseISO(certData.internshipStartDate!),
+                issueDate: parseISO(certData.certificateIssueDate!),
             };
-
-            // Only parse dates if they exist
-            if (certData.internshipStartDate) {
-                fetchedData.startDate = parseISO(certData.internshipStartDate);
-            }
-             if (certData.certificateIssueDate) {
-                fetchedData.issueDate = parseISO(certData.certificateIssueDate);
-            }
             
-            if (!fetchedData.startDate || !fetchedData.issueDate) {
-                 toast({ variant: 'destructive', title: 'Error', description: `Certificate data is missing required dates.`});
-            }
-
             setInitialData(fetchedData);
             form.reset(fetchedData);
 
@@ -137,9 +127,8 @@ export default function EditCertificatePage() {
             return;
         }
 
-        if (hasDataChanges) {
-            formData.append('data', JSON.stringify(dataToSubmit));
-        }
+        formData.append('data', JSON.stringify(dataToSubmit));
+
         if (hasPngFile) {
             formData.append('pngFile', values.pngFile[0]);
         }
@@ -390,5 +379,3 @@ export default function EditCertificatePage() {
     </Card>
   );
 }
-
-    
