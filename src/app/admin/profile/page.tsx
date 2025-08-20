@@ -16,6 +16,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const MAX_AVATAR_SIZE = 100 * 1024; // 100KB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -23,7 +24,13 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gi
 const profileFormSchema = z.object({
   firstName: z.string().min(2, "First name is required."),
   lastName: z.string().optional(),
-  phone: z.string().min(10, "Please enter a valid phone number.").optional().or(z.literal('')),
+  countryCode: z.string().min(1, "Country code is required."),
+  qualification: z.string().min(2, "Qualification is required."),
+  currentStatus: z.enum(['student', 'graduate', 'professional']),
+  orgName: z.string().min(2, "Organization name is required."),
+  orgCity: z.string().min(2, "City is required."),
+  orgState: z.string().min(2, "State is required."),
+  orgCountry: z.string().min(2, "Country is required."),
   avatar: z.any().optional()
     .refine((files) => !files || files.length === 0 || files?.[0]?.size <= MAX_AVATAR_SIZE, `Max image size is 100KB.`)
     .refine((files) => !files || files.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type), "Only .jpg, .png, .gif and .webp formats are supported."),
@@ -36,8 +43,15 @@ interface AdminProfile {
     name: string;
     email: string;
     phone: string;
+    highestQualification: string;
+    status: 'student' | 'graduate' | 'professional';
+    organization: string;
+    city: string;
+    state: string;
+    country: string;
     firstName: string;
     lastName?: string;
+    countryCode: string;
 }
 
 export default function AdminProfilePage() {
@@ -65,19 +79,22 @@ export default function AdminProfilePage() {
     if (!isLoggedIn || !isAdmin || !token) return;
     setIsLoading(true);
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me/profile`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/me/application-profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Failed to fetch profile.');
         
         const data = await response.json();
         
+        const [firstName, ...lastNameParts] = data.name.split(' ');
         const fullAvatarUrl = data.avatarUrl && !data.avatarUrl.startsWith('http') 
             ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${data.avatarUrl}`
             : data.avatarUrl;
         
         const profileData: AdminProfile = {
           ...data,
+          firstName,
+          lastName: lastNameParts.join(' '),
           avatarUrl: fullAvatarUrl,
         };
 
@@ -87,7 +104,13 @@ export default function AdminProfilePage() {
         form.reset({
           firstName: profileData.firstName,
           lastName: profileData.lastName,
-          phone: profileData.phone,
+          countryCode: profileData.countryCode || '+91',
+          qualification: profileData.highestQualification,
+          currentStatus: profileData.status,
+          orgName: profileData.organization,
+          orgCity: profileData.city,
+          orgState: profileData.state,
+          orgCountry: profileData.country,
         });
 
     } catch (error: any) {
@@ -175,7 +198,7 @@ export default function AdminProfilePage() {
 
   if (isLoading) {
     return (
-        <div className="w-full max-w-2xl mx-auto">
+        <div className="w-full max-w-2xl mx-auto space-y-8">
             <Card>
                 <CardHeader>
                     <CardTitle><Skeleton className="h-6 w-32" /></CardTitle>
@@ -238,6 +261,7 @@ export default function AdminProfilePage() {
                               className="hidden"
                               accept={ACCEPTED_IMAGE_TYPES.join(',')}
                               {...rest}
+                              ref={rest.ref as React.RefObject<HTMLInputElement>}
                               onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (file) {
@@ -273,11 +297,52 @@ export default function AdminProfilePage() {
                       <Label htmlFor="email">Email</Label>
                       <Input id="email" type="email" defaultValue={profile.email} disabled />
                     </div>
-                    <FormField control={form.control} name="phone" render={({ field }) => (
-                      <FormItem><FormLabel>Phone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
+                     <div className="grid grid-cols-3 gap-2">
+                        <FormField control={form.control} name="countryCode" render={({ field }) => (
+                            <FormItem className="col-span-1"><FormLabel>Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <div className="space-y-2 col-span-2">
+                            <Label htmlFor="phone">Phone</Label>
+                            <Input id="phone" defaultValue={profile.phone} disabled />
+                        </div>
+                    </div>
+                     <FormField control={form.control} name="qualification" render={({ field }) => (
+                        <FormItem className="md:col-span-2"><FormLabel>Highest Qualification</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                     )} />
                 </div>
             </div>
+
+            <div className="border-t pt-6 space-y-4">
+                <h3 className="text-lg font-medium">Organization / Institute Information</h3>
+                <FormField control={form.control} name="currentStatus" render={({ field }) => (
+                <FormItem><FormLabel>Current Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                    <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="graduate">Graduate</SelectItem>
+                        <SelectItem value="professional">Working Professional</SelectItem>
+                    </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+                )} />
+                <FormField control={form.control} name="orgName" render={({ field }) => (
+                <FormItem><FormLabel>Organization/Institute Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField control={form.control} name="orgCity" render={({ field }) => (
+                    <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="orgState" render={({ field }) => (
+                    <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="orgCountry" render={({ field }) => (
+                    <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>
+                )} />
+                </div>
+            </div>
+
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button type="submit" disabled={isSubmittingProfile}>
@@ -289,7 +354,7 @@ export default function AdminProfilePage() {
         </form>
       </Form>
 
-       <form onSubmit={handlePasswordChange}>
+       <form onSubmit={handlePasswordChange} className="w-full max-w-2xl mt-8">
          <Card>
             <CardHeader>
                 <CardTitle>Change Password</CardTitle>
@@ -325,3 +390,5 @@ export default function AdminProfilePage() {
     </div>
   );
 }
+
+    
