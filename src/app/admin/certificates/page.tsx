@@ -185,7 +185,7 @@ export default function CertificatesIssuedPage() {
                         <>
                             <DialogHeader>
                                 <DialogTitle>Certificate Details</DialogTitle>
-                                <DialogDescription>Viewing details for Certificate ID: {selectedCertificate.certificateId}</DialogDescription>
+                                <DialogDescription>Viewing details for Certificate ID: {selectedCertificate.certificateId || 'N/A'}</DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
                                 <div className="relative w-full aspect-[4/3] rounded-md overflow-hidden border">
