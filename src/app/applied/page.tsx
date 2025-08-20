@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { InternshipCard } from '@/components/internship-card';
-import { InternshipStatus, ApiInternshipStatus, MyApplication } from '@/lib/mock-data';
+import { ApiInternshipStatus, MyApplication } from '@/lib/mock-data';
 import { useAuth } from '@/context/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import * as api from '@/lib/api';
@@ -21,7 +22,7 @@ const applicationApiStatuses: ApiInternshipStatus[] = [
     'Withdrawn',
 ];
 
-const statusApiToDisplayMap: Record<ApiInternshipStatus, InternshipStatus> = {
+const statusApiToDisplayMap: Record<ApiInternshipStatus, string> = {
     'In_Review': 'In Review',
     'Shortlisted': 'Shortlisted',
     'Interview_Scheduled': 'Interview Scheduled',

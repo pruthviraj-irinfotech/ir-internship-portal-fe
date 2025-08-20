@@ -215,6 +215,31 @@ export type DetailedApplication = {
     }
 };
 
+export type UserApplicationDetails = {
+    id: number;
+    applicationNumber: string;
+    applicationDate: string;
+    status: ApiInternshipStatus;
+    resumeUrl: string;
+    whyApply: string;
+    altEmail: string | null;
+    altPhone: string | null;
+    interviewDate: string | null;
+    interviewInstructions: string | null;
+    adminComments: string | null;
+    internship: {
+        title: string;
+        company: string;
+    };
+    user: {
+        profile: {
+            firstName: string;
+            lastName: string | null;
+        }
+    };
+    documents: Document[];
+};
+
 export type ApplicationDetails = {
   id: number;
   internship: {

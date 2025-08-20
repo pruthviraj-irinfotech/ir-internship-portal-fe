@@ -2,7 +2,7 @@
 
 'use client';
 
-import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern, Document as DocType, MyGameApplication, ApplicationDetails, MyApplication } from './mock-data';
+import type { Internship, Application, ApiInternshipStatus, DetailedApplication, User, DetailedUser, Certificate, CertificateListItem, DetailedCertificate, Intern, Document as DocType, MyGameApplication, ApplicationDetails, MyApplication, UserApplicationDetails } from './mock-data';
 
 const getApiBaseUrl = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -117,6 +117,17 @@ export const getApplicationDetails = async (id: number, token: string): Promise<
         data.resumeUrl = `${getApiBaseUrl()}${data.resumeUrl}`;
     }
     return data;
+};
+
+export const getApplicationDetailsForUser = async (id: number, token: string): Promise<UserApplicationDetails> => {
+    const response = await fetch(`${getApiBaseUrl()}/api/applications/${id}`, {
+        headers: getAuthHeaders(token),
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch application details.');
+    }
+    return response.json();
 };
 
 
