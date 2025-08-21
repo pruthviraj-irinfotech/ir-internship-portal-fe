@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/context/auth-context';
-import { internships, applications, Application, Internship } from '@/lib/mock-data';
+import type { Internship } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Loader2, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { getFullUrl } from '@/lib/utils';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = ["application/pdf"];
@@ -219,7 +220,7 @@ export default function ApplyPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-4">
                     <Avatar className="h-16 w-16">
-                        <AvatarImage src={userProfile.avatarUrl || 'https://placehold.co/100x100.png'} alt={userProfile.name} data-ai-hint="user avatar" />
+                        <AvatarImage src={getFullUrl(userProfile.avatarUrl)} alt={userProfile.name} data-ai-hint="user avatar" />
                         <AvatarFallback>{userProfile.name?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
                     <div>

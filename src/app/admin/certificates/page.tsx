@@ -18,6 +18,7 @@ import Image from 'next/image';
 import { format, parseISO, differenceInMonths } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { getFullUrl } from '@/lib/utils';
 
 const statusColors: Record<CertificateStatus, 'default' | 'secondary' | 'destructive'> = {
     'Active': 'default',
@@ -34,7 +35,6 @@ export default function CertificatesIssuedPage() {
     const [certToDelete, setCertToDelete] = useState<CertificateListItem | null>(null);
     const { token } = useAuth();
     const { toast } = useToast();
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     const fetchCertificates = useCallback(async () => {
         if (!token) return;
@@ -81,12 +81,6 @@ export default function CertificatesIssuedPage() {
         } finally {
             setCertToDelete(null);
         }
-    };
-
-    const getFullUrl = (relativeUrl: string | null | undefined) => {
-        if (!relativeUrl) return 'https://placehold.co/800x600.png';
-        if (relativeUrl.startsWith('http') || relativeUrl.startsWith('data:')) return relativeUrl;
-        return `${baseUrl}${relativeUrl}`;
     };
 
     const calculateDuration = (startDateStr?: string | null, endDateStr?: string | null): string => {

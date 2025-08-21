@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
+import { getFullUrl } from '@/lib/utils';
 
 export default function AdminUsersPage() {
   const [userList, setUserList] = useState<User[]>([]);
@@ -27,7 +28,6 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   const { token } = useAuth();
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const fetchUsers = useCallback(async () => {
     if (!token) return;
@@ -80,12 +80,6 @@ export default function AdminUsersPage() {
     }
   }
 
-  const getFullAvatarUrl = (relativeUrl: string | null | undefined) => {
-      if (!relativeUrl) return 'https://placehold.co/100x100.png';
-      if (relativeUrl.startsWith('http')) return relativeUrl;
-      return `${baseUrl}${relativeUrl}`;
-  }
-
   return (
     <>
       <Card>
@@ -135,7 +129,7 @@ export default function AdminUsersPage() {
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-9 w-9">
-                            <AvatarImage src={getFullAvatarUrl(user.avatarUrl)} alt={user.name} data-ai-hint="user avatar" />
+                            <AvatarImage src={getFullUrl(user.avatarUrl)} alt={user.name} data-ai-hint="user avatar" />
                             <AvatarFallback>{user.name?.[0] || 'U'}</AvatarFallback>
                           </Avatar>
                           <div>
@@ -221,7 +215,7 @@ export default function AdminUsersPage() {
                       <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-6">
                           <div className="flex items-start gap-4">
                               <Avatar className="h-24 w-24">
-                                  <AvatarImage src={getFullAvatarUrl(viewingUser.profile.avatarUrl)} alt="User Avatar" data-ai-hint="user avatar" />
+                                  <AvatarImage src={getFullUrl(viewingUser.profile.avatarUrl)} alt="User Avatar" data-ai-hint="user avatar" />
                                   <AvatarFallback>{viewingUser.profile.firstName?.[0]}</AvatarFallback>
                               </Avatar>
                               <div>

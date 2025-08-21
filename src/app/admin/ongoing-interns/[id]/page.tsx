@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
+import { cn, getFullUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, File, Loader2, Trash2, Upload, CalendarIcon, FileDown } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -157,11 +157,6 @@ export default function OngoingInternDetailsPage() {
         }
     };
     
-    const getFullUrl = (relativeUrl: string | null | undefined) => {
-        if (!relativeUrl) return '#';
-        if (relativeUrl.startsWith('http')) return relativeUrl;
-        return `${process.env.NEXT_PUBLIC_API_BASE_URL}${relativeUrl}`;
-    };
 
     if (isLoading || !application) {
         return (
@@ -329,5 +324,3 @@ export default function OngoingInternDetailsPage() {
         </Form>
     </div>
     );
-
-    

@@ -26,9 +26,6 @@ export type Internship = {
   status?: InternshipStatus; // This is for frontend display mapping, API will use applicationStatus
 };
 
-export let internships: Internship[] = [];
-
-
 export type CertificateStatus = 'Active' | 'Terminated' | 'On_Hold';
 
 // For the public verification page
@@ -79,36 +76,6 @@ export type DetailedCertificate = {
     } | null;
 };
 
-
-
-export const interns = [
-    { id: 1, name: 'Player One' },
-    { id: 2, name: 'Admin User' },
-    { id: 3, name: 'Alex Doe' },
-    { id: 4, name: 'Sam Smith' },
-    { id: 5, name: 'Jamie Rivera' },
-    { id: 6, name: 'Casey Jordan' },
-];
-
-export const certificates: Certificate[] = [
-  {
-    id: 1,
-    applicationId: 5, // Corresponds to Alex Doe's completed NextJS internship
-    certificateNumber: 'CERT12345',
-    internName: 'Player One',
-    internshipRole: 'React Js Frontend',
-    company: 'IR INFOTECH',
-    duration: '3 Months',
-    startDate: '2023-06-01',
-    approvedDate: '2023-09-05',
-    description: 'This certifies that Player One has successfully completed the React Js Frontend internship at IR INFOTECH. During this internship, Player One demonstrated exceptional skills in building modern, responsive web applications using React. Their dedication and creative contributions were invaluable to the team.',
-    imageUrl: 'https://placehold.co/800x600.png',
-    pdfUrl: '#',
-    uploadedBy: 2, // Admin User
-    status: 'Active',
-  },
-];
-
 // For the main admin user list
 export type User = {
     id: number;
@@ -150,9 +117,6 @@ export type DetailedUser = {
     isCurrent: boolean;
   }[];
 };
-
-
-export const users: User[] = [];
 
 export type Document = {
   id: number;
@@ -284,8 +248,3 @@ export type MyApplication = {
     status: ApiInternshipStatus;
     internship: Internship;
 }
-
-
-export let applications: Application[] = [];
-
-    

@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getFullUrl } from '@/lib/utils';
 
 const MAX_AVATAR_SIZE = 100 * 1024; // 100KB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -86,9 +87,7 @@ export default function ProfilePage() {
         
         const data = await response.json();
         const [firstName, ...lastNameParts] = data.name.split(' ');
-        const fullAvatarUrl = data.avatarUrl && !data.avatarUrl.startsWith('http') 
-            ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${data.avatarUrl}`
-            : data.avatarUrl;
+        const fullAvatarUrl = getFullUrl(data.avatarUrl);
         
         const profileData: UserProfile = {
           ...data,
@@ -387,5 +386,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    

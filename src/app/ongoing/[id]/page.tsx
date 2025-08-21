@@ -13,6 +13,7 @@ import { ArrowLeft, File, Loader2, Trash2, Upload, FileDown } from 'lucide-react
 import { format, parseISO } from 'date-fns';
 import * as api from '@/lib/api';
 import type { Document, ApplicationDetails } from '@/lib/mock-data';
+import { getFullUrl } from '@/lib/utils';
 
 function formatBytes(bytes: number, decimals = 2) {
     if (!bytes || bytes === 0) return '0 Bytes';
@@ -34,12 +35,6 @@ export default function UserOngoingInternshipDetailsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [newFile, setNewFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
-
-    const getFullUrl = (relativeUrl?: string) => {
-        if (!relativeUrl) return '#';
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        return relativeUrl.startsWith('http') ? relativeUrl : `${baseUrl}${relativeUrl}`;
-    };
 
     const fetchDetails = useCallback(async () => {
         if (!token || isNaN(appId)) return;
