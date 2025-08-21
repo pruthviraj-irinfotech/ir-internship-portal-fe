@@ -108,13 +108,19 @@ export default function OngoingInternDetailsPage() {
     }
     
     const handleUploadClick = async () => {
-        if (!newFile || !application || !token) {
+        if (!newFile || !token) {
             toast({ variant: 'destructive', title: 'No file selected or invalid state' });
             return;
         }
+
+        if (!appId) {
+             toast({ variant: 'destructive', title: 'Error', description: 'Application ID is missing. Cannot upload document.' });
+             return;
+        }
+
         setIsUploading(true);
         try {
-            const uploadedDoc = await api.uploadDocument(application.id, newFile, token);
+            const uploadedDoc = await api.uploadDocument(appId, newFile, token);
             setApplication(prev => prev ? ({
                 ...prev,
                 documentsForIntern: [...(prev.documentsForIntern || []), uploadedDoc]
