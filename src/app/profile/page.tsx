@@ -71,6 +71,8 @@ export default function ProfilePage() {
   
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -247,7 +249,7 @@ export default function ProfilePage() {
               <FormField
                   control={form.control}
                   name="avatar"
-                  render={({ field: { onChange, value, ...rest } }) => (
+                  render={({ field: { onChange, ...rest } }) => (
                   <FormItem>
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-24 w-24">
@@ -261,7 +263,7 @@ export default function ProfilePage() {
                               className="hidden"
                               accept={ACCEPTED_IMAGE_TYPES.join(',')}
                               {...rest}
-                              ref={rest.ref as React.RefObject<HTMLInputElement>}
+                              ref={fileInputRef}
                               onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (file) {
@@ -273,7 +275,7 @@ export default function ProfilePage() {
                               }}
                             />
                           </FormControl>
-                          <Button type="button" variant="outline" onClick={() => (rest.ref as React.RefObject<HTMLInputElement>)?.current?.click()}>
+                          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                             Change Avatar
                           </Button>
                           <p className="text-xs text-muted-foreground mt-2">Max 100KB. JPG, PNG, GIF, WEBP.</p>
