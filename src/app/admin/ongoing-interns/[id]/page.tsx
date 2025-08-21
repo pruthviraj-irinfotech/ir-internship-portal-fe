@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,6 +52,7 @@ export default function OngoingInternDetailsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [newFile, setNewFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -106,8 +107,7 @@ export default function OngoingInternDetailsPage() {
         }
     }
     
-    const handleFileUpload = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleUploadClick = async () => {
         if (!newFile || !application || !token) {
             toast({ variant: 'destructive', title: 'No file selected or invalid state' });
             return;
@@ -121,7 +121,9 @@ export default function OngoingInternDetailsPage() {
             }) : null);
             
             setNewFile(null);
-            (e.target as HTMLFormElement).reset();
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
             toast({ title: 'File Uploaded', description: `${newFile.name} has been added.` });
         } catch (error: any) {
             toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
@@ -306,13 +308,13 @@ export default function OngoingInternDetailsPage() {
                         <Card>
                             <CardHeader><CardTitle>Upload New Document</CardTitle></CardHeader>
                             <CardContent>
-                                <form onSubmit={handleFileUpload} className="space-y-4">
-                                    <Input type="file" onChange={(e) => setNewFile(e.target.files ? e.target.files[0] : null)} disabled={isUploading}/>
-                                    <Button className="w-full" type="submit" disabled={!newFile || isUploading}>
+                                <div className="space-y-4">
+                                    <Input ref={fileInputRef} type="file" onChange={(e) => setNewFile(e.target.files ? e.target.files[0] : null)} disabled={isUploading}/>
+                                    <Button type="button" className="w-full" onClick={handleUploadClick} disabled={!newFile || isUploading}>
                                         {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                                         {isUploading ? 'Uploading...' : 'Upload'}
                                     </Button>
-                                </form>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -321,4 +323,5 @@ export default function OngoingInternDetailsPage() {
         </Form>
     </div>
     );
-}
+
+    
