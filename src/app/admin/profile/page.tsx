@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getFullUrl } from '@/lib/utils';
 
 const MAX_AVATAR_SIZE = 100 * 1024; // 100KB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -71,7 +72,7 @@ export default function AdminProfilePage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -89,15 +90,13 @@ export default function AdminProfilePage() {
         const data = await response.json();
         
         const [firstName, ...lastNameParts] = data.name.split(' ');
-        const fullAvatarUrl = data.avatarUrl && !data.avatarUrl.startsWith('http') 
-            ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${data.avatarUrl}`
-            : data.avatarUrl;
+        const fullAvatarUrl = getFullUrl(data.avatarUrl);
         
         const profileData: AdminProfile = {
           ...data,
           firstName,
           lastName: lastNameParts.join(' '),
-          avatarUrl: fullAvatarUrl,
+          avatarUrl: fullAvatarUrl || '',
         };
 
         setProfile(profileData);
@@ -249,11 +248,11 @@ export default function AdminProfilePage() {
             <FormField
                   control={form.control}
                   name="avatar"
-                  render={({ field: { onChange, ...rest } }) => (
+                  render={({ field: { onChange, value, ...rest } }) => (
                   <FormItem>
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-24 w-24">
-                          <AvatarImage src={avatarPreview || 'https://placehold.co/100x100.png'} alt={profile.name} data-ai-hint="user avatar" />
+                          <AvatarImage src={avatarPreview} alt={profile.name} data-ai-hint="user avatar" />
                           <AvatarFallback>{profile.name?.[0] || 'A'}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -262,8 +261,7 @@ export default function AdminProfilePage() {
                               type="file"
                               className="hidden"
                               accept={ACCEPTED_IMAGE_TYPES.join(',')}
-                              {...rest}
-                              ref={fileInputRef}
+                              ref={avatarInputRef}
                               onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (file) {
@@ -275,7 +273,7 @@ export default function AdminProfilePage() {
                               }}
                             />
                           </FormControl>
-                          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                          <Button type="button" variant="outline" onClick={() => avatarInputRef.current?.click()}>
                             Change Avatar
                           </Button>
                           <p className="text-xs text-muted-foreground mt-2">Max 100KB. JPG, PNG, GIF, WEBP.</p>
@@ -392,5 +390,3 @@ export default function AdminProfilePage() {
     </div>
   );
 }
-
-    
