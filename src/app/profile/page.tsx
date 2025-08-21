@@ -127,6 +127,7 @@ export default function ProfilePage() {
   }, [isLoggedIn, router, fetchProfile]);
 
   const onProfileSubmit: SubmitHandler<ProfileFormValues> = async (values) => {
+    if (!token) return;
     setIsSubmittingProfile(true);
     const { avatar, ...jsonData } = values;
 
@@ -165,6 +166,7 @@ export default function ProfilePage() {
         toast({ variant: 'destructive', title: 'Missing Fields', description: 'Please fill out both password fields.'});
         return;
     }
+    if (!token) return;
     setIsSubmittingPassword(true);
 
     try {
@@ -259,6 +261,7 @@ export default function ProfilePage() {
                               className="hidden"
                               accept={ACCEPTED_IMAGE_TYPES.join(',')}
                               {...rest}
+                              ref={rest.ref as React.RefObject<HTMLInputElement>}
                               onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (file) {
